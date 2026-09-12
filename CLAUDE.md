@@ -64,6 +64,9 @@ is right and you are wrong.
   recorded on every `match_run` so any delivered report is reproducible.
 - **Reference data (NACE, municipalities, regions) is versioned files in `data/`,** not rows edited in
   production. A reclassification must show up in a diff.
+- **Never hand-edit `docs/schema.sql`.** Change the models, autogenerate a migration, then run
+  `./ops/dump-schema.sh`. Two check constraints carry the accuracy contract into the database
+  (`has_citation`, `structured_has_predicate`) — do not drop them to make a test pass.
 - **Adding an ingestion source touches only `app/ingestion/sources/` and `config/sources.yaml`.** If it
   forces changes elsewhere, say so — the abstraction is wrong and that is worth knowing.
 - **Content-hash everything fetched.** Re-analysing an unchanged document is pure waste and the main
@@ -103,7 +106,8 @@ six and later arrives as a separate scheduled container (`docs/architecture.md` 
 | Question | File |
 |---|---|
 | Why is it built this way? | `docs/architecture.md` (§9 lists disagreements with the brief) |
-| What does the data look like? | `docs/schema.sql` — design artifact; Alembic is the truth |
+| What does the data look like? | `app/models/` is the truth; `docs/schema.sql` is generated |
+| Why is the schema shaped that way? | `docs/data-model.md` |
 | Where do calls come from? | `docs/sources.md` |
 | How does matching work? | `docs/matching.md` |
 | What am I building next? | `docs/roadmap.md` |

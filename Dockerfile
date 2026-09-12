@@ -17,6 +17,9 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 COPY app ./app
+# Shipped with the image so a deploy can run `alembic upgrade head`.
+COPY migrations ./migrations
+COPY alembic.ini ./
 
 RUN useradd --system --uid 10001 grants && chown -R grants:grants /srv/app
 USER grants

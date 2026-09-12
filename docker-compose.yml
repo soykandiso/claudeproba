@@ -29,6 +29,10 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./ops/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Loopback only: reachable for psql and alembic on the machine itself,
+      # never from the network, on the VPS as well as locally.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-grants} -d ${POSTGRES_DB:-grants}"]
       interval: 5s

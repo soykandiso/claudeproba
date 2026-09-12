@@ -4,13 +4,16 @@ version = "0.1.0"
 description = "Grant and subsidy matching platform for North Macedonia"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "alembic>=1.14",
     "flask>=3.0",
     "gunicorn>=23.0",
+    "pgvector>=0.3",
     "psycopg[binary]>=3.2",
     "pydantic>=2.9",
     "pydantic-settings>=2.5",
     "redis>=5.2",
     "rq>=2.0",
+    "sqlalchemy>=2.0",
 ]
 
 [dependency-groups]
@@ -25,6 +28,12 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic's autogenerate emits long op.create_index calls and older-style type
+# annotations. Rewriting them by hand to satisfy the linter would mean editing
+# migrations that have already run somewhere, which is never worth it.
+"migrations/versions/*" = ["E501", "UP007", "UP035", "I001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

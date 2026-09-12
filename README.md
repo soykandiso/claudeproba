@@ -9,8 +9,8 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P0.5 session 2** — application skeleton and container stack. No ingestion, no matching,
-no UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
+Status: **P0.5 session 3** — application skeleton, container stack, database schema. No ingestion,
+no matching, no UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Running it locally
 
@@ -23,10 +23,27 @@ curl localhost:5000/healthz
 ```
 
 ```bash
-uv run pytest           # tests
+uv run pytest           # tests (database-backed ones skip if no database is up)
 uv run ruff check .     # lint
 uv run ruff format .    # format
 ```
+
+## Database
+
+```bash
+uv run alembic upgrade head                          # apply migrations
+uv run alembic revision --autogenerate -m "message"  # after changing models
+uv run alembic check                                 # models and database agree?
+./ops/dump-schema.sh                                 # regenerate docs/schema.sql
+```
+
+The SQLAlchemy models in [`app/models/`](app/models/) and the migrations in
+[`migrations/`](migrations/) are the source of truth. [`docs/schema.sql`](docs/schema.sql) is
+generated and must not be hand-edited; the reasoning behind the model is in
+[`docs/data-model.md`](docs/data-model.md).
+
+Postgres is published on `127.0.0.1` only, so `psql` and `alembic` reach it from the machine itself
+and nothing reaches it from the network.
 
 ## Running the full stack
 
