@@ -21,6 +21,12 @@ venv/
 *.dump
 *.sql.gz
 
+# Backups and keys. A committed backup is a data breach; a committed age private
+# key makes every backup readable by anyone who clones the repo.
+/backups/
+*.age
+*key.txt
+
 # Build output
 /app/static/dist/
 tailwindcss

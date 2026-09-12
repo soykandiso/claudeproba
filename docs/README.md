@@ -14,6 +14,7 @@ No implementation code exists yet. Read them in this order.
 | 6 | [risks.md](risks.md) | Completed risk register with the cheapest test that reveals each risk |
 | 7 | [decisions.md](decisions.md) | **Open questions only you can answer.** Start here if you only read one file |
 | 8 | [repo-skeleton.md](repo-skeleton.md) | Proposed repository tree |
+| 9 | [runbook.md](runbook.md) | Backups, restore, deploy, what to check when something breaks |
 |   | [../CLAUDE.md](../CLAUDE.md) | Standing instructions for future Claude Code sessions |
 
 ## Status

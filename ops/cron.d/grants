@@ -1,0 +1,20 @@
+# Scheduled jobs. Install on the VPS with:
+#   sudo cp ops/cron.d/grants /etc/cron.d/grants && sudo chmod 644 /etc/cron.d/grants
+#
+# Timing is UTC. Europe/Skopje is UTC+1 in winter and UTC+2 in summer, so these
+# run between 04:15 and 05:15 local -- deliberately after midnight-published
+# calls and before the working day.
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Nightly backup. Encrypts, uploads off-site, prunes, pings the heartbeat.
+15 3 * * *  root  cd /srv/grants && ./ops/backup.sh >> /var/log/grants-backup.log 2>&1
+
+# Ingestion. Per-source cadence is configured in config/sources.yaml; this wakes
+# the scheduler, which decides what is actually due. Arrives in P1.
+# 0 */4 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest due >> /var/log/grants-ingest.log 2>&1
+
+# Source staleness check. A dead scraper is the primary business failure mode,
+# so this alerts independently of the ingestion run that may itself be broken.
+# 30 8 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest health >> /var/log/grants-health.log 2>&1
