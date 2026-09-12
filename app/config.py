@@ -28,8 +28,9 @@ class Settings(BaseSettings):
     # Set from the git SHA at build time.
     version: str = "dev"
 
-    # Storage. Populated in P0.5 session 2 (compose) and session 3 (models).
-    database_url: str = "postgresql+psycopg://grants:grants@localhost:5432/grants"
+    # Storage. Stored as a plain libpq URL so psycopg can use it directly;
+    # SQLAlchemy gets the dialect-qualified form from sqlalchemy_url below.
+    database_url: str = "postgresql://grants:grants@localhost:5432/grants"
     redis_url: str = "redis://localhost:6379/0"
 
     # Locale. Macedonian Cyrillic is the launch language (brief 3.1).
@@ -42,6 +43,12 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.env == "production"
+
+    @property
+    def sqlalchemy_url(self) -> str:
+        """The database URL in SQLAlchemy's dialect-qualified form."""
+        scheme, _, rest = self.database_url.partition("://")
+        return f"{scheme}+psycopg://{rest}"
 
 
 def load_settings(**overrides: object) -> Settings:

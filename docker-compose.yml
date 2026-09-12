@@ -1,0 +1,94 @@
+name: grants
+
+x-app: &app
+  build: .
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  environment:
+    GRANTS_ENV: ${GRANTS_ENV:-development}
+    GRANTS_DEBUG: "false"
+    GRANTS_SECRET_KEY: ${GRANTS_SECRET_KEY:?set GRANTS_SECRET_KEY in .env}
+    GRANTS_VERSION: ${GRANTS_VERSION:-dev}
+    # Service names, not localhost: these override whatever .env holds for
+    # running the app directly on the host.
+    GRANTS_DATABASE_URL: postgresql://${POSTGRES_USER:-grants}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-grants}
+    GRANTS_REDIS_URL: redis://redis:6379/0
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-grants}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-grants}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./ops/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-grants} -d ${POSTGRES_DB:-grants}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # noeviction: this is a job queue, not a cache. Silently dropping a queued
+    # ingestion or a paid analysis under memory pressure would be far worse than
+    # failing loudly.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  web:
+    <<: *app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as r; r.urlopen('http://127.0.0.1:8000/healthz').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  worker:
+    <<: *app
+    command: ["sh", "-c", "exec rq worker --url \"$$GRANTS_REDIS_URL\" ingest analysis"]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-:80}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  default:
+    # Named explicitly so the host interface is predictable. Firewall rules on the
+    # VPS can then reference it by name instead of a generated br-<hash> that
+    # changes whenever the network is recreated.
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: grants-br

@@ -9,8 +9,8 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P0.5 session 1** — application skeleton. No ingestion, no matching, no UI yet.
-See [`docs/roadmap.md`](docs/roadmap.md).
+Status: **P0.5 session 2** — application skeleton and container stack. No ingestion, no matching,
+no UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Running it locally
 
@@ -27,6 +27,37 @@ uv run pytest           # tests
 uv run ruff check .     # lint
 uv run ruff format .    # format
 ```
+
+## Running the full stack
+
+```bash
+cp .env.example .env      # then set GRANTS_SECRET_KEY and POSTGRES_PASSWORD
+docker compose up -d
+curl localhost:8080/healthz    # liveness: is this process up
+curl localhost:8080/readyz     # readiness: can it reach Postgres and Redis
+```
+
+Five services: `caddy` (TLS and reverse proxy), `web` (gunicorn), `worker` (RQ), `postgres`
+(pgvector), `redis`. Postgres extensions are created on first volume initialisation by
+[`ops/initdb/01-extensions.sql`](ops/initdb/01-extensions.sql).
+
+In production, set `CADDY_SITE_ADDRESS` to the real hostname and Caddy obtains a certificate
+automatically; Cloudflare in front must then be **Full (Strict)**.
+
+### If containers cannot reach each other (GitHub Codespaces and similar)
+
+In some nested-Docker environments the kernel has both iptables backends active. Docker writes its
+rules to the nft table, while the legacy table still carries `-P FORWARD DROP` with ACCEPT rules only
+for the default `docker0` bridge — so traffic on this project's bridge is dropped and every service
+times out talking to every other one. One rule fixes it:
+
+```bash
+sudo iptables-legacy -I FORWARD 1 -i grants-br -o grants-br -j ACCEPT
+```
+
+This is a quirk of such sandboxes, not a requirement of the stack. A normal Docker install on the
+VPS needs nothing. The bridge is named `grants-br` in `docker-compose.yml` precisely so rules like
+this — and the firewall rules on the VPS — can reference it by a stable name.
 
 ## Configuration
 

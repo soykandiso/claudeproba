@@ -27,3 +27,10 @@ def test_reads_environment(monkeypatch):
 
     assert settings.is_production is True
     assert settings.secret_key == "from-environment"
+
+
+def test_sqlalchemy_url_is_dialect_qualified():
+    """psycopg takes the plain libpq URL; SQLAlchemy needs the +psycopg form."""
+    settings = load_settings(database_url="postgresql://u:p@db:5432/grants")
+
+    assert settings.sqlalchemy_url == "postgresql+psycopg://u:p@db:5432/grants"
