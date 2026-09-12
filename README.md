@@ -28,6 +28,30 @@ uv run ruff check .     # lint
 uv run ruff format .    # format
 ```
 
+## Developing with live reload
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+This bind-mounts `app/` into the container and runs the Flask development server.
+Editing a template shows up on the next refresh; editing Python restarts the server
+automatically. No rebuild, no restart command.
+
+In GitHub Codespaces, port 8080 is forwarded and can be shared:
+
+```bash
+gh codespace ports visibility 8080:public -c "$CODESPACE_NAME"
+echo "https://$CODESPACE_NAME-8080.app.github.dev"
+```
+
+The overlay runs `flask run --reload --no-debugger`. The debugger is off deliberately:
+it offers an interactive Python console to anyone who can reach the port, and a
+Codespaces port can be made public.
+
+Plain `docker compose up -d` (no overlay) runs gunicorn against code baked into the
+image — that is what the VPS runs, and it needs a rebuild to pick up changes.
+
 ## Database
 
 ```bash

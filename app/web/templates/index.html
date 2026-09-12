@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="mk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Платформа за грантови и субвенции</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      margin: 0; padding: 48px 20px;
+      font: 16px/1.5 "Fira Sans", "Segoe UI", system-ui, sans-serif;
+      background: #F7F6F3; color: #22201B;
+    }
+    main { max-width: 34rem; margin: 0 auto; }
+    h1 { font: 600 28px/1.3 "Source Serif 4", Georgia, serif; margin: 0 0 8px; }
+    p { margin: 0 0 24px; color: #625D54; }
+    dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0 0 24px; }
+    dt { color: #625D54; }
+    dd { margin: 0; }
+    ul { padding-left: 20px; }
+    a { color: #35635A; }
+    .note { border-top: 1px solid #C9C4B8; padding-top: 16px; font-size: 14px; color: #625D54; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Платформа за грантови и субвенции</h1>
+    <p>Развојна инсталација. Јавниот дел сè уште не е изграден.</p>
+
+    <dl>
+      <dt>Околина</dt><dd>{{ settings.env }}</dd>
+      <dt>Верзија</dt><dd>{{ settings.version }}</dd>
+      <dt>Јазик</dt><dd>{{ settings.default_language }}</dd>
+    </dl>
+
+    <ul>
+      <li><a href="/healthz">/healthz</a> — дали процесот работи</li>
+      <li><a href="/readyz">/readyz</a> — дали базата и редот се достапни</li>
+    </ul>
+
+    <p class="note">
+      Placeholder only. The public surface is P3 and follows the project design system;
+      nothing on this page is a design decision.
+    </p>
+  </main>
+</body>
+</html>
