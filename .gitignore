@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data
+/data/
+/snapshots/
+*.sqlite3
+*.dump
+*.sql.gz
+
+# Build output
+/app/static/dist/
+tailwindcss
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
