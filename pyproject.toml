@@ -1,0 +1,33 @@
+[project]
+name = "grants"
+version = "0.1.0"
+description = "Grant and subsidy matching platform for North Macedonia"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "flask>=3.0",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# The app is run as a package from the repo root, not installed, so tests need
+# the root on sys.path.
+pythonpath = ["."]
+
+[tool.uv]
+package = false
