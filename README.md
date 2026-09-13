@@ -31,12 +31,24 @@ uv run ruff format .    # format
 ## Developing with live reload
 
 ```bash
+./run.py              # start, open the browser, follow logs; Ctrl+C stops
+./run.py --detach     # leave it running;  ./run.py stop  to stop
+./run.py --build      # after changing dependencies or the Dockerfile
+```
+
+`run.py` is a thin wrapper around
+
+```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
 This bind-mounts `app/` into the container and runs the Flask development server.
-Editing a template shows up on the next refresh; editing Python restarts the server
-automatically. No rebuild, no restart command.
+Editing Python restarts the server automatically. No rebuild, no restart command.
+
+Open pages also refresh themselves: with `GRANTS_LIVE_RELOAD=true` (set by the overlay)
+every HTML page polls `/__dev/reload` once a second and reloads when a template or
+static file changes or the server restarts. See `app/web/devreload.py`. The setting
+is refused in production.
 
 In GitHub Codespaces, port 8080 is forwarded and can be shared:
 

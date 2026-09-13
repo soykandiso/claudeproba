@@ -17,6 +17,8 @@ services:
     environment:
       FLASK_APP: app:create_app
       GRANTS_ENV: development
+      # Open pages refresh themselves on save (app/web/devreload.py).
+      GRANTS_LIVE_RELOAD: "true"
     volumes:
       - ./app:/srv/app/app:ro
       - ./migrations:/srv/app/migrations:ro

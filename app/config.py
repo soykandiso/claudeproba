@@ -7,7 +7,7 @@ No secrets in code, ever (see CLAUDE.md).
 
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     secret_key: str = "dev-only-not-a-secret"
     debug: bool = False
 
+    # Browser auto-refresh on file changes (app/web/devreload.py). Development
+    # only; enabled by docker-compose.dev.yml, and refused in production.
+    live_reload: bool = False
+
     # Release identifier, surfaced by /healthz so a deploy can be confirmed.
     # Set from the git SHA at build time.
     version: str = "dev"
@@ -39,6 +43,12 @@ class Settings(BaseSettings):
 
     # Hard ceiling on model spend, alarmed rather than enforced (decisions.md D8).
     model_spend_ceiling_eur: float = Field(default=30.0, ge=0)
+
+    @model_validator(mode="after")
+    def _no_live_reload_in_production(self) -> "Settings":
+        if self.live_reload and self.is_production:
+            raise ValueError("GRANTS_LIVE_RELOAD must not be enabled in production")
+        return self
 
     @property
     def is_production(self) -> bool:
