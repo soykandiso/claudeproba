@@ -33,6 +33,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(public_bp)
 
+    from app.cli import register_cli
+
+    register_cli(app)
+
     if settings.live_reload:
         from app.web import devreload
 

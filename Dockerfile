@@ -24,7 +24,10 @@ COPY prompts ./prompts
 COPY migrations ./migrations
 COPY alembic.ini ./
 
-RUN useradd --system --uid 10001 grants && chown -R grants:grants /srv/app
+# /srv/snapshots exists in the image so a fresh named volume inherits its owner.
+RUN useradd --system --uid 10001 grants \
+    && mkdir -p /srv/snapshots \
+    && chown -R grants:grants /srv/app /srv/snapshots
 USER grants
 
 EXPOSE 8000

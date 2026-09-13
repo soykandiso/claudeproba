@@ -9,8 +9,9 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P0.5 session 3** — application skeleton, container stack, database schema. No ingestion,
-no matching, no UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
+Status: **P1 session 8** — container stack, schema, backups, source reconnaissance, LLM gateway, and
+the snapshot store and fetcher base class. No source fetchers, matching or UI yet. See
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ## Running it locally
 
@@ -101,16 +102,30 @@ automatically; Cloudflare in front must then be **Full (Strict)**.
 
 In some nested-Docker environments the kernel has both iptables backends active. Docker writes its
 rules to the nft table, while the legacy table still carries `-P FORWARD DROP` with ACCEPT rules only
-for the default `docker0` bridge — so traffic on this project's bridge is dropped and every service
-times out talking to every other one. One rule fixes it:
+for the default `docker0` bridge — so traffic on this project's bridge is dropped: services time out
+talking to each other, and the crawler cannot resolve any hostname (every source then fails closed as
+"robots.txt unreachable"). `./run.py` adds these rules for you; by hand:
 
 ```bash
 sudo iptables-legacy -I FORWARD 1 -i grants-br -o grants-br -j ACCEPT
+sudo iptables-legacy -I FORWARD 1 -i grants-br ! -o grants-br -j ACCEPT
+sudo iptables-legacy -I FORWARD 1 -o grants-br -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 ```
 
 This is a quirk of such sandboxes, not a requirement of the stack. A normal Docker install on the
 VPS needs nothing. The bridge is named `grants-br` in `docker-compose.yml` precisely so rules like
 this — and the firewall rules on the VPS — can reference it by a stable name.
+
+## Ingestion
+
+```bash
+flask ingest sync-sources                 # config/sources.yaml → source_feed
+flask ingest run <slug>                   # crawl a source with its fetcher
+flask ingest snapshot <slug> <url>        # fetch one URL and store it, for checks
+```
+
+In the dev stack, prefix with `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web`.
+Every request carries `grantbot/0.1 (+contact URL)`, obeys robots.txt and waits 5 s per host.
 
 ## Configuration
 
@@ -126,7 +141,13 @@ stops the process immediately instead of surfacing as a confusing failure later.
 app/
   __init__.py    application factory
   config.py      env-driven settings, validated at boot
+  cli.py         operator commands (flask ingest ...)
+  ai/            LLM gateway and identity scrubber -- the only path to a model
+  ingestion/     polite HTTP, robots.txt, snapshot store, fetcher base class
+  models/        SQLAlchemy models (the schema's source of truth)
   web/           blueprints
+config/          models.yaml (task routing), sources.yaml (ingestion sources)
+prompts/         versioned prompt files
 tests/
 docs/            design documents (see docs/README.md)
 ```

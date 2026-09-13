@@ -17,6 +17,11 @@ x-app: &app
     # running the app directly on the host.
     GRANTS_DATABASE_URL: postgresql://${POSTGRES_USER:-grants}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-grants}
     GRANTS_REDIS_URL: redis://redis:6379/0
+    GRANTS_SNAPSHOT_DIR: /srv/snapshots
+  volumes:
+    # Raw fetched bytes, content-addressed and write-once. Public documents, no
+    # personal data; copied off-site by ops/backup.sh.
+    - snapshots:/srv/snapshots
 
 services:
   postgres:
@@ -83,6 +88,7 @@ services:
       - caddy-config:/config
 
 volumes:
+  snapshots:
   postgres-data:
   redis-data:
   caddy-data:

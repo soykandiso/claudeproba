@@ -159,6 +159,14 @@ sources are unaffected (JSON). Three consequences:
   to `open`.
 - **Skopje mixes procurement tenders** ("Јавен повик за набавка…") into the calls listing. Filter them
   out; they are not funding.
+- **ASP.NET pages regenerate `__VIEWSTATE` on every request.** av.gov.mk returned the same listing
+  twice, seven seconds apart, differing only in that field. Such a source's fetcher overrides
+  `Fetcher.significant` with `snapshots.without_aspnet_state`, or every run looks like a change.
+- **av.gov.mk's robots.txt starts with a byte-order mark and uses a wildcard (`*.pdf`).** Python's
+  `urllib.robotparser` honours neither, and would have allowed the PDFs. `app/ingestion/robots.py`
+  implements RFC 9309 matching instead.
+- **Containers in a Codespace cannot reach the internet** without the iptables rules in `README.md`;
+  every source then fails closed as "robots.txt unreachable", which is the correct failure.
 - **The EU search returns the same topic identifier several times** (per deadline/type). Deduplicate
   on `identifier`. `frameworkProgramme` is a numeric code that needs a lookup.
 

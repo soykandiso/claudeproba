@@ -191,6 +191,8 @@ setting where both failures are cheap.
 
 ## D9 — OCR for call documents without a text layer
 
+> **Decided 13.09.2026: A — Tesseract, with both rules below.** Implemented in the normaliser (P1 s9).
+
 Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
 mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image
 (Economy, IPARD). `pypdf` returns nothing. AV and the EU portal are unaffected.
@@ -237,7 +239,7 @@ enter the evidence chain unnoticed.
 | D6 | Free tier depth | P2 s28 | Full top 10 with reasons and citations |
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
-| D9 | OCR for image-only PDFs | **P1 s9** (normaliser) | Tesseract `mkd` locally; OCR citations always reviewed |
+| D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026** | Tesseract `mkd` locally; OCR citations always reviewed |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

@@ -61,6 +61,21 @@ else
   echo "           A backup on the same box as the database is not a backup."
 fi
 
+# Snapshots: the raw bytes every citation points back to. Not encrypted -- they
+# are public documents with no personal data -- and not pruned. Content-addressed
+# files never change, so rclone only uploads the ones that are new.
+if [ -n "$BACKUP_REMOTE" ]; then
+  # The compose project is named "grants", so the volume is always grants_snapshots.
+  snapshots=$(docker volume inspect --format '{{ .Mountpoint }}' grants_snapshots)
+  if [ -r "$snapshots" ]; then
+    rclone copy "$snapshots" "$BACKUP_REMOTE/snapshots/" --quiet
+    echo "  snapshots copied to $BACKUP_REMOTE/snapshots/"
+  else
+    echo "FAILED: cannot read the snapshot volume at $snapshots (run as root)" >&2
+    exit 1
+  fi
+fi
+
 prune() {
   local dir=$1 keep=$2
   # ls -1 sorts by name, and the name is an ISO-8601 UTC timestamp, so name order

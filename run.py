@@ -104,14 +104,21 @@ def allow_bridge_traffic_in_codespaces() -> None:
     """The nested-Docker iptables quirk described in README.md. Best effort."""
     if not os.environ.get("CODESPACES") or shutil.which("iptables-legacy") is None:
         return
-    rule = ["FORWARD", "-i", "grants-br", "-o", "grants-br", "-j", "ACCEPT"]
-    exists = subprocess.call(
-        ["sudo", "-n", "iptables-legacy", "-C", *rule],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    if exists != 0:
-        subprocess.call(["sudo", "-n", "iptables-legacy", "-I", rule[0], "1", *rule[1:]])
+    rules = [
+        # containers talking to each other
+        ["-i", "grants-br", "-o", "grants-br", "-j", "ACCEPT"],
+        # containers reaching the internet (the crawler), and the replies coming back
+        ["-i", "grants-br", "!", "-o", "grants-br", "-j", "ACCEPT"],
+        ["-o", "grants-br", "-m", "conntrack", "--ctstate", "RELATED,ESTABLISHED", "-j", "ACCEPT"],
+    ]
+    for rule in rules:
+        exists = subprocess.call(
+            ["sudo", "-n", "iptables-legacy", "-C", "FORWARD", *rule],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if exists != 0:
+            subprocess.call(["sudo", "-n", "iptables-legacy", "-I", "FORWARD", "1", *rule])
 
 
 def wait_until_healthy(url: str) -> bool:

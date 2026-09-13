@@ -826,7 +826,8 @@ CREATE TABLE public.raw_snapshot (
     storage_key text NOT NULL,
     fetched_at timestamp with time zone DEFAULT now() NOT NULL,
     normalised_text text,
-    normaliser_version text
+    normaliser_version text,
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1514,6 +1515,13 @@ CREATE INDEX ix_review_pending ON public.review_queue_item USING btree (state, p
 --
 
 CREATE INDEX ix_snapshot_hash ON public.raw_snapshot USING btree (content_sha256);
+
+
+--
+-- Name: ix_snapshot_url_seen; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_snapshot_url_seen ON public.raw_snapshot USING btree (url, last_seen_at DESC);
 
 
 --

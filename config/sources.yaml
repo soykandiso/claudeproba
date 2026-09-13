@@ -1,0 +1,95 @@
+# Ingestion sources: one entry per source_feed row. `flask ingest sync-sources`
+# writes this file into the database; the file is the truth, the rows follow it.
+#
+# Values come from the reconnaissance of 13.09.2026 (docs/sources.md §6).
+#   expected_cadence_days  how often something new usually appears
+#   staleness_sla_days     how long without a successful run before alerting.
+#                          Generous where calls are seasonal (sources.md §6.4).
+#   rate_limit_rps         requests per second per host; 0.2 is one per 5 s
+#
+# A source is `active: false` until its fetcher exists in app/ingestion/sources/.
+
+sources:
+  - slug: eu-portal
+    name_mk: Портал за финансирање и тендери на ЕУ
+    name_en: EU Funding & Tenders Portal
+    institution: European Commission
+    base_url: https://ec.europa.eu/info/funding-tenders/opportunities/portal
+    access_method: api
+    expected_cadence_days: 1
+    staleness_sla_days: 3
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: robots allows portal paths; reuse terms not yet read (P3 s43)
+    priority: 2
+    active: false
+
+  - slug: av
+    name_mk: Агенција за вработување на Република Северна Македонија
+    name_en: Employment Service Agency
+    institution: АВРСМ
+    base_url: https://av.gov.mk
+    access_method: api
+    expected_cadence_days: 14
+    staleness_sla_days: 45
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no terms published; robots disallows *.pdf, JSON endpoint allowed
+    priority: 3
+    active: false
+
+  - slug: economy
+    name_mk: Министерство за економија и труд
+    name_en: Ministry of Economy and Labour
+    institution: МЕТ
+    base_url: https://www.economy.gov.mk
+    access_method: html
+    expected_cadence_days: 45
+    staleness_sla_days: 120
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no terms published; attachments on portal.mdt.gov.mk
+    priority: 4
+    active: false
+
+  - slug: skopje
+    name_mk: Град Скопје
+    name_en: City of Skopje
+    institution: Град Скопје
+    base_url: https://skopje.gov.mk
+    access_method: pdf_index
+    expected_cadence_days: 10
+    staleness_sla_days: 60
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no robots.txt, no terms published; calls are scanned PDFs
+    priority: 5
+    active: false
+
+  - slug: ipard
+    name_mk: Агенција за финансиска поддршка во земјоделството и руралниот развој
+    name_en: Agency for Financial Support in Agriculture and Rural Development
+    institution: АФПЗРР
+    base_url: https://www.ipardpa.gov.mk
+    access_method: html
+    expected_cadence_days: 120
+    staleness_sla_days: 240
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no robots.txt; footer says all rights reserved
+    priority: 6
+    active: false
+
+  - slug: fitr
+    name_mk: Фонд за иновации и технолошки развој
+    name_en: Fund for Innovation and Technology Development
+    institution: ФИТР
+    base_url: https://fitr.mk
+    access_method: html
+    expected_cadence_days: 60
+    staleness_sla_days: 180
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: UNVERIFIED -- host did not respond from a datacenter (sources.md §6.1)
+    priority: 1
+    active: false

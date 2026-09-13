@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://grants:grants@localhost:5432/grants"
     redis_url: str = "redis://localhost:6379/0"
 
+    # Raw fetched bytes, content-addressed (app/ingestion/snapshots.py). Copied
+    # off-site by ops/backup.sh.
+    snapshot_dir: str = "snapshots"
+
+    # Where a site operator can read what the crawler does and ask it to stop.
+    # Becomes https://<domain>/crawler once the domain exists (decisions.md D2).
+    crawler_contact_url: str = "https://github.com/soykandiso/claudeproba"
+
     # Locale. Macedonian Cyrillic is the launch language (brief 3.1).
     default_language: str = "mk"
     timezone: str = "Europe/Skopje"

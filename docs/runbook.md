@@ -20,8 +20,11 @@ this file is only useful if it is trusted.
 3. Rejected if smaller than 10 KB, because a tiny dump is a silent failure rather than a small database
 4. Copied to `backups/monthly/` on the first of the month
 5. Uploaded off-site with `rclone` if `BACKUP_REMOTE` is set
-6. Pruned to 30 daily and 6 monthly
-7. Heartbeat pinged **only on success**
+6. The snapshot volume (raw fetched documents) copied to `$BACKUP_REMOTE/snapshots/` — not
+   encrypted, since they are public documents with no personal data, and never pruned, since every
+   citation points back into them. Needs root to read the volume.
+7. Pruned to 30 daily and 6 monthly
+8. Heartbeat pinged **only on success**
 
 ### Encryption keys
 
@@ -56,6 +59,16 @@ typo.
 After restoring, the script checks that the restored schema is **identical** to
 the live one and fails if it is not. A restore that runs without error but
 produces a different schema is the failure mode that stays hidden until it matters.
+
+### Restoring snapshots
+
+The database rows (`raw_snapshot`) say which files should exist; the files come back from the
+remote. Each file is named by its SHA-256, so a corrupted one is detected on read.
+
+```bash
+sudo rclone copy "$BACKUP_REMOTE/snapshots/" \
+  "$(docker volume inspect --format '{{ .Mountpoint }}' grants_snapshots)/"
+```
 
 ### The monthly drill — first Saturday, 15 minutes
 

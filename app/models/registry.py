@@ -107,7 +107,7 @@ class IngestionRun(Base):
 
 
 class RawSnapshot(Base):
-    """Immutable record of what a URL returned at a point in time.
+    """What a URL returned. The content never changes once written; see last_seen_at.
 
     The bytes live in object storage; only the pointer and hash are here, so
     nightly pg_dump stays small and restores stay fast. normalised_text IS stored,
@@ -119,6 +119,7 @@ class RawSnapshot(Base):
     __table_args__ = (
         UniqueConstraint("url", "content_sha256", name="uq_raw_snapshot_url_hash"),
         Index("ix_snapshot_url_time", "url", text("fetched_at DESC")),
+        Index("ix_snapshot_url_seen", "url", text("last_seen_at DESC")),
         Index("ix_snapshot_hash", "content_sha256"),
     )
 
@@ -133,6 +134,11 @@ class RawSnapshot(Base):
     byte_length: Mapped[int | None] = mapped_column(Integer)
     storage_key: Mapped[str] = mapped_column(Text)
     fetched_at: Mapped[dt.datetime] = now_column()
+    # The one mutable column: bumped each time the same bytes are fetched again.
+    # It answers "is this still what the source says?" (last_verified_at in the
+    # UI), and it keeps "current content for this URL" correct when a page
+    # changes and then reverts to bytes already stored.
+    last_seen_at: Mapped[dt.datetime] = now_column()
     normalised_text: Mapped[str | None] = mapped_column(Text)
     normaliser_version: Mapped[str | None] = mapped_column(Text)
 

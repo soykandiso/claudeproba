@@ -87,7 +87,7 @@
 |---|---|---|
 | **Scheduler** | Host `cron` fires `flask ingest run --source=<slug>` on each source's cadence | Cron, not an in-process scheduler. It survives app restarts and is inspectable with `crontab -l`. |
 | **Fetcher** | One small class per source. HTTP via `httpx` with an honest User-Agent (`grantbot/1.0 (+https://<domain>/crawler; contact@<domain>)`), per-source rate limit, `robots.txt` respected | No browser in P1. See §9.4. |
-| **Snapshot store** | Writes raw bytes to object storage under `snapshots/<source>/<sha256>`; records hash, URL, HTTP status, byte length, `fetched_at` in Postgres | Bytes out of the database keeps nightly dumps small and restores fast. |
+| **Snapshot store** | Writes raw bytes once under `snapshots/<source>/<sha256>` on a Docker volume, copied off-site nightly by `ops/backup.sh` with the same `rclone` remote as the database backups; records hash, URL, HTTP status, byte length, `fetched_at` and `last_seen_at` in Postgres | Bytes out of the database keeps nightly dumps small and restores fast. A directory rather than an S3 API: content-addressed files never change, so an incremental copy gives the same off-site guarantee without an S3 client or a MinIO container. |
 | **Change detector** | Compares content hash to the last snapshot for that URL. Unchanged → stop, costs nothing | This is the single biggest cost control in the system. |
 | **Normaliser** | HTML → text (`selectolax`), PDF → text (`pypdf`, `pdfplumber` for tables). Preserves character offsets so citations can point back into the snapshot | Offset preservation is a hard requirement, not a nicety — citations depend on it. |
 | **Extractor** | LLM gateway call producing a `CallExtraction` Pydantic model: dates, budget, eligibility criteria, required documents | Schema failure → retry once → review queue. Never published unvalidated. |
@@ -204,8 +204,8 @@ Host `cron` runs `docker compose exec web flask ...` for scheduling. Cloudflare 
 **Full (Strict)** mode — Caddy already terminates real TLS, so Flexible would be a downgrade.
 
 **Backups.** Nightly `pg_dump -Fc` encrypted with `age` and pushed to EU object storage (Hetzner
-Storage Box or Backblaze B2 EU), 30 daily + 6 monthly retention. Snapshots live in object storage
-already and are versioned there. **A restore drill into a scratch container is a calendar task on the
+Storage Box or Backblaze B2 EU), 30 daily + 6 monthly retention. Snapshots are copied off-site by the same
+job; being content-addressed, they never change once written. **A restore drill into a scratch container is a calendar task on the
 first Saturday of every month** — an untested backup is not a backup.
 
 **Observability.** Sentry free tier for exceptions. An external heartbeat service
