@@ -28,7 +28,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, now_column, pg_enum, timestamptz, uuid_pk
-from app.models.enums import AccessMethod, CallStatus, CriterionKind, EntityType
+from app.models.enums import AccessMethod, CallStatus, CriterionKind, EntityType, TextSource
 
 
 class SourceFeed(Base):
@@ -139,8 +139,12 @@ class RawSnapshot(Base):
     # UI), and it keeps "current content for this URL" correct when a page
     # changes and then reverts to bytes already stored.
     last_seen_at: Mapped[dt.datetime] = now_column()
+    # Written once by app/ingestion/normalise and never rewritten: citations index
+    # into it by character offset. PDF pages are separated by a form feed (\f).
     normalised_text: Mapped[str | None] = mapped_column(Text)
     normaliser_version: Mapped[str | None] = mapped_column(Text)
+    text_source: Mapped[TextSource | None] = mapped_column(pg_enum(TextSource, "text_source"))
+    ocr_mean_confidence: Mapped[float | None] = mapped_column(Numeric(5, 2))
 
 
 class Programme(Base):

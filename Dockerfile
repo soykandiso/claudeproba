@@ -11,6 +11,12 @@ ENV UV_COMPILE_BYTECODE=1 \
 
 WORKDIR /srv/app
 
+# OCR for PDFs without a text layer (decisions.md D9): Tesseract with the Macedonian
+# model, and pdftoppm from poppler to render pages. No recommends, to stay small.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-mkd poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 # Dependencies first: they change far less often than application code, so this
 # layer stays cached across ordinary edits.
 COPY pyproject.toml uv.lock ./

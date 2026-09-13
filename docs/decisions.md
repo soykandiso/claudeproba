@@ -192,6 +192,16 @@ setting where both failures are cheap.
 ## D9 — OCR for call documents without a text layer
 
 > **Decided 13.09.2026: A — Tesseract, with both rules below.** Implemented in the normaliser (P1 s9).
+>
+> **As built (P1 s9), two findings changed the details:**
+> - **Macedonian model only (`-l mkd`), not `mkd+eng`.** English turned Cyrillic "б" into "6" and put
+>   a Latin "A" into Cyrillic text on an IPARD call — invisible look-alikes that break quote matching.
+> - **Rule 2 needs two signals, because a page mean hides misread words.** A clean 300 dpi Skopje scan
+>   averaged 94 while still containing garbage words at confidence 0. A page goes to review when its
+>   mean is below 85 **or** more than 10% of its words score below 60 (degraded 75 dpi: mean 78, 18%).
+>   Isolated misreads on a good page are exactly why rule 1 — every OCR citation reviewed — stays.
+> - `raw_snapshot.text_source` and `ocr_mean_confidence` record which text is OCR, and
+>   `normaliser_version` names the Tesseract version that read it.
 
 Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
 mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image

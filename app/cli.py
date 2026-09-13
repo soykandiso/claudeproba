@@ -8,10 +8,12 @@ from sqlalchemy import select
 
 from app.db import session_factory
 from app.ingestion.fetcher import CrawlContext, Fetcher, run_fetcher
+from app.ingestion.normalise.pdf import TesseractOcr
+from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapshots
 from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers
-from app.models import SourceFeed
+from app.models import RawSnapshot, SourceFeed
 
 
 def register_cli(app: Flask) -> None:
@@ -70,6 +72,33 @@ def snapshot_command(slug, url, ignore_aspnet_state):
         if session.scalars(select(SourceFeed).where(SourceFeed.slug == slug)).first() is None:
             raise click.ClickException(f"no source_feed {slug!r}; run `flask ingest sync-sources`")
     _run(OneUrl(), allow_inactive=True)
+
+
+@ingest.command("normalise", help="Turn stored snapshots into text for citations.")
+@click.option("--snapshot-id", type=int, help="One snapshot instead of all pending ones.")
+@click.option("--limit", default=100, show_default=True)
+def normalise_command(snapshot_id, limit):
+    settings = _settings()
+    store = SnapshotStore(settings.snapshot_dir)
+    ocr = TesseractOcr()
+    with session_factory(settings)() as session:
+        if snapshot_id is not None:
+            snapshot = session.get(RawSnapshot, snapshot_id)
+            if snapshot is None:
+                raise click.ClickException(f"no snapshot {snapshot_id}")
+            snapshots = [snapshot]
+        else:
+            snapshots = pending_snapshots(session, limit)
+        registered = fetchers()
+        for snapshot in snapshots:
+            fetcher_cls = registered.get(session.get(SourceFeed, snapshot.source_feed_id).slug)
+            root = fetcher_cls().html_root(snapshot.url) if fetcher_cls else None
+            outcome = normalise_snapshot(session, store, snapshot, ocr=ocr, html_root=root)
+            session.commit()  # one document at a time: OCR is slow, keep what is done
+            flag = f" -> review item {outcome.review_item_id}" if outcome.review_item_id else ""
+            click.echo(f"snapshot {outcome.snapshot_id}: {outcome.detail}{flag}")
+    if not snapshots:
+        click.echo("nothing to normalise")
 
 
 def _run(fetcher: Fetcher, allow_inactive: bool = False) -> None:

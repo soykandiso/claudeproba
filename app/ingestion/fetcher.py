@@ -66,6 +66,14 @@ class CrawlContext:
 class Fetcher(ABC):
     slug: ClassVar[str]
 
+    def html_root(self, url: str) -> str | None:
+        """CSS selector for the content area of this source's HTML pages at `url`.
+
+        None normalises the whole body, navigation included. A selector that stops
+        matching sends the document to review (normalise/html.py).
+        """
+        return None
+
     def significant(self, content: bytes) -> bytes:
         """Override to ignore parts of this source's pages that change on every request.
 

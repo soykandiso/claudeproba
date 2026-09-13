@@ -88,6 +88,18 @@ class InvoiceKind(enum.StrEnum):
     CREDIT_NOTE = "credit_note"
 
 
+class TextSource(enum.StrEnum):
+    """Where a snapshot's normalised_text came from (decisions.md D9).
+
+    A citation into OCR text is verbatim against the OCR output, not the paper,
+    so it is always shown to a reviewer beside the page image.
+    """
+
+    NATIVE = "native"  # HTML, DOCX, or a PDF text layer
+    OCR = "ocr"  # every page OCR'd
+    MIXED = "mixed"  # some pages had a text layer, some were OCR'd
+
+
 class AccessMethod(enum.StrEnum):
     API = "api"
     RSS = "rss"

@@ -170,6 +170,17 @@ CREATE TYPE public.review_state AS ENUM (
 
 
 --
+-- Name: text_source; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.text_source AS ENUM (
+    'native',
+    'ocr',
+    'mixed'
+);
+
+
+--
 -- Name: verdict; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -827,7 +838,9 @@ CREATE TABLE public.raw_snapshot (
     fetched_at timestamp with time zone DEFAULT now() NOT NULL,
     normalised_text text,
     normaliser_version text,
-    last_seen_at timestamp with time zone DEFAULT now() NOT NULL
+    last_seen_at timestamp with time zone DEFAULT now() NOT NULL,
+    text_source public.text_source,
+    ocr_mean_confidence numeric(5,2)
 );
 
 

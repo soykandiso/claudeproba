@@ -159,6 +159,10 @@ sources are unaffected (JSON). Three consequences:
   to `open`.
 - **Skopje mixes procurement tenders** ("Јавен повик за набавка…") into the calls listing. Filter them
   out; they are not funding.
+- **Official documents mix Latin look-alike letters into Cyrillic words.** The Economy call DOCX has
+  "Mинистерството", "зa", "машинa"; the IPARD notice "Aлтернативно". 7 such words across 2 of 5
+  documents. The normaliser keeps them (faithful), and `find_quote(..., fold=True)` matches them
+  against an all-Cyrillic quote without moving offsets. Whether verification uses folding is P2 s29.
 - **ASP.NET pages regenerate `__VIEWSTATE` on every request.** av.gov.mk returned the same listing
   twice, seven seconds apart, differing only in that field. Such a source's fetcher overrides
   `Fetcher.significant` with `snapshots.without_aspnet_state`, or every run looks like a change.
