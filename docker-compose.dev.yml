@@ -22,8 +22,12 @@ services:
     volumes:
       - ./app:/srv/app/app:ro
       - ./migrations:/srv/app/migrations:ro
+      - ./config:/srv/app/config:ro
+      - ./prompts:/srv/app/prompts:ro
 
   worker:
     # The worker reloads by restarting the container; RQ has no watcher.
     volumes:
       - ./app:/srv/app/app:ro
+      - ./config:/srv/app/config:ro
+      - ./prompts:/srv/app/prompts:ro

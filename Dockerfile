@@ -17,6 +17,9 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 COPY app ./app
+# Read at runtime by the LLM gateway: task routing and versioned prompts.
+COPY config ./config
+COPY prompts ./prompts
 # Shipped with the image so a deploy can run `alembic upgrade head`.
 COPY migrations ./migrations
 COPY alembic.ini ./

@@ -1,0 +1,20 @@
+# Task → model routing for app/ai/gateway.py (docs/architecture.md §3.4).
+#
+# The model and prompt version are both part of the cache key, so changing
+# either here recomputes every cached answer for that task on its next use.
+# Changing a prompt means a NEW version file in prompts/<task>/ and an
+# evaluation run (CLAUDE.md); never edit a version file that has run.
+#
+# Tasks are added together with their prompt:
+#   extract_call      P1 s10
+#   verify_criterion  P2 s29
+#   compose_report    P2 s32
+
+# USD per million tokens, Anthropic list prices as of 13.09.2026. Used only to
+# fill model_call.cost_usd; the provider's invoice is the authority.
+pricing_usd_per_mtok:
+  claude-opus-5: {input: 5.00, output: 25.00}
+  claude-sonnet-5: {input: 2.00, output: 10.00}
+  claude-haiku-4-5: {input: 1.00, output: 5.00}
+
+tasks: {}
