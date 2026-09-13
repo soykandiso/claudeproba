@@ -1,0 +1,128 @@
+{
+  "document_kind": "call",
+  "title_mk": {
+    "document": 1,
+    "quote": "за финансиска поддршка на микро, мали и средни претпријатија и занаетчии",
+    "value": "Јавен повик за финансиска поддршка на микро, мали и средни претпријатија и занаетчии"
+  },
+  "reference_code": null,
+  "published_on": null,
+  "opens_on": null,
+  "deadline": {
+    "document": 1,
+    "quote": "Крајниот рок за аплицирање по овој јавен повик е до 30.06.2026 година.",
+    "value": "2026-06-30",
+    "time": null
+  },
+  "total_budget": {
+    "document": 1,
+    "quote": "предвидени се средства во вкупен износ од 11.340.000 денари",
+    "amount": 11340000,
+    "currency": "MKD"
+  },
+  "grant_min": null,
+  "grant_max": {
+    "document": 1,
+    "quote": "но не повеќе од 200.000 денари вкупно по барател, направени за набавка на нови машини и алати",
+    "amount": 200000,
+    "currency": "MKD"
+  },
+  "grant_share_pct": {
+    "document": 1,
+    "quote": "преку кофинансирање на 40% од докажаните трошоци",
+    "value": 40
+  },
+  "criteria": [
+    {
+      "document": 1,
+      "quote": "Работење во траење од најмалку 12 (дванаесет) месеци пред објавувањето на јавниот повик;",
+      "kind": "hard_structured",
+      "label_mk": "Најмалку 12 месеци работење пред објавувањето на повикот",
+      "applies_to_all_applicants": true,
+      "field": "age_months",
+      "operator": "gte",
+      "values": null,
+      "minimum": 12,
+      "maximum": null,
+      "confidence": 0.9
+    },
+    {
+      "document": 1,
+      "quote": "Микро, мали и средни претпријатија со мнозински домашен капитал (над 50%)",
+      "kind": "hard_structured",
+      "label_mk": "Големи претпријатија немаат право на учество",
+      "applies_to_all_applicants": true,
+      "field": "entity_type",
+      "operator": "not_in",
+      "values": ["large"],
+      "minimum": null,
+      "maximum": null,
+      "confidence": 0.8
+    },
+    {
+      "document": 1,
+      "quote": "Микро, мали и средни претпријатија со мнозински домашен капитал (над 50%)",
+      "kind": "applicant_attest",
+      "label_mk": "Мнозински домашен капитал (над 50%)",
+      "applies_to_all_applicants": false,
+      "confidence": 0.85
+    },
+    {
+      "document": 1,
+      "quote": "Имаат статус на активен деловен субјект над кој не е покрената стечајна постапка или ликвидација;",
+      "kind": "applicant_attest",
+      "label_mk": "Активен субјект без стечајна постапка или ликвидација",
+      "applies_to_all_applicants": true,
+      "confidence": 0.95
+    },
+    {
+      "document": 1,
+      "quote": "Имаат остварено позитивен финансиски резултат во 2025 година;",
+      "kind": "applicant_attest",
+      "label_mk": "Позитивен финансиски резултат во 2025 година",
+      "applies_to_all_applicants": true,
+      "confidence": 0.95
+    },
+    {
+      "document": 1,
+      "quote": "Не го надминале максималниот дозволен износ од 300.000 евра на вкупно добиена помош за период од три последни фискални години",
+      "kind": "applicant_attest",
+      "label_mk": "Помош од мало значење под 300.000 евра во последните три фискални години",
+      "applies_to_all_applicants": true,
+      "confidence": 0.9
+    },
+    {
+      "document": 1,
+      "quote": "Вршат претежна дејност наведена во Тековната состојба од ЦРРСМ, која спаѓа во секторот C/B - Преработувачка индустрија (10-33.20)",
+      "kind": "narrative_verify",
+      "label_mk": "За претпријатија: претежна дејност во Преработувачка индустрија (10-33.20)",
+      "applies_to_all_applicants": false,
+      "confidence": 0.85
+    },
+    {
+      "document": 1,
+      "quote": "Имаат минимум 2 (двајца) вработени на неопределено работно време, пред датумот на објавување на јавниот повик.",
+      "kind": "narrative_verify",
+      "label_mk": "За претпријатија: најмалку 2 вработени на неопределено време",
+      "applies_to_all_applicants": false,
+      "confidence": 0.85
+    },
+    {
+      "document": 1,
+      "quote": "Пополнет Образец „Барање – ММСП/З 2026“",
+      "kind": "documentary",
+      "label_mk": "Образец „Барање – ММСП/З 2026“",
+      "applies_to_all_applicants": true,
+      "confidence": 0.95
+    },
+    {
+      "document": 1,
+      "quote": "Уверение за состојба на даноци, придонеси и други јавни приходи и давачки од Управата за јавни приходи на Република Северна Македонија, не постаро од 6 (шест) месеци;",
+      "kind": "documentary",
+      "label_mk": "Уверение од УЈП за платени даноци и придонеси, не постаро од 6 месеци",
+      "applies_to_all_applicants": true,
+      "confidence": 0.95
+    }
+  ],
+  "notes_for_reviewer": "Section 2.2 conditions apply only to companies, not to craftsmen."
+}

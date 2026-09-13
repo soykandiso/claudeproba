@@ -6,7 +6,9 @@ import click
 from flask import Flask, current_app
 from sqlalchemy import select
 
+from app.ai.gateway import AnthropicProvider, Gateway, InvalidModelOutput
 from app.db import session_factory
+from app.ingestion.extract import Document, extract_call
 from app.ingestion.fetcher import CrawlContext, Fetcher, run_fetcher
 from app.ingestion.normalise.pdf import TesseractOcr
 from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapshots
@@ -99,6 +101,45 @@ def normalise_command(snapshot_id, limit):
             click.echo(f"snapshot {outcome.snapshot_id}: {outcome.detail}{flag}")
     if not snapshots:
         click.echo("nothing to normalise")
+
+
+@ingest.command(
+    "extract",
+    help="Run extraction over normalised snapshots of one call and print what came back. "
+    "Stores the model call and any review item; writes no call or criteria.",
+)
+@click.option("--snapshot-id", "snapshot_ids", type=int, multiple=True, required=True)
+def extract_command(snapshot_ids):
+    settings = _settings()
+    sessions = session_factory(settings)
+    with sessions() as session:
+        snapshots = [session.get(RawSnapshot, sid) for sid in snapshot_ids]
+        pairs = zip(snapshot_ids, snapshots, strict=True)
+        if missing := [sid for sid, snap in pairs if snap is None]:
+            raise click.ClickException(f"no snapshot {missing}")
+        try:
+            documents = [Document.from_snapshot(snap) for snap in snapshots]
+        except ValueError as exc:
+            raise click.ClickException(f"{exc}; run `flask ingest normalise` first") from exc
+    try:
+        provider = AnthropicProvider()
+    except Exception as exc:  # the SDK refuses to construct without credentials
+        raise click.ClickException(f"no model provider: {exc}") from exc
+
+    try:
+        extraction = extract_call(Gateway(sessions, provider), sessions, documents)
+    except InvalidModelOutput as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    click.echo(extraction.output.model_dump_json(indent=2))
+    cache = " (cache hit)" if extraction.cache_hit else ""
+    click.echo(f"model_call {extraction.model_call_id}{cache}", err=True)
+    for failure in extraction.failures:
+        click.echo(f"NOT FOUND {failure.path}: {failure.quote!r}", err=True)
+    if extraction.review_item_id:
+        click.echo(f"-> review item {extraction.review_item_id}", err=True)
+        sys.exit(1)
+    click.echo(f"all {len(extraction.citations)} quotes located", err=True)
 
 
 def _run(fetcher: Fetcher, allow_inactive: bool = False) -> None:

@@ -9,8 +9,9 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P1 session 9** — container stack, schema, backups, source reconnaissance, LLM gateway,
-snapshot store, fetcher base class, and the normaliser (HTML, DOCX, PDF, OCR). No source fetchers, matching or UI yet. See
+Status: **P1 session 10** — container stack, schema, backups, source reconnaissance, LLM gateway,
+snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), and call extraction with
+citations located in code. No source fetchers, matching or UI yet. See
 [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Running it locally
@@ -123,6 +124,7 @@ flask ingest sync-sources                 # config/sources.yaml → source_feed
 flask ingest run <slug>                   # crawl a source with its fetcher
 flask ingest snapshot <slug> <url>        # fetch one URL and store it, for checks
 flask ingest normalise                    # stored snapshots → text for citations (OCR if needed)
+flask ingest extract --snapshot-id N      # one call's documents → CallExtraction (needs ANTHROPIC_API_KEY)
 ```
 
 In the dev stack, prefix with `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web`.

@@ -17,4 +17,12 @@ pricing_usd_per_mtok:
   claude-sonnet-5: {input: 2.00, output: 10.00}
   claude-haiku-4-5: {input: 1.00, output: 5.00}
 
-tasks: {}
+tasks:
+  # Brief §7 asks for the cheapest tier for extraction. Sonnet rather than Haiku:
+  # extraction decides which conditions can exclude an applicant and must copy
+  # Macedonian quotes verbatim, and it runs once per changed document, so the
+  # difference is cents a month. Revisit with the evaluation harness (P2).
+  extract_call:
+    model: claude-sonnet-5
+    prompt_version: "2026-09-13.1"
+    max_tokens: 16000
