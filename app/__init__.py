@@ -33,6 +33,12 @@ def create_app(settings: Settings | None = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(public_bp)
 
+    # Invented calls and citations; must never be reachable in production.
+    if not settings.is_production:
+        from app.web.demo import bp as demo_bp
+
+        app.register_blueprint(demo_bp)
+
     from app.cli import register_cli
 
     register_cli(app)

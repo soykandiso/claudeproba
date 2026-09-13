@@ -1,0 +1,105 @@
+{% extends "demo/base.html" %}
+{% block title %}Профил на фирмата{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Профил на фирмата</h1>
+    <p class="soft">Десет прашања. Одговорите служат само за да се споредат со условите на повиците.</p>
+  </div>
+
+  <form class="form stack-lg" method="post" action="{{ url_for('demo.shortlist') }}"
+        onsubmit="this.querySelector('[type=submit]').setAttribute('aria-busy','true')">
+    <div>
+      <div class="field">
+        <label for="entity">Вид на субјект</label>
+        <select class="select" id="entity" name="entity">
+          <option>ДООЕЛ</option><option>ДОО</option><option>АД</option>
+          <option>Трговец поединец</option><option>Земјоделско стопанство</option>
+          <option>Здружение на граѓани</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="nace">Главна дејност</label>
+        <input class="input" id="nace" name="nace" list="nace-list" value="{{ profile.nace }}" autocomplete="off">
+        <datalist id="nace-list">
+          <option value="62.01 Компјутерско програмирање">
+          <option value="10.71 Производство на леб и свежи пецива">
+          <option value="01.13 Одгледување зеленчук">
+          <option value="55.10 Хотели и слично сместување">
+        </datalist>
+        <span class="hint">Шифрата по НКД е во решението од Централниот регистар.</span>
+      </div>
+
+      <div class="field">
+        <label for="municipality">Општина на седиштето</label>
+        <select class="select" id="municipality" name="municipality">
+          <option>Центар</option><option>Карпош</option><option>Битола</option>
+          <option>Куманово</option><option>Тетово</option><option>Штип</option>
+        </select>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label for="founded">Година на основање</label>
+          <input class="input" id="founded" name="founded" inputmode="numeric" pattern="[0-9]{4}" value="{{ profile.founded }}">
+        </div>
+        <div class="field">
+          <label for="employees">Број на вработени</label>
+          <select class="select" id="employees" name="employees">
+            <option>0–1</option><option selected>2–9</option><option>10–49</option><option>50–249</option><option>250 и повеќе</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="turnover">Годишен промет, минатата година</label>
+        <select class="select" id="turnover" name="turnover">
+          <option selected>до 10 милиони МКД</option><option>10–50 милиони МКД</option>
+          <option>50–150 милиони МКД</option><option>над 150 милиони МКД</option>
+        </select>
+      </div>
+
+      <fieldset class="field">
+        <legend>Што планирате да финансирате</legend>
+        <div class="choices">
+          <label class="choice"><input type="checkbox" name="inv" value="digital" checked> Дигитализација</label>
+          <label class="choice"><input type="checkbox" name="inv" value="equipment" checked> Опрема и машини</label>
+          <label class="choice"><input type="checkbox" name="inv" value="jobs"> Нови вработувања</label>
+          <label class="choice"><input type="checkbox" name="inv" value="rnd"> Истражување и развој</label>
+          <label class="choice"><input type="checkbox" name="inv" value="green"> Енергетска ефикасност</label>
+          <label class="choice"><input type="checkbox" name="inv" value="export"> Извоз и нови пазари</label>
+        </div>
+      </fieldset>
+
+      <div class="two-col">
+        <div class="field">
+          <label for="amount">Приближен износ на инвестицијата</label>
+          <select class="select" id="amount" name="amount">
+            <option>до 1 милион МКД</option><option selected>1–3 милиони МКД</option>
+            <option>3–10 милиони МКД</option><option>над 10 милиони МКД</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="timeline">Кога планирате да започнете</label>
+          <select class="select" id="timeline" name="timeline">
+            <option>Веднаш</option><option selected>Во наредните 6 месеци</option><option>За повеќе од 6 месеци</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="keywords">Опишете го проектот во неколку зборови</label>
+        <textarea class="textarea" id="keywords" name="keywords">Софтвер за управување со залихи за мали продавници</textarea>
+        <span class="hint">Не внесувајте имиња, адреси или телефони.</span>
+      </div>
+    </div>
+
+    <p class="privacy-note">Назив, ЕМБС и контакт ги бараме дури ако нарачате извештај. Во автоматската анализа никогаш не се праќаат податоци по кои може да се препознае фирмата.</p>
+
+    <div class="actions">
+      <button class="btn" type="submit">Прикажи ги повиците</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

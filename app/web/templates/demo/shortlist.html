@@ -1,0 +1,72 @@
+{% extends "demo/base.html" %}
+{% block title %}Листа на повици{% endblock %}
+
+{% macro call_item(call) %}
+<li class="call call--{{ call.verdict }} stack">
+  <span class="verdict verdict--{{ call.verdict }}">{{ verdict_labels[call.verdict] }}</span>
+  <div class="stack" style="--gap: 4px">
+    <h3><a href="{{ url_for('demo.report', slug=call.slug) }}">{{ call.title }}</a></h3>
+    <p class="soft small">{{ call.institution }}</p>
+  </div>
+  <p>{{ call.summary }}</p>
+  <dl class="facts">
+    <div><dt>Рок за пријава</dt><dd class="deadline">{{ call.deadline|mkdate }}{% set left = days_left(call.deadline) %}{% if left %}, {{ left }}{% endif %}</dd></div>
+    <div><dt>Најмногу по барател</dt><dd>{{ call.max_eur|thousands }} EUR<br><span class="small soft">{{ call.max_mkd|thousands }} МКД</span></dd></div>
+    <div><dt>Последна проверка</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+  </dl>
+  <ul class="reasons" aria-label="Причини">
+    {% for r in call.reasons %}
+    <li>
+      <span class="outcome">{{ outcome_labels[r.outcome] }}</span>
+      <p>{{ r.text }}</p>
+      <details class="cite">
+        <summary>Цитат од повикот, {{ r.citation.clause }}</summary>
+        {% with c = r.citation, compact = true %}{% include "demo/_excerpt.html" %}{% endwith %}
+      </details>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if call.verdict != 'not_eligible' %}
+  <div class="actions">
+    <a class="btn btn--quiet" href="{{ url_for('demo.report', slug=call.slug) }}">Побарај детален извештај</a>
+  </div>
+  {% endif %}
+</li>
+{% endmacro %}
+
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Отворени повици за вашиот профил</h1>
+    <p class="soft">{{ profile.entity }}, {{ profile.nace }}, {{ profile.municipality }}. Основана {{ profile.founded }}, {{ profile.employees }} вработени.</p>
+    <p class="small"><a href="{{ url_for('demo.intake') }}">Измени го профилот</a></p>
+  </div>
+
+  <section class="stack" aria-labelledby="legend-h" style="padding-block: 24px;">
+    <h2 id="legend-h" class="small" style="font: 500 var(--text-14)/1.4 var(--font-body);">Што значат ознаките</h2>
+    <ul class="legend">
+      {% for key, label in verdict_labels.items() %}
+      <li><span class="verdict verdict--{{ key }}">{{ label }}</span></li>
+      {% endfor %}
+    </ul>
+    <p class="small soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
+  </section>
+
+  <section aria-labelledby="open-h" style="padding-top: 32px;">
+    <h2 id="open-h">{{ open_calls|length }} повици, подредени според тоа колку одговараат</h2>
+    <ol class="calls">
+      {% for call in open_calls %}{{ call_item(call) }}{% endfor %}
+    </ol>
+  </section>
+
+  <section aria-labelledby="excluded-h">
+    <div class="stack">
+      <h2 id="excluded-h">Повици за кои не можете да аплицирате</h2>
+      <p class="soft">Отворени се, но фирмата не исполнува услов што е јасно пропишан во повикот. Ги прикажуваме за да знаете дека се проверени.</p>
+    </div>
+    <ul class="calls">
+      {% for call in excluded %}{{ call_item(call) }}{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

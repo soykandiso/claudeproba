@@ -1,0 +1,10 @@
+{# A cited passage. Expects `c` (demo_data.Citation) and optional `compact`. #}
+<figure class="excerpt{% if compact %} excerpt--compact{% endif %}">
+  <blockquote cite="{{ c.source_url }}">{{ c.quote }}</blockquote>
+  <figcaption>
+    <span><span class="cite-mark">Извор:</span> {{ c.clause }}</span>
+    <a href="{{ c.source_url }}" rel="nofollow">{{ c.source_url.split('/')[2] }}</a>
+    <span>Преземено {{ c.retrieved|mkdate }}</span>
+    <span class="id" title="Снимка и позиција на цитатот во изворниот документ">{{ c.snapshot_id }} {{ c.char_start }}–{{ c.char_end }}</span>
+  </figcaption>
+</figure>

@@ -1,0 +1,77 @@
+{% extends "demo/base.html" %}
+{% block title %}Пример извештај: {{ call.title }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.shortlist') }}">Назад кон листата</a>
+
+  <div class="report-head stack-lg" style="padding-top: 8px;">
+    <div class="stack">
+      <p class="small soft">Детален извештај, пример</p>
+      <h1>{{ call.title }}</h1>
+      <p class="soft">{{ call.institution }}</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Број на повикот</dt><dd class="id" style="font-size: var(--text-14);">{{ call.reference }}</dd></div>
+      <div><dt>Рок за пријава</dt><dd class="deadline">{{ call.deadline|mkdate }}{% set left = days_left(call.deadline) %}{% if left %}, {{ left }}{% endif %}</dd></div>
+      <div><dt>Најмногу по барател</dt><dd>{{ call.max_eur|thousands }} EUR<br><span class="small soft">{{ call.max_mkd|thousands }} МКД</span></dd></div>
+      <div><dt>Последна проверка</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+    </dl>
+    <div class="call call--{{ call.verdict }} stack" style="margin-top: 32px;">
+      <span class="verdict verdict--{{ call.verdict }}">{{ verdict_labels[call.verdict] }}</span>
+      <p>
+        {% if call.verdict == 'eligible' %}Сите услови што може да се проверат од профилот и од текстот на повикот се исполнети. Пред да аплицирате, проверете ги документите во делот 3.
+        {% elif call.verdict == 'likely_eligible' %}Условите од повикот се исполнети, освен оние што треба вие да ги потврдите.
+        {% elif call.verdict == 'needs_verification' %}Еден или повеќе услови не може да се потврдат. Погледнете што треба да се провери во делот 1.
+        {% else %}Фирмата не исполнува услов кој е јасно пропишан во повикот.{% endif %}
+      </p>
+    </div>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="crit-h">
+    <h2 id="crit-h">1. Услови од повикот</h2>
+    <div>
+      {% for r in call.reasons %}
+      <article class="criterion stack">
+        <span class="outcome">{{ outcome_labels[r.outcome] }}{% if r.decided_by == 'rule' %}, проверено според податоците од профилот{% else %}, проверено според текстот на повикот{% endif %}</span>
+        <h3 style="font-size: var(--text-20); font-family: var(--font-display); font-weight: 600;">{{ r.text }}</h3>
+        {% with c = r.citation %}{% include "demo/_excerpt.html" %}{% endwith %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="gaps-h">
+    <div class="stack">
+      <h2 id="gaps-h">2. Што треба да подготвите</h2>
+      {% if call.slug != 'fitr-novoosnovani' %}<p class="small soft">Во демото деловите 2 и 3 се пополнети само за повикот на ФИТР.</p>{% endif %}
+    </div>
+    <ol class="clauses">
+      <li><div class="stack"><h3>Сопствено учество од најмалку 15%</h3><p class="soft">При барање од {{ call.max_eur|thousands }} EUR, фирмата обезбедува најмалку {{ (call.max_eur * 0.15)|round|int|thousands }} EUR од сопствени средства.</p></div></li>
+      <li><div class="stack"><h3>Опис на иновацијата</h3><p class="soft">Повикот бара објаснување зошто производот е нов за пазарот. Профилот не содржи доволно за да се оцени ова.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="docs-h">
+    <h2 id="docs-h">3. Документи што се бараат</h2>
+    <ul class="checklist">
+      <li>Тековна состојба од Централниот регистар, не постара од 6 месеци</li>
+      <li>Потврда од Управата за јавни приходи за платени даноци</li>
+      <li>Биланс на состојба и биланс на успех за претходната година</li>
+      <li>Пополнет образец за апликација</li>
+      <li>Буџет на проектот според образецот од повикот</li>
+    </ul>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="next-h">
+    <div class="stack">
+      <h2 id="next-h">4. Преглед и следни чекори</h2>
+      <p class="review-stamp">Прегледано од консултант пред испраќање, {{ call.last_verified|mkdate }}</p>
+      <p class="soft">Извештајот е проценка според објавениот текст на повикот. Одлуката за доделување ја носи {{ call.institution }}.</p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="#" aria-disabled="true" onclick="return false">Нарачај пакет документи</a>
+      <span class="small soft">Не е достапно во демо верзијата.</span>
+    </div>
+  </section>
+</div>
+{% endblock %}

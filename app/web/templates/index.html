@@ -34,6 +34,7 @@
     </dl>
 
     <ul>
+      {% if not settings.is_production %}<li><a href="/demo/">/demo</a> — демо на патеката на корисникот, со измислени податоци</li>{% endif %}
       <li><a href="/healthz">/healthz</a> — дали процесот работи</li>
       <li><a href="/readyz">/readyz</a> — дали базата и редот се достапни</li>
     </ul>

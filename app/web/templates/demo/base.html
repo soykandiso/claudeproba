@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="mk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}Грантови.мк{% endblock %}</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/fira-sans-cyrillic-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/source-serif-4-cyrillic-600-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+  <div class="demo-notice" role="note">
+    <div class="wrap">Демо верзија. Повиците, износите и цитатите се измислени примери, не вистински јавни повици.</div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="{{ url_for('demo.landing') }}">Грантови.мк</a>
+      <nav class="site-nav" aria-label="Главна навигација">
+        {% set here = request.endpoint %}
+        <a href="{{ url_for('demo.landing') }}" {% if here == 'demo.landing' %}aria-current="page"{% endif %}>Како функционира</a>
+        <a href="{{ url_for('demo.intake') }}" {% if here == 'demo.intake' %}aria-current="page"{% endif %}>Профил</a>
+        <a href="{{ url_for('demo.shortlist') }}" {% if here == 'demo.shortlist' %}aria-current="page"{% endif %}>Листа на повици</a>
+        <a href="{{ url_for('demo.report', slug='fitr-novoosnovani') }}" {% if here == 'demo.report' %}aria-current="page"{% endif %}>Пример извештај</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    {% block main %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap stack">
+      <p>Грантови.мк не поднесува барања во ваше име и не одлучува за доделување средства. Одлуката ја носи институцијата што го објавила повикот.</p>
+      <p>Работно име на платформата. Скопје, {{ today.year }}.</p>
+    </div>
+  </footer>
+</body>
+</html>
