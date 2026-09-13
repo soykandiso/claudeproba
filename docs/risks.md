@@ -50,6 +50,7 @@ inconvenience.
 | **Impact** | **Medium.** Cash-flow pain rather than existential, but it distorts every early signal you read — a quiet October looks like product failure when it is just the calendar |
 | **Mitigation** | The monitoring subscription exists precisely to convert spiky transactions into recurring revenue. Document packages extend each spike (a call that opens in March generates package work through May). The public archive draws traffic in dead months. Digest emails in busy seasons so bursts do not become spam |
 | **Earliest cheap test** | **P1 session 6**, free as part of reconnaissance. Walk each source's archive back 2–3 years and plot actual publication dates. One evening produces the seasonal shape of your entire market — and tells you whether session 21's demand test is landing in a dead period (`roadmap.md` §8) |
+| **Observed (13.09.2026)** | AV announcements peak May–June and September, thinnest December–January; Economy deadlines cluster in August and November; IPARD 1–3 calls/year. Detail in `sources.md` §6.4 |
 
 ---
 

@@ -1,6 +1,6 @@
 # Open decisions — yours to make
 
-Everything else in `/docs` I decided and justified. These eight I cannot decide for you, because they
+Everything else in `/docs` I decided and justified. These nine I cannot decide for you, because they
 depend on your market judgement, your risk appetite, or facts about your business I do not have.
 
 Each has a **recommendation**, the **reasoning**, and the **consequence of each option** so you can
@@ -189,6 +189,42 @@ setting where both failures are cheap.
 
 ---
 
+## D9 — OCR for call documents without a text layer
+
+Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
+mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image
+(Economy, IPARD). `pypdf` returns nothing. AV and the EU portal are unaffected.
+
+A test on 13.09.2026 with Tesseract 5.3.4 and its `mkd` model, first page at 300 dpi:
+
+- **Word-export PDFs** (Economy, IPARD): body text essentially exact. ~5–6 s per page.
+- **Scanned PDF** (Skopje): body text good but not exact — "постапката за субвенционирање" came out as
+  "поечатката- за еубвенционирање". Letterheads and stamps become noise. ~8 s per page.
+
+| | **A — Tesseract in the worker image** ⭐ | **B — No OCR; route to review** | **C — Vision model via the gateway** |
+|---|---|---|---|
+| What happens | `pdftoppm` → `tesseract -l mkd` when a PDF has no text layer | Snapshot stored, item lands in the review queue as "unreadable"; you transcribe or summarise by hand | Page images sent to a model provider for transcription |
+| New moving parts | Two apt packages (~40 MB), one normaliser branch | None | None in the image; a new task type and a per-page cost |
+| Leaves the EU | No | No | Yes, unless the provider is EU-hosted |
+| Citation quality | Verbatim against OCR text, which can differ from the paper | Whatever you type | Verbatim against model output, which can silently "correct" or paraphrase |
+| Your time | Review of OCR-derived citations only | Every such document, ~50/year across the three sources | Review of every transcription |
+
+### Recommendation: **A**, with two rules
+
+1. **An OCR-derived snapshot is marked as such** (proposed: a `text_source` column on `raw_snapshot`), and every citation into it
+   is shown to you with the page image beside the quote before it can reach a customer. The
+   verbatim check still runs — against the OCR text — but it no longer proves the paper says it.
+2. **OCR never runs silently.** Low Tesseract confidence on a page routes the document to review,
+   in line with invariant 3.
+
+**Consequences:** A keeps the pipeline local, cheap and boring, and turns ~50 manual transcriptions a
+year into ~50 quick reviews. B is honest and simplest, but the three affected sources are half the
+domestic coverage, and your evenings are the constraint. C is the most accurate on messy scans, and
+the worst fit for "no citation, no claim": a model transcript is the one place a paraphrase could
+enter the evidence chain unnoticed.
+
+---
+
 ## Summary — what to decide, and by when
 
 | # | Decision | Needed by | My recommendation |
@@ -201,6 +237,7 @@ setting where both failures are cheap.
 | D6 | Free tier depth | P2 s28 | Full top 10 with reasons and citations |
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
+| D9 | OCR for image-only PDFs | **P1 s9** (normaliser) | Tesseract `mkd` locally; OCR citations always reviewed |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

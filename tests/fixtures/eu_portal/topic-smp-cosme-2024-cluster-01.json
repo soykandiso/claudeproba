@@ -1,0 +1,107 @@
+{
+  "TopicDetails" : {
+    "type" : 1,
+    "ccm2Id" : 47108154,
+    "identifier" : "SMP-COSME-2024-CLUSTER-01",
+    "title" : "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery",
+    "publicationDateLong" : 1728950400000,
+    "callIdentifier" : "SMP-COSME-2024-CLUSTER",
+    "callTitle" : "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery",
+    "callccm2Id" : 47108178,
+    "allowPartnerSearch" : true,
+    "frameworkProgramme" : {
+      "id" : 43252476,
+      "abbreviation" : "SMP",
+      "description" : "Single Market Programme (SMP)"
+    },
+    "programmeDivision" : [ {
+      "id" : 43252504,
+      "abbreviation" : "Cosme",
+      "description" : "Cosme"
+    } ],
+    "topicMGAs" : [ {
+      "id" : 43250793,
+      "abbreviation" : "SMP-AG",
+      "description" : "SMP Action Grant Budget-Based"
+    } ],
+    "keywords" : [ ],
+    "tags" : [ "Cluster", "EUROCLUSTERS", "Green Deal  Industrial Plan for the Net-Zero Age", "REPowerEU Plan", "Single  Market Programme", "advanced technologies", "industrial ecosystems", "partnering", "smart specialisation  strategies" ],
+    "sme" : false,
+    "actions" : [ {
+      "status" : {
+        "id" : 31094503,
+        "abbreviation" : "Closed",
+        "description" : "Closed"
+      },
+      "types" : [ {
+        "typeOfAction" : "SMP-GFS SMP Grants for Financial Support",
+        "typeOfMGA" : [ {
+          "id" : 43250793,
+          "abbreviation" : "SMP-AG",
+          "description" : "SMP Action Grant Budget-Based"
+        } ]
+      } ],
+      "plannedOpeningDate" : "1728950400000",
+      "submissionProcedure" : { },
+      "deadlineDates" : [ "1738713600000" ]
+    } ],
+    "latestInfos" : [ {
+      "approvalDate" : "",
+      "lastChangeDate" : "2025-01-24T10:19:29.745",
+      "content" : "<p>TECHNICAL ISSUE on affiliated entities RESOLVED in the submission system</p><p>Due to a technical error, it was not possible to include affiliated entities among the partners of the Consortia applying under the call. We resolved the issue and now, this option is enabled in the submission system. We apologise for this inconvenience.</p>"
+    }, {
+      "approvalDate" : "",
+      "lastChangeDate" : "2024-12-05T16:38:19.449",
+      "content" : "<p>IMPORTANT – DETAILED BUDGET TABLE template CHANGED</p><p>Please note that the template of ‘Detailed budget table’ available until now in the below section ‘Topic conditions and documents’, among ‘Application form templates’, was changed. </p><p>Initially, the template of ‘Detailed budget table’ with co-financing rate of 75% was erroneously included under the link, while now, the correct template of ‘Detailed budget table’ with the co-financing rate of 90% is featured below. The costs of grants selected for funding under the SMP-COSME-2024-CLUSTER call, will be reimbursed at the funding rates fixed in the Grant Agreement: 100% for the costs for providing financial support to third parties and 90% for all other cost categories. </p><p>Thus, please use the template of ‘Detailed budget table’ with co-financing rate of 90% in preparation of your applications. </p><p>We apologize for the inconvenience this may have caused.&#xa0;</p><p><br></br></p>"
+    }, {
+      "approvalDate" : "",
+      "lastChangeDate" : "2024-10-28T08:37:13.201",
+      "content" : "<p>22.10.2024</p><p>IMPORTANT – TECHNICAL CORRIGENDUM to the call text was published</p><p>Please note that the call text has been modified. The modifications are of purely technical nature and are marked in the call text in yellow. In particular, the references to the EU Financial Regulation were updated following the entry into force of the new Regulation on 30/09/2024. Also, some formatting issues were fixed, namely the text of footnotes 43-45 has been introduced.</p>"
+    } ],
+    "budgetOverviewJSONItem" : {
+      "budgetTopicActionMap" : {
+        "103333" : [ {
+          "action" : "SMP-COSME-2024-CLUSTER-01 - SMP-GFS SMP Grants for Financial Support",
+          "plannedOpeningDate" : "1728950400000",
+          "deadlineModel" : "single-stage",
+          "deadlineDates" : [ "1738713600000" ],
+          "budgetYearMap" : {
+            "2024" : "10000000",
+            "2025" : "11000000",
+            "2026" : "12000000",
+            "2027" : "9000000"
+          },
+          "expectedGrants" : 0,
+          "minContribution" : 0,
+          "maxContribution" : 0
+        } ]
+      },
+      "budgetYearsColumns" : [ "2027", "2026", "2025", "2024" ]
+    },
+    "description" : "<span class=\"topicdescriptionkind\">Expected Outcome:</span><p><strong>Qualitative and quantitative indicators:</strong></p><ul level=\"0\"><li>Number of partnerships;</li><li>Take up of innovation solutions in SMEs;</li><li>Number of businesses putting in place process innovations leading to improved sustainability;</li><li>Number of businesses that enhanced their skills for sustainability / circularity;</li><li>Quality of business support activities such as innovation uptake, re/upskilling and internationalisation and collecting impact data.</li> </ul><span class=\"topicdescriptionkind\">Scope:</span><p>This action will incentivise the creation and development of Joint Cluster Initiatives (EUROCLUSTERS), one of the flagship measures mentioned in article 8 of the Single Market Programme (SMP). It builds on the successful and inspiring experience of the COSME and the Horizon 2020/INNOSUP-1 cluster projects, and on the Euroclusters call launched in 2021, which created 30 cross-sectorial, interdisciplinary and trans European Joint Cluster Initiatives to improve the resilience of the European industrial ecosystems, while boosting their green and digital transformation.</p><p>The initiatives will help clusters organisations and their members to strengthen their interlinkages and collaborate to exploit new resilient business opportunities and anticipate and address challenges they face in terms of critical infrastructure, inputs, technologies, skills and value chains. The actions foreseen in this call for proposals will focus on the implementation of actions foreseen in the Green Deal industrial plan and REPowerEU plan, in order to improve SMEs’ social and economic resilience, while supporting their green and digital transition.</p><p>The resilience of value and supply chains will be a priority, for example, through the diversification of production inputs on different EU territories, pooling of supply or demand, joint investments in critical innovation and production facilities, development of alternative EU technologies and implementation of circularity measures.</p><p>In addition, clusters and their companies shall explore new ways of rebuilding and reconnecting global supply and value chains in a joint strategy, reshaping their global position to take account of the latest developments affecting their field of business, and taking rational positions on risk exposure.</p><p>The Joint Cluster Initiatives (EUROCLUSTERS) will build on the EU cluster capacity to bring together a critical mass of firms and societies in geographical and functional proximities, which are economically and socially interdependent.</p>",
+    "conditions" : "<div class=\"eui-u-mt-l>\"><h4>Conditions</h4><div><h4>1. Admissibility Conditions: Proposal page limit and layout</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p><p><strong>Proposal page limits and layout:</strong> described in Part B of the <a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/temp-form/af/af_smp-cosme_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">Application Form</a> available in the Submission System.</p></div></div><div><h4>2. Eligible Countries</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div><div><h4>3. Other Eligible Conditions</h4><div class=\"eui-u-mt-s\"><p>n/a</p></div></div><div><h4>4. Financial and operational capacity and exclusion</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div><div><h4>5a. Evaluation and award: Submission and evaluation processes</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div><div><h4>5b. Evaluation and award: Award criteria, scoring and thresholds</h4><div class=\"eui-u-mt-s\"><p>Evaluation criteria, scoring, threshold and process are described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div><div><h4>5c. Evaluation and award: Indicative timeline for evaluation and grant agreement</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div><div><h4>6. Legal and financial set-up of the grants</h4><div class=\"eui-u-mt-s\"><p>described in the <u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">call document</a></u>.</p></div></div></div><div class=\"eui-u-mt-l\"><div class=\"eui-u-mt-s\">\n</div><h4>Call document and annexes:</h4> <div class=\"eui-u-mt-s\"><p><u><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/wp-call/2024/call-fiche_smp-cosme-2024-cluster_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">Call document</a></u></p><p><strong>Application form templates</strong></p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/temp-form/af/af_smp-cosme_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">Standard proposal template (COSME)</a> — the application form specific to this call is available in the Submission System</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/temp-form/af/detailed-budget-table_smp-cosme-grants-for-financial-support-90-percent_en.xlsm\" rel=\"noopener noreferrer\" target=\"_blank\">Detailed budget template (COSME GFS 90%)</a></p><p><strong>Model Grant Agreements (MGA)</strong></p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/smp/agr-contr/general-mga_smp_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">SMP MGA</a></p></div><h4>Additional documents:</h4> <div class=\"eui-u-mt-s\"><p><a href=\"https://commission.europa.eu/publications/single-market-programme-legal-texts-and-factsheets_en\" rel=\"noopener noreferrer\" target=\"_blank\">SMP Work Programmes</a></p><p><a href=\"https://eur-lex.europa.eu/legal-content/en/ALL/?uri=CELEX%3A32021R0690\" rel=\"noopener noreferrer\" target=\"_blank\">SMP Regulation 2021/690: Single Market Programme establishment act</a></p><p><a href=\"https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32018R1046&amp;qid=1535046024012\" rel=\"noopener noreferrer\" target=\"_blank\">EU Financial Regulation 2018/1046</a> </p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/guidance/rules-lev-lear-fca_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">Rules for Legal Entity Validation, LEAR Appointment and Financial Capacity Assessment</a>&#xa0;</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/guidance/aga_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">EU Grants AGA — Annotated Model Grant Agreement</a>&#xa0;</p><p><a href=\"https://webgate.ec.europa.eu/funding-tenders-opportunities/display/OM/Online+Manual\" rel=\"noopener noreferrer\" target=\"_blank\">Funding &amp; Tenders Portal Online Manual</a>&#xa0;</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/docs/2021-2027/common/ftp/tc_en.pdf\" rel=\"noopener noreferrer\" target=\"_blank\">Funding &amp; Tenders Portal Terms and Conditions</a>&#xa0;</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/support/legalnotice\" rel=\"noopener noreferrer\" target=\"_blank\">Funding &amp; Tenders Portal Privacy Statement</a></p></div></div>",
+    "supportInfo" : "<p>For help related to this call, please contact EISMEA-SMP-COSME-ENQUIRIES@ec.europa.eu</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/support/faq?order=DESC&amp;pageNumber=1&amp;pageSize=10&amp;sortBy=publicationDate&amp;isExactMatch=true&amp;type=1&amp;grantCategories=p_submission_eval\" rel=\"noopener noreferrer\" target=\"_blank\">Funding &amp; Tenders Portal FAQ – Submission of proposals</a>.</p><p><a href=\"https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/support/helpdesks/contact-form\" rel=\"noopener noreferrer\" target=\"_blank\">IT Helpdesk</a> – Contact the IT helpdesk for questions such as forgotten passwords, access rights and roles, technical aspects of submission of proposals, etc.</p><p><a href=\"https://webgate.ec.europa.eu/funding-tenders-opportunities/display/OM/Online+Manual\" rel=\"noopener noreferrer\" target=\"_blank\">Online Manual</a> – Step-by-step online guide through the Portal processes from proposal preparation and submission to reporting on your ongoing project. Valid for all 2021-2027 programmes.</p><p><a href=\"https://een.ec.europa.eu/\" rel=\"noopener noreferrer\" target=\"_blank\">Enterprise Europe Network</a> – Contact your Network national contact for advice to business with special focus on SMEs. The support includes guidance on EU research funding.</p><p><a href=\"https://intellectual-property-helpdesk.ec.europa.eu/index_en\" rel=\"noopener noreferrer\" target=\"_blank\">Intellectual Property Helpdesk</a> – Contact the IP Helpdesk for advice on the IP elements of your grant agreement.</p>",
+    "sepTemplate" : "<p>No submission system is open for this topic.</p>",
+    "links" : [ ],
+    "additionalDossiers" : [ ],
+    "infoPackDossiers" : [ ],
+    "callDetailsJSONItem" : {
+      "latestInfos" : [ {
+        "approvalDate" : "",
+        "lastChangeDate" : "2025-01-24T10:19:29.745",
+        "content" : "<p>TECHNICAL ISSUE on affiliated entities RESOLVED in the submission system</p><p>Due to a technical error, it was not possible to include affiliated entities among the partners of the Consortia applying under the call. We resolved the issue and now, this option is enabled in the submission system. We apologise for this inconvenience.</p>"
+      }, {
+        "approvalDate" : "",
+        "lastChangeDate" : "2024-12-05T16:38:19.449",
+        "content" : "<p>IMPORTANT – DETAILED BUDGET TABLE template CHANGED</p><p>Please note that the template of ‘Detailed budget table’ available until now in the below section ‘Topic conditions and documents’, among ‘Application form templates’, was changed. </p><p>Initially, the template of ‘Detailed budget table’ with co-financing rate of 75% was erroneously included under the link, while now, the correct template of ‘Detailed budget table’ with the co-financing rate of 90% is featured below. The costs of grants selected for funding under the SMP-COSME-2024-CLUSTER call, will be reimbursed at the funding rates fixed in the Grant Agreement: 100% for the costs for providing financial support to third parties and 90% for all other cost categories. </p><p>Thus, please use the template of ‘Detailed budget table’ with co-financing rate of 90% in preparation of your applications. </p><p>We apologize for the inconvenience this may have caused.&#xa0;</p><p><br></br></p>"
+      }, {
+        "approvalDate" : "",
+        "lastChangeDate" : "2024-10-28T08:37:13.201",
+        "content" : "<p>22.10.2024</p><p>IMPORTANT – TECHNICAL CORRIGENDUM to the call text was published</p><p>Please note that the call text has been modified. The modifications are of purely technical nature and are marked in the call text in yellow. In particular, the references to the EU Financial Regulation were updated following the entry into force of the new Regulation on 30/09/2024. Also, some formatting issues were fixed, namely the text of footnotes 43-45 has been introduced.</p>"
+      } ],
+      "hasForthcomingTopics" : false,
+      "hasOpenTopics" : false,
+      "allClosedTopics" : false
+    }
+  }
+}
