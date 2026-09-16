@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 16.09.2026, after P1 s16, before P1 s17.
+**Last updated:** 16.09.2026, after P1 s17 (deferred), during P1 s18.
 
 ---
 
@@ -22,7 +22,7 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). **Next: s17** — its slot was FITR, still unreachable (`sources.md` §6.1) and AV is already built, so check FITR from the host first; if it still times out, record that and move to s18 (Economy) |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). **Now: s18, Economy fetcher** |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
@@ -39,6 +39,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | 16.09 | P1 s14 | `bc6848e` | `flask ingest health` + healthchecks.io; delivery drill waits for the VPS |
 | 16.09 | P1 s15 | `4ad9ef6` | `/admin` review queue; approval re-checks citations, fills prefilter columns. Not in production until D11 |
 | 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
+| 16.09 | P1 s17 | `git log --grep 'session 17'` | FITR re-checked from the host: still no TCP connection. Slot deferred, nothing built |
 | 16.09 | P1 s16 | `git log --grep 'session 16'` | Manual entry by URL: `/admin/rachen-vnes` → RQ job (the first one) → pipeline; failures answer in the queue. Live-checked through the real worker |
 
 ## 3. What is built, in one screen

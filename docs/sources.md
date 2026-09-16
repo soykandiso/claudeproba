@@ -138,6 +138,12 @@ not done). AV took the priority-1 slot and is the fetcher built end to end in P1
 (`app/ingestion/sources/av.py`). FITR stays in `config/sources.yaml` at priority 3, inactive, until it
 has been checked from a Macedonian connection and from the VPS.
 
+**16.09.2026, P1 s17:** checked again from the Codespace host before building its slot. DNS still
+resolves (104.247.81.99); HTTPS and HTTP both time out after 20 s without a TCP connection, three
+attempts five seconds apart. Nothing to build against. Until a connection that reaches it exists,
+a FITR call can enter through manual entry (§3) only if the operator can download it, since the
+crawler cannot. The slot is deferred and P1 continues with s18.
+
 ### 6.2 Most domestic call documents have no text layer
 
 This is the most consequential finding. Of the PDFs sampled:
