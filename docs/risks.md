@@ -17,6 +17,7 @@ inconvenience.
 | **Impact** | **High.** This is the failure mode that kills the business quietly: the site keeps working, results keep rendering, and they are wrong. A customer pays for a report about a call that closed six weeks ago |
 | **Mitigation** | Per-source `staleness_sla` with alerting that leaves the system (email plus an external heartbeat service, so a dead box is noticed by something that is not the box). `last_verified_at` displayed on every call in the UI (brief §12), so staleness is visible to users, not just to you. Parser fixtures per source in CI — a layout change breaks a test before it breaks production. Raw snapshots stored even on parse failure, so recovery does not require re-crawling |
 | **Earliest cheap test** | **P1 session 14.** Deliberately point one source at a dead URL in staging and confirm the alert reaches you outside the app within its SLA window. Fifteen minutes of work, and it is the single most valuable alarm in the system |
+| **Status (16.09.2026)** | Built. A test breaks AV through the real pipeline (listing answers 404) and asserts the failure ping that healthchecks.io turns into an email, error included (`tests/test_source_health.py`). **Not yet proven:** that the email reaches you — that is the `--drill` in `runbook.md` §4, on the VPS, which does not exist yet (P0.5 s4) |
 
 ---
 

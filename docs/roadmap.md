@@ -39,7 +39,7 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 11 | **FITR fetcher, end to end** — *built for AV instead (16.09.2026): FITR unreachable, `sources.md` §6.1* | **Brief's own P1 criterion:** a newly published FITR call is in the database within 24 hours, with a snapshot and working citations |
 | 12 | Chunker, embedder, hybrid retrieval query (vector + trigram) | A clause retrieved by paraphrase appears in the top 3 |
 | 13 | EU Funding & Tenders fetcher — *built 16.09.2026, no interface change needed; scope is `decisions.md` D10, linked call documents not yet extracted (`sources.md` §6.6)* | Same pipeline, different access method. Any interface change this forces is the point of building it second |
-| 14 | Source health, staleness SLA, alerting, external heartbeat | Break a source deliberately in staging → alert reaches you **outside the app** within its SLA |
+| 14 | Source health, staleness SLA, alerting, external heartbeat — *built 16.09.2026: `flask ingest health` + healthchecks.io; delivery drill waits for the VPS (P0.5 s4), `runbook.md` §4* | Break a source deliberately in staging → alert reaches you **outside the app** within its SLA |
 | 15 | Admin review queue UI (extraction items) | Approve / edit / reject works; only approved calls get `is_published = true` |
 | 16 | Manual source entry (`access_method='manual'`) | Paste a URL → snapshot → extraction → review, same citation quality |
 | 17 | Агенција за вработување fetcher — *built in s11; this slot goes to FITR once it is reachable* | Calls in registry with citations |

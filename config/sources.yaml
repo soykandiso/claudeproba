@@ -3,8 +3,10 @@
 #
 # Values come from the reconnaissance of 13.09.2026 (docs/sources.md §6).
 #   expected_cadence_days  how often something new usually appears
-#   staleness_sla_days     how long without a successful run before alerting.
-#                          Generous where calls are seasonal (sources.md §6.4).
+#   staleness_sla_days     how long without a NEW CALL before `flask ingest health`
+#                          alerts that the source is quiet. Generous where calls are
+#                          seasonal (sources.md §6.4). A source whose runs fail
+#                          alerts after 30 hours regardless (app/ingestion/health.py).
 #   rate_limit_rps         requests per second per host; 0.2 is one per 5 s
 #
 # A source is `active: false` until its fetcher exists in app/ingestion/sources/.
@@ -16,8 +18,10 @@ sources:
     institution: European Commission
     base_url: https://ec.europa.eu/info/funding-tenders/opportunities/portal
     access_method: api
-    expected_cadence_days: 1
-    staleness_sla_days: 3
+    # For the D10 scope (39 topics), not the whole portal: new topics in those
+    # programmes arrive in batches when a work programme's calls open.
+    expected_cadence_days: 7
+    staleness_sla_days: 30
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: robots allows portal paths; reuse terms not yet read (P3 s43)

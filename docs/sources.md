@@ -103,7 +103,7 @@ These apply to every source, present and future, and are restated in `CLAUDE.md`
 - **Store the raw snapshot, always**, even when parsing fails — especially when parsing fails.
 - **Every source has a staleness SLA and alerts on breach.** A silently dead scraper is the primary
   failure mode of this business (`risks.md` R1). The alert must reach you outside the system, not
-  only in an admin page you might not open for a week.
+  only in an admin page you might not open for a week. *(Built in P1 s14: `flask ingest health`, `docs/runbook.md` §4.)*
 - **Surface `last_verified_at` in the UI on every call**, per brief §12.
 - **Expansion after P1 follows demand, not symmetry.** When a segment produces paying customers, add
   its adjacent sources next. Do not add sources to keep the four segments evenly covered.

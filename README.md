@@ -9,10 +9,10 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P1 session 13** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P1 session 14** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
-citations located in code, the AV and EU Funding & Tenders fetchers end to end, and chunking, local
-embeddings and hybrid retrieval. See [`docs/roadmap.md`](docs/roadmap.md).
+citations located in code, the AV and EU Funding & Tenders fetchers end to end, chunking, local
+embeddings and hybrid retrieval, and source health alerts through healthchecks.io. See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
 database: profile, cited shortlist, report, order and proforma invoice, human review in an admin

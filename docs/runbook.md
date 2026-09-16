@@ -120,6 +120,8 @@ restart into a half-migrated state.
 | 502 from Caddy | `docker compose logs web` — usually a failed start after a bad deploy |
 | `/readyz` says not ready | It names the failing dependency. `docker compose logs postgres` or `redis` |
 | Jobs not processing | `docker compose logs worker`; is Redis healthy; is the queue name right |
+| Alert email from the health check | §4, "A source alert" |
+| Alert email from the ingest check (no ping) | §4, "The ingest heartbeat went silent" |
 | No new calls for days | `flask ingest health` — the source is probably blocking or has changed layout |
 | `index FAILED: ModelNotDownloaded` in the ingest log | The `models` volume is empty or was recreated: `docker compose run --rm web flask ingest fetch-model` |
 | Ingest run killed, `Killed` or exit 137 | Out of memory while embedding (~1.9 GB peak). `free -m`; stop what else is large, run `flask ingest index` again — it resumes |
@@ -131,7 +133,72 @@ note in [`README.md`](../README.md). Not a concern on the VPS.
 
 ---
 
-## 4. If you are unavailable for a while
+## 4. Source alerts
+
+A silently dead scraper is the failure that kills this business quietly (`docs/risks.md` R1).
+Alerts leave the box through **healthchecks.io** (EU: Hetzner, Germany), which emails. Nothing in
+the ping says anything about a customer: source slugs, dates, error messages.
+
+### Setup — once, on the VPS
+
+1. On healthchecks.io create two checks, and set email (and, if you like, a phone app) as their
+   integration:
+   - **grants-ingest**: period **4 hours**, grace **3 hours**. Pinged at the end of every
+     `flask ingest due`, whatever happened to the sources. Silence means cron, Docker or the box
+     is dead.
+   - **grants-health**: period **1 day**, grace **2 hours**. Told once a day by
+     `flask ingest health` whether every active source is fine.
+2. Put their ping URLs in `.env` as `GRANTS_HEARTBEAT_INGEST_URL` and
+   `GRANTS_HEARTBEAT_HEALTH_URL`, then `docker compose up -d` so the containers see them.
+   In production `flask ingest health` refuses to run without the health URL.
+3. Install the cron file (it runs `health` at 06:30 UTC).
+4. **Drill — not done until it has actually arrived:**
+   `docker compose exec web flask ingest health --drill` sends a failure marked DRILL. Confirm the
+   email (or phone notification) arrives, then `docker compose exec web flask ingest health` to
+   clear it. Repeat the drill after changing email address or phone.
+
+### What the health check judges
+
+`flask ingest health` prints the same report the email carries. Each active source is:
+
+| State | Meaning | Threshold |
+|---|---|---|
+| `FAILING` | Its runs fail — fetch (blocked, moved, changed shape) or processing (model key, provider) — and none has succeeded | 30 hours, about six retries |
+| `NOT_RUNNING` | No run started — cron is not reaching it, or it is active in `config/sources.yaml` without a fetcher | 30 hours |
+| `QUIET` | Runs succeed but no new call has appeared | the source's `staleness_sla_days` |
+| `ok` | Possibly with "last run failed … alerts at …": one bad night is a note, not an alert | |
+
+healthchecks.io emails when the check changes state. If a second source breaks while the check is
+already failing, the command briefly marks it up and fails it again, so the new problem gets its
+own email; "(new)" marks it in the report.
+
+### A source alert
+
+1. `docker compose exec web flask ingest health` for the current picture.
+2. **FAILING**, error mentions HTTP, timeout, robots.txt: open the source's site in a browser.
+   Down for everyone → wait; it clears itself. Blocked (403, timeouts only from the VPS) → see
+   `docs/sources.md` §6.1 for how FITR was handled; the fallback is `access_method: manual`.
+   Changed shape (the fetcher raises `ValueError`, or normalising sends everything to review) →
+   capture a new fixture, fix the fetcher, run its tests, deploy, then
+   `flask ingest run <slug>`.
+3. **FAILING**, error starts "processing failed": the source is fine and our side is not — model
+   key, provider outage, spend ceiling. `/var/log/grants-ingest.log` has the whole message.
+4. **NOT_RUNNING**: `crontab`/`/etc/cron.d/grants` installed? `docker compose ps`? Does
+   `flask ingest due` print "active in config/sources.yaml but has no fetcher"?
+5. **QUIET**: look at the source's own listing. Nothing new published (seasonal: `docs/sources.md`
+   §6.4) → fine; raise `staleness_sla_days` if this will recur every year. New calls there but not
+   here → the listing parses but no longer lists them: treat as a changed shape.
+6. Once fixed, `flask ingest health` again; the check goes back up and emails that too.
+
+### The ingest heartbeat went silent
+
+The box, Docker or cron is not running `flask ingest due` at all. `docker compose ps`,
+`systemctl status cron`, `tail /var/log/grants-ingest.log`, disk space (`df -h`). When it runs
+again, the next ping clears the check.
+
+---
+
+## 5. If you are unavailable for a while
 
 The bus-factor plan (`docs/risks.md` R7). Ingestion needs no human and continues
 on its own. What must not happen is a customer paying and then waiting with no

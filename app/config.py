@@ -53,6 +53,13 @@ class Settings(BaseSettings):
     default_language: str = "mk"
     timezone: str = "Europe/Skopje"
 
+    # healthchecks.io check URLs (app/heartbeat.py). The ingest check is pinged by
+    # every `flask ingest due`, so silence means cron or the box is dead; the health
+    # check is told by `flask ingest health` whether any source needs attention.
+    # Unset in development; `flask ingest health` refuses to run without it in production.
+    heartbeat_ingest_url: str | None = None
+    heartbeat_health_url: str | None = None
+
     # Hard ceiling on model spend, alarmed rather than enforced (decisions.md D8).
     model_spend_ceiling_eur: float = Field(default=30.0, ge=0)
 

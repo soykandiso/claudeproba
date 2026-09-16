@@ -2,6 +2,7 @@
 
 import datetime as dt
 import sys
+from zoneinfo import ZoneInfo
 
 import click
 from flask import Flask, current_app
@@ -9,8 +10,10 @@ from sqlalchemy import select
 
 from app.ai.gateway import AnthropicProvider, Gateway, InvalidModelOutput
 from app.db import session_factory
+from app.heartbeat import ping
 from app.ingestion.extract import Document, extract_call
 from app.ingestion.fetcher import CrawlContext, Fetcher, run_fetcher
+from app.ingestion.health import run_health_check
 from app.ingestion.normalise.pdf import TesseractOcr
 from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapshots
 from app.ingestion.pipeline import ERROR, UNCHANGED, due_sources, run_source
@@ -73,19 +76,68 @@ def due_command():
     with session_factory(settings)() as session:
         slugs = due_sources(session, dt.datetime.now(dt.UTC))
     failed = False
+    summary = []
     for slug in slugs:
         if slug not in available:
             # Active in config but no code: a deploy mistake, and loud on purpose.
             click.echo(f"{slug}: active in config/sources.yaml but has no fetcher", err=True)
+            summary.append(f"{slug}: NO FETCHER")
             failed = True
             continue
         click.echo(f"== {slug}")
-        failed |= not _run_source(available[slug]())
+        ok = _run_source(available[slug]())
+        summary.append(f"{slug}: {'ok' if ok else 'FAILED'}")
+        failed |= not ok
     if not slugs:
         click.echo("nothing due")
+        summary.append("nothing due")
     # Also when nothing was due: an earlier run may have stopped before embedding.
-    failed |= not _index()
+    indexed = _index()
+    summary.append(f"index: {'ok' if indexed else 'FAILED'}")
+    failed |= not indexed
+    # Always a success ping: it says cron and this command are alive. Whether a
+    # source is in trouble is `flask ingest health`'s judgement, with the patience
+    # a flaky ministry server needs; a failure here would email every 4 hours.
+    click.echo(ping(settings.heartbeat_ingest_url, ok=True, body="\n".join(summary)))
     if failed:
+        sys.exit(1)
+
+
+@ingest.command(
+    "health",
+    help="Judge every active source (failing, not running, quiet) and report to the "
+    "health check, which emails. Exits 1 when any source needs attention.",
+)
+@click.option(
+    "--drill",
+    is_flag=True,
+    help="Send a test alert through the health check, to confirm it reaches you.",
+)
+def health_command(drill):
+    settings = _settings()
+    url = settings.heartbeat_health_url
+    if not url and settings.is_production:
+        raise click.ClickException(
+            "GRANTS_HEARTBEAT_HEALTH_URL is not set: source alerts cannot leave the box"
+        )
+    tz = ZoneInfo(settings.timezone)
+    now = dt.datetime.now(dt.UTC)
+    if drill:
+        body = (
+            f"DRILL {now.astimezone(tz):%d.%m.%Y %H:%M}: a test alert from `flask ingest "
+            "health --drill`. No source is broken. Run `flask ingest health` to clear it."
+        )
+        click.echo(body)
+        line = ping(url, ok=False, body=body)
+        click.echo(line)
+        if not line.startswith("heartbeat sent"):
+            sys.exit(1)  # a drill that did not leave the box proves nothing
+        return
+    result = run_health_check(session_factory(settings), url=url, now=now, tz=tz)
+    click.echo(result.text)
+    for line in result.heartbeat:
+        click.echo(line)
+    if result.alerting:
         sys.exit(1)
 
 

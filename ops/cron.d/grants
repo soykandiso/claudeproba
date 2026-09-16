@@ -16,6 +16,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # at the next wake-up when not. New calls are written unpublished and queued for review.
 0 */4 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest due >> /var/log/grants-ingest.log 2>&1
 
-# Source staleness check. A dead scraper is the primary business failure mode,
-# so this alerts independently of the ingestion run that may itself be broken.
-# 30 8 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest health >> /var/log/grants-health.log 2>&1
+# Source health. A dead scraper is the primary business failure mode, so this
+# judges every source independently of the ingestion run that may itself be broken,
+# and reports to healthchecks.io, which emails (docs/runbook.md §4). After the
+# 04:00 ingestion run, so a morning alert describes last night.
+30 6 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest health >> /var/log/grants-health.log 2>&1
