@@ -15,7 +15,7 @@
       {% set stage = stage_of(item) %}
       <li>
         <div class="stack">
-          <span class="small soft">{{ stage_labels.get(stage, stage) }}{% if item.priority < 100 %}, <strong>беше објавен, сега е скриен</strong>{% endif %}</span>
+          <span class="small soft">{{ stage_labels[item.id] }}{% if item.priority < 100 %}, <strong>беше објавен, сега е скриен</strong>{% endif %}</span>
           <a class="break" href="{{ url_for('admin.item', item_id=item.id) }}"><strong>{{ titles[item.id] }}</strong></a>
           <span class="small soft break">{{ item.reason }}</span>
         </div>

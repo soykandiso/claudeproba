@@ -203,6 +203,12 @@ setting where both failures are cheap.
 > - `raw_snapshot.text_source` and `ocr_mean_confidence` record which text is OCR, and
 >   `normaliser_version` names the Tesseract version that read it.
 
+> **Open again in part (16.09.2026, P1 s18):** bilingual Macedonian–Albanian PDFs (every Economy
+> call) score a page mean of 67–75 because the `mkd` model turns the Albanian half into garbage at
+> confidence 0, while the Macedonian half reads well (median 92). Rule 2 as written flags every such
+> page. Options: measure confidence over the Macedonian text only; or OCR with `mkd+sqi`, which must
+> first be tested against the Cyrillic corruption that `mkd+eng` caused. `sources.md` §6.7.
+
 Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
 mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image
 (Economy, IPARD). `pypdf` returns nothing. AV and the EU portal are unaffected.

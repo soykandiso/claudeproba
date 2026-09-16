@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 16.09.2026, after P1 s17 (deferred), during P1 s18.
+**Last updated:** 16.09.2026, after P1 s18, before P1 s19.
 
 ---
 
@@ -22,7 +22,7 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). **Now: s18, Economy fetcher** |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy done. **Next: s19, Град Скопје** (scanned PDFs, tenders mixed into the listing: `sources.md` §1, §6.2–6.3) |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
@@ -39,6 +39,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | 16.09 | P1 s14 | `bc6848e` | `flask ingest health` + healthchecks.io; delivery drill waits for the VPS |
 | 16.09 | P1 s15 | `4ad9ef6` | `/admin` review queue; approval re-checks citations, fills prefilter columns. Not in production until D11 |
 | 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
+| 16.09 | P1 s18 | `git log --grep 'session 18'` | Economy fetcher: call text only; empty listing is normal; Livewire tokens stripped. Found: bilingual MK/AL PDFs fail the D9 OCR confidence rule on every page |
 | 16.09 | P1 s17 | `git log --grep 'session 17'` | FITR re-checked from the host: still no TCP connection. Slot deferred, nothing built |
 | 16.09 | P1 s16 | `git log --grep 'session 16'` | Manual entry by URL: `/admin/rachen-vnes` → RQ job (the first one) → pipeline; failures answer in the queue. Live-checked through the real worker |
 
@@ -67,6 +68,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | D2 | Domain and brand | P0.5 s4 deploy, transactional email, magic link |
 | D10 | EU portal scope — default in code, user to confirm or widen | first EU approvals |
 | D11 | Operator sign-in — recommended SSH tunnel, then magic link at s44 | production admin |
+| D9 (reopened) | OCR confidence on bilingual MK/AL documents | noise in the queue for every Economy call; extraction reads garbled Albanian |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
 | — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
 
@@ -171,6 +173,10 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   banded profile is compared to them is s24's to get right.
 - **Removing an approved criterion** is refused once match outcomes reference it (the FK cascades into
   delivered reports). A proper "retire" needs a column; decide when P2 writes outcomes.
+- **D9 rule 2 flags every bilingual MK/AL page** (`sources.md` §6.7). Fix in the normaliser (bump
+  `NORMALISER_VERSION`), with a small test set of bilingual pages; not in a fetcher.
+- **D9 rule 1 is only half built**: the admin marks OCR quotes and links the document, but does not
+  show the page image beside the quote.
 - **A closed review item is never re-asked** for the same snapshots. A retry path (e.g. after a prompt
   change) does not exist yet; the natural place is P2 s34 or a prompt-version bump.
 - **`reviewer_id`** stays empty until operator accounts exist (D11).

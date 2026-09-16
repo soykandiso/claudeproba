@@ -443,3 +443,33 @@ def test_snapshot_text_in_a_context_passage_is_escaped_and_blank_lines_collapse(
     assert "<script>" not in html and "&lt;script&gt;" in html
     assert "<mark>&lt;script&gt;alert(1)&lt;/script&gt; цитат</mark>" in html
     assert "\n\n" not in html
+
+
+def test_ocr_text_is_marked_on_each_quote_and_a_doubtful_read_is_not_called_unreadable(
+    admin,
+    sessions,  # noqa: F811
+    written,
+):
+    from app.models.enums import ReviewKind, TextSource
+    from app.web.admin import READ_WITH_DOUBT
+
+    with sessions() as s:
+        call = s.get(Call, written.call_id)
+        snapshot = s.get(RawSnapshot, call.primary_snapshot_id)
+        snapshot.text_source = TextSource.OCR
+        snapshot.ocr_mean_confidence = 71
+        doubt = ReviewQueueItem(
+            kind=ReviewKind.EXTRACTION,
+            reason=f"normalising snapshot {snapshot.id} needs a human",
+            payload={"stage": "normalise", "snapshot_id": snapshot.id, "url": snapshot.url,
+                     "reasons": ["page 1: OCR confidence 67 is below 85"]},
+        )  # fmt: skip
+        s.add(doubt)
+        s.commit()
+        doubt_id = doubt.id
+
+    html = admin.get(f"/admin/stavka/{written.review_item_id}").get_data(as_text=True)
+    assert "Текстот е прочитан со OCR</strong>, сигурност 71" in html
+
+    assert READ_WITH_DOUBT in admin.get("/admin/").get_data(as_text=True)
+    assert READ_WITH_DOUBT in admin.get(f"/admin/stavka/{doubt_id}").get_data(as_text=True)

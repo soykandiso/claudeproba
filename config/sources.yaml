@@ -58,8 +58,9 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: no terms published; attachments on portal.mdt.gov.mk
+    # Built in P1 s18 (16.09.2026): app/ingestion/sources/economy.py.
     priority: 4
-    active: false
+    active: true
 
   - slug: skopje
     name_mk: Град Скопје

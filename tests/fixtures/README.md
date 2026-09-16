@@ -17,6 +17,7 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 | `economy/call-2.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-zajaknuvanje-na-sorbotkata-… (open, deadline 15.09.2026) |  | `d0419993e1d2f3f2…` |
 | `economy/call-3-javen-povik.docx` | https://portal.mdt.gov.mk/post-body-files/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii-file-tw5n.docx | main call document is DOCX | `85f0155d8d4cab25…` |
 | `economy/call-3.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii (closed 30.06.2026) |  | `fd9b9232ffaf0f00…` |
+| `economy/listing-javni-oglasi-empty.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi | retrieved 16.09.2026: "Во моментот нема активни јавни огласи" | `d639c7759baf06e0…` |
 | `economy/listing-javni-oglasi.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi | retrieved 12.09.2026 | `852b4aadcf5263ee…` |
 | `economy/listing-zavrseni.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/zavrseni-javni-oglasi | retrieved 12.09.2026 | `0248f8160ab29962…` |
 | `eu_portal/search-open-sme.json` | POST https://api.tech.ec.europa.eu/search-api/prod/rest/search?apiKey=SEDIA&text=SME (open+forthcoming; trimmed to 5 results) |  | `a7efddd1aa9922eb…` |

@@ -101,6 +101,9 @@
       {% if row.holds %}
       <p class="small"><span class="cite-mark">Цитатот стои дословно во документот</span>, снимка <span class="id">{{ c.snapshot_id }}</span>, знаци <span class="id">{{ c.quote_start }}–{{ c.quote_end }}</span>{% if c.confidence is not none %}, сигурност {{ '%.2f'|format(c.confidence) }}{% endif %}</p>
       <div class="document document--context document--lines">{{ row.context }}</div>
+      {% if row.snapshot and row.snapshot.text_source and row.snapshot.text_source.value in ('ocr', 'mixed') %}
+      <p class="small"><strong>Текстот е прочитан со OCR</strong>{% if row.snapshot.ocr_mean_confidence is not none %}, сигурност {{ '%.0f'|format(row.snapshot.ocr_mean_confidence) }}{% endif %}. Цитатот е дословен во OCR-текстот, не нужно во оригиналот: споредете со <a class="break" href="{{ row.snapshot.url }}" rel="noopener noreferrer" target="_blank">документот</a>.</p>
+      {% endif %}
       {% else %}
       <div class="notice stack"><p><strong>Цитатот не стои на запишаното место во документот.</strong> Поправете го цитатот или отстранете го условот.</p>{% if c.source_quote %}<p class="break">„{{ c.source_quote }}“</p>{% endif %}</div>
       {% endif %}

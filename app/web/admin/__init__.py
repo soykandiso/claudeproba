@@ -48,6 +48,10 @@ STAGE_LABELS = {
     review.MANUAL_ENTRY: "Рачен внес без повик за објава",
 }
 
+# A normalise item whose snapshot kept its text was read, with doubt: low OCR
+# confidence (app/ingestion/normalise/snapshot.py). Extraction went ahead anyway.
+READ_WITH_DOUBT = "Прочитано со OCR, со ниска сигурност"
+
 MANUAL_OUTCOMES = {
     manual.FETCH_FAILED: "Адресите не можеа да се преземат.",
     manual.PROCESSING_FAILED: "Документите се преземени, но повикот не можеше да се обработи.",
@@ -211,7 +215,7 @@ def queue():
             decided=decided,
             titles=titles,
             stage_of=review.stage_of,
-            stage_labels=STAGE_LABELS,
+            stage_labels={item.id: _stage_label(db, item) for item in pending + decided},
             state_labels=STATE_LABELS,
         )
 
@@ -234,6 +238,15 @@ def _titles(db, items) -> dict[int, str]:
     return titles
 
 
+def _stage_label(db, item) -> str:
+    stage = review.stage_of(item)
+    if stage == review.NORMALISE:
+        snapshot = db.get(RawSnapshot, (item.payload or {}).get("snapshot_id") or 0)
+        if snapshot is not None and snapshot.normalised_text is not None:
+            return READ_WITH_DOUBT
+    return STAGE_LABELS.get(stage, stage)
+
+
 @bp.get("/stavka/<int:item_id>")
 def item(item_id: int):
     with _sessions()() as db:
@@ -247,7 +260,7 @@ def _render_item(db, item, *, error: str | None = None, open_form: str | None = 
     context = {
         "item": item,
         "stage": stage,
-        "stage_label": STAGE_LABELS.get(stage, stage),
+        "stage_label": _stage_label(db, item),
         "state_label": STATE_LABELS[item.state],
         "payload": payload,
         "call": call,
@@ -280,6 +293,7 @@ def _render_item(db, item, *, error: str | None = None, open_form: str | None = 
                         criterion.quote_end,
                     ),
                     "values": ", ".join((criterion.value_json or {}).get("values") or []),
+                    "snapshot": snapshot,
                 }
             )
         cited = []

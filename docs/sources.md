@@ -243,3 +243,29 @@ existed for.
 - **Live check, 16.09.2026:** 41 requests (2 search pages, 39 topics), all 39 topics normalised
   without review; rendered text 2.039 to 19.428 characters, median 6.702. Under 4 minutes at one
   request per 5 s.
+
+### 6.7 Economy ministry, as built — 16.09.2026 (P1 s18)
+
+`app/ingestion/sources/economy.py`. No change outside `app/ingestion/sources/` and
+`config/sources.yaml`.
+
+- **The listing is calls only, and can be empty.** On 16.09.2026 it read "Во моментот нема активни
+  јавни огласи": both calls captured on 13.09 had closed on 15.09 and moved to "Завршени". No rows
+  with that message is a quiet source; no rows without it fails the run. A row is a link to a page
+  under `/javni-objavi/javni-oglasi/`, which leaves the menu out. The closed listing also carries
+  national awards ("Национална награда…") and an EU call advertised on the ministry's behalf
+  (EISMEA): extraction decides what is a funding call, and the institution comes from the page.
+- **The document is the "Јавен повик" attachment only.** Forms ("Барање", "Образец…") are templates
+  and often legacy `.doc`, which the normaliser refuses; they go into the review item's listing.
+- **Livewire regenerates a CSRF token and component snapshots on every request.** Two fetches five
+  seconds apart differed only there; `significant` strips them.
+- **Link labels split digits across spans** ("202<span>6</span>"), as on AV (§6.3).
+- **The call PDFs are bilingual, Macedonian and Albanian, with no text layer.** A live 12-page call
+  took 99 s to OCR in the worker. Tesseract's `mkd` model reads the Macedonian cleanly (median word
+  confidence 92) and turns the Albanian into Cyrillic nonsense at confidence 0 ("ЕКопотте" for
+  Ekonomisë), so every page's mean lands at 67–75, under the D9 threshold of 85. The pipeline still
+  extracts (text read with doubt is kept), but **every Economy call also raises an OCR-doubt review
+  item**, and extraction sees the garbled Albanian too. The admin labels those items "read with
+  doubt" and marks each OCR quote. The fix belongs to the normaliser, not this fetcher: judge
+  confidence over the Macedonian part only, or evaluate `mkd+sqi` against the D9 finding that adding
+  a Latin-script model corrupted Cyrillic. Needs a decision and a test set (`decisions.md` D9).

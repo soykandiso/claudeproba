@@ -43,7 +43,7 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 15 | Admin review queue UI (extraction items) — *built 16.09.2026: `/admin`, not registered in production until operator sign-in (`decisions.md` D11); approval fills the stage-1 prefilter columns* | Approve / edit / reject works; only approved calls get `is_published = true` |
 | 16 | Manual source entry (`access_method='manual'`) — *built 16.09.2026: `/admin/rachen-vnes` queues an RQ job, `flask ingest manual` runs it now; every entry answers in the review queue* | Paste a URL → snapshot → extraction → review, same citation quality |
 | 17 | Агенција за вработување fetcher — *built in s11; this slot goes to FITR once it is reachable. 16.09.2026: FITR still times out (`sources.md` §6.1); slot deferred, P1 continues with s18* | Calls in registry with citations |
-| 18 | Министерство за економија fetcher | Calls in registry; news items correctly *not* ingested |
+| 18 | Министерство за економија fetcher — *built 16.09.2026: call text only (forms listed for the reviewer); bilingual MK/AL PDFs OCR at mean confidence ~70, so each call also raises an OCR-doubt item (`sources.md` §6.7)* | Calls in registry; news items correctly *not* ingested |
 | 19 | Град Скопје fetcher | Calls in registry; the fetcher is configurable enough that a second municipality is config, not code |
 | 20 | АФПЗРР / IPARD fetcher (hardest parse, PDF tables) | Calls in registry; tabular eligibility extracted or explicitly routed to manual review |
 | 21 | **Demand test** — landing page, email capture, a deep report offered at a real price and fulfilled *by hand* | Page live; ≥20 emails captured **or** a clear negative signal; ≥5 prospects have given you a yes or a no at the real price |
