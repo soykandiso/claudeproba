@@ -121,7 +121,8 @@ this — and the firewall rules on the VPS — can reference it by a stable name
 
 ```bash
 flask ingest sync-sources                 # config/sources.yaml → source_feed
-flask ingest run <slug>                   # crawl a source with its fetcher
+flask ingest due                          # what cron runs: every active source not run in 20 h
+flask ingest run <slug>                   # crawl one source; new calls → unpublished + review queue
 flask ingest snapshot <slug> <url>        # fetch one URL and store it, for checks
 flask ingest normalise                    # stored snapshots → text for citations (OCR if needed)
 flask ingest extract --snapshot-id N      # one call's documents → CallExtraction (needs ANTHROPIC_API_KEY)
@@ -129,6 +130,12 @@ flask ingest extract --snapshot-id N      # one call's documents → CallExtract
 
 In the dev stack, prefix with `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web`.
 Every request carries `grantbot/0.1 (+contact URL)`, obeys robots.txt and waits 5 s per host.
+
+`run` and `due` fetch, normalise, extract and write each call the fetcher found. A call is written
+unpublished, with cited unapproved criteria and one review item; anything the pipeline cannot vouch
+for (unreadable document, invalid model output, a quote not found verbatim) becomes a review item
+instead of a call. Extraction needs `ANTHROPIC_API_KEY`; without it, changed calls are reported as
+errors and retried on the next run.
 
 ## Configuration
 

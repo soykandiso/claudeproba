@@ -1,5 +1,6 @@
 """Normalising stored snapshots: the database side of the normaliser."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from sqlalchemy import select
@@ -27,21 +28,26 @@ def normalise_snapshot(
     *,
     ocr: TesseractOcr | None = None,
     html_root: str | None = None,
+    unwrap: Callable[[bytes, str | None], tuple[bytes, str | None]] | None = None,
 ) -> Outcome:
     """Fill normalised_text once. Anything uncertain goes to review; nothing is dropped.
 
     A document that cannot be read at all leaves normalised_text empty and creates
     a review item. A document that was read but with doubt (low OCR confidence)
     keeps its text -- a reviewer needs something to look at -- and also creates one.
+
+    `unwrap` is the source's Fetcher.unwrap, for responses that carry the document
+    inside a wrapper (AV serves HTML inside JSON).
     """
     if snapshot.normalised_text is not None:
         # Never rewritten: evidence rows may already cite these offsets.
         return Outcome(snapshot.id, ok=True, detail="already normalised")
 
     try:
-        result = normalise(
-            store.get(snapshot.storage_key), snapshot.content_type, ocr=ocr, html_root=html_root
-        )
+        content, content_type = store.get(snapshot.storage_key), snapshot.content_type
+        if unwrap is not None:
+            content, content_type = unwrap(content, content_type)
+        result = normalise(content, content_type, ocr=ocr, html_root=html_root)
     except (NormaliseError, OSError) as exc:
         item = _review(session, snapshot, [f"{type(exc).__name__}: {exc}"])
         return Outcome(snapshot.id, ok=False, review_item_id=item.id, detail=str(exc))

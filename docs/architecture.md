@@ -85,7 +85,7 @@
 
 | Component | Responsibility | Notes |
 |---|---|---|
-| **Scheduler** | Host `cron` fires `flask ingest run --source=<slug>` on each source's cadence | Cron, not an in-process scheduler. It survives app restarts and is inspectable with `crontab -l`. |
+| **Scheduler** | Host `cron` fires `flask ingest due` every 4 hours; it runs each active source whose last run failed or is over 20 hours old (`ops/cron.d/grants`) | Cron, not an in-process scheduler. It survives app restarts and is inspectable with `crontab -l`. |
 | **Fetcher** | One small class per source. HTTP via `httpx` with an honest User-Agent (`grantbot/1.0 (+https://<domain>/crawler; contact@<domain>)`), per-source rate limit, `robots.txt` respected | No browser in P1. See §9.4. |
 | **Snapshot store** | Writes raw bytes once under `snapshots/<source>/<sha256>` on a Docker volume, copied off-site nightly by `ops/backup.sh` with the same `rclone` remote as the database backups; records hash, URL, HTTP status, byte length, `fetched_at` and `last_seen_at` in Postgres | Bytes out of the database keeps nightly dumps small and restores fast. A directory rather than an S3 API: content-addressed files never change, so an incremental copy gives the same off-site guarantee without an S3 client or a MinIO container. |
 | **Change detector** | Compares content hash to the last snapshot for that URL. Unchanged → stop, costs nothing | This is the single biggest cost control in the system. |

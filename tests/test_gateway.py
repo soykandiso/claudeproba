@@ -10,7 +10,7 @@ from pathlib import Path
 import psycopg
 import pytest
 from pydantic import BaseModel, Field
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, delete, func, select
 from sqlalchemy.orm import sessionmaker
 
 from app.ai.gateway import (
@@ -82,7 +82,15 @@ def session_factory():
     engine = create_engine(settings.sqlalchemy_url)
     connection = engine.connect()
     transaction = connection.begin()
-    yield sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
+    factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
+    with factory() as s:
+        # Real runs leave audit rows and review items in the development database;
+        # these tests count them, so they start from none (all rolled back below).
+        s.execute(delete(ModelCallPayload))
+        s.execute(delete(ModelCall))
+        s.execute(delete(ReviewQueueItem))
+        s.commit()
+    yield factory
     transaction.rollback()
     connection.close()
     engine.dispose()

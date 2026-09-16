@@ -36,13 +36,13 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 8 | Snapshot store, fetcher base class, change detector | Fetching one URL twice creates one snapshot row; bytes land in object storage; second fetch spends zero tokens |
 | 9 | Normaliser: HTML (`selectolax`) and PDF (`pypdf`/`pdfplumber`) with **character-offset preservation** | A known quote's `(start, end)` in `normalised_text` round-trips to exactly that text |
 | 10 | Extraction prompt v1 + `CallExtraction` schema | On 3 FITR fixtures, criteria extract with citations; a malformed response lands in the review queue |
-| 11 | **FITR fetcher, end to end** | **Brief's own P1 criterion:** a newly published FITR call is in the database within 24 hours, with a snapshot and working citations |
+| 11 | **FITR fetcher, end to end** — *built for AV instead (16.09.2026): FITR unreachable, `sources.md` §6.1* | **Brief's own P1 criterion:** a newly published FITR call is in the database within 24 hours, with a snapshot and working citations |
 | 12 | Chunker, embedder, hybrid retrieval query (vector + trigram) | A clause retrieved by paraphrase appears in the top 3 |
 | 13 | EU Funding & Tenders fetcher | Same pipeline, different access method. Any interface change this forces is the point of building it second |
 | 14 | Source health, staleness SLA, alerting, external heartbeat | Break a source deliberately in staging → alert reaches you **outside the app** within its SLA |
 | 15 | Admin review queue UI (extraction items) | Approve / edit / reject works; only approved calls get `is_published = true` |
 | 16 | Manual source entry (`access_method='manual'`) | Paste a URL → snapshot → extraction → review, same citation quality |
-| 17 | Агенција за вработување fetcher | Calls in registry with citations |
+| 17 | Агенција за вработување fetcher — *built in s11; this slot goes to FITR once it is reachable* | Calls in registry with citations |
 | 18 | Министерство за економија fetcher | Calls in registry; news items correctly *not* ingested |
 | 19 | Град Скопје fetcher | Calls in registry; the fetcher is configurable enough that a second municipality is config, not code |
 | 20 | АФПЗРР / IPARD fetcher (hardest parse, PDF tables) | Calls in registry; tabular eligibility extracted or explicitly routed to manual review |

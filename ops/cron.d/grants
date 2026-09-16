@@ -11,9 +11,10 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Nightly backup. Encrypts, uploads off-site, prunes, pings the heartbeat.
 15 3 * * *  root  cd /srv/grants && ./ops/backup.sh >> /var/log/grants-backup.log 2>&1
 
-# Ingestion. Per-source cadence is configured in config/sources.yaml; this wakes
-# the scheduler, which decides what is actually due. Arrives in P1.
-# 0 */4 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest due >> /var/log/grants-ingest.log 2>&1
+# Ingestion. Every 4 hours `flask ingest due` runs each active source whose last
+# run failed or is more than 20 hours old: about once a day when healthy, retried
+# at the next wake-up when not. New calls are written unpublished and queued for review.
+0 */4 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest due >> /var/log/grants-ingest.log 2>&1
 
 # Source staleness check. A dead scraper is the primary business failure mode,
 # so this alerts independently of the ingestion run that may itself be broken.

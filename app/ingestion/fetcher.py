@@ -1,11 +1,13 @@
 """The fetcher base class: one small subclass per source.
 
 A subclass implements `crawl(ctx)`, calling `ctx.fetch()` for each thing it wants
--- usually a listing, then the items the listing links to. Everything else is the
+-- usually a listing, then the items the listing links to -- and `ctx.found_call()`
+for each call, naming the snapshots that are its documents. Everything else is the
 base class's job: the polite client configured from the source's row, the
 ingestion_run record, snapshot storage and change detection, source health, and
 committing each snapshot as soon as it is stored, so a crawl that dies halfway
-keeps what it already fetched.
+keeps what it already fetched. What then happens to a found call (normalise,
+extract, write) is app/ingestion/pipeline.py, the same for every source.
 
 Adding a source means a module in app/ingestion/sources/ and an entry in
 config/sources.yaml, nothing else (CLAUDE.md). If a source needs more, the
@@ -39,6 +41,19 @@ class Fetched:
         return self.recorded.changed
 
 
+@dataclass(frozen=True)
+class FoundCall:
+    """One call a crawl found, and the snapshots that are its documents.
+
+    `listing` is what the source's own listing says about the call (dates, audience),
+    kept for the reviewer: it is not citable text, so it never becomes a claim.
+    """
+
+    public_url: str  # where a person can read the call; shown next to every citation
+    snapshot_ids: tuple[int, ...]  # the primary document first
+    listing: dict[str, str] = field(default_factory=dict)
+
+
 @dataclass
 class CrawlContext:
     source: SourceFeed
@@ -48,6 +63,7 @@ class CrawlContext:
     _store: SnapshotStore
     _significant: Significant = all_bytes
     changed: list[Fetched] = field(default_factory=list)
+    found: list[FoundCall] = field(default_factory=list)
 
     def fetch(self, request: Request | str) -> Fetched:
         if isinstance(request, str):
@@ -62,9 +78,33 @@ class CrawlContext:
         self._session.commit()
         return fetched
 
+    def found_call(
+        self, public_url: str, documents: list[Fetched], listing: dict[str, str] | None = None
+    ) -> None:
+        if not documents:
+            raise ValueError("a found call needs at least one document")
+        ids = tuple(doc.recorded.snapshot.id for doc in documents)
+        self.found.append(FoundCall(public_url, ids, dict(listing or {})))
+
 
 class Fetcher(ABC):
     slug: ClassVar[str]
+
+    listing_is_complete: ClassVar[bool] = False
+    """True when one crawl sees every open call the source has.
+
+    Only then can a call missing from a successful crawl be closed. A source that
+    paginates, or lists only recent items, leaves this False.
+    """
+
+    def unwrap(self, content: bytes, content_type: str | None) -> tuple[bytes, str | None]:
+        """The document inside a stored response, for a source that wraps it.
+
+        The snapshot keeps the bytes as served; the normaliser reads what this
+        returns. Must be deterministic, like the normaliser itself. Raise
+        NormaliseError when the wrapper is not the expected shape.
+        """
+        return content, content_type
 
     def html_root(self, url: str) -> str | None:
         """CSS selector for the content area of this source's HTML pages at `url`.
@@ -90,6 +130,7 @@ class RunResult:
     run_id: int
     ok: bool
     changed: list[Fetched]
+    found: list[FoundCall]
     error: str | None
 
 
@@ -158,4 +199,6 @@ def run_fetcher(
             health.consecutive_failures = (health.consecutive_failures or 0) + 1
             health.last_error = error
         session.commit()
-        return RunResult(run_id=run.id, ok=error is None, changed=ctx.changed, error=error)
+        return RunResult(
+            run_id=run.id, ok=error is None, changed=ctx.changed, found=ctx.found, error=error
+        )

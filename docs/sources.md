@@ -20,16 +20,18 @@ the proven pattern.
 
 | # | Source | Segment | Access (observed) | Legal check | Cadence (observed) | Parsing difficulty | Priority |
 |---|--------|---------|-------------------|-------------|--------------------|--------------------|----------|
-| 1 | **ФИТР** — Фонд за иновации и технолошки развој (`fitr.mk`) | Startups / tech | HTML listing → per-call page + PDF guidelines `UNVERIFIED` — **host did not respond** (§6.1) | robots + ToS `UNVERIFIED` | Bursty: several calls/year, clustered `UNVERIFIED` | **Medium** `UNVERIFIED` | **1** |
+| 1 | **ФИТР** — Фонд за иновации и технолошки развој (`fitr.mk`) | Startups / tech | HTML listing → per-call page + PDF guidelines `UNVERIFIED` — **host did not respond** (§6.1) | robots + ToS `UNVERIFIED` | Bursty: several calls/year, clustered `UNVERIFIED` | **Medium** `UNVERIFIED` | ~~1~~ **3** (§6.1) |
 | 2 | **EU Funding & Tenders Portal** (Horizon Europe, SMP, IPA III) | All / international | **JSON search API** (`api.tech.ec.europa.eu/search-api`, public key `SEDIA`) + per-topic JSON (`…/data/topicDetails/<id>.json`). No HTML scraping needed | robots: portal paths allowed. Reuse terms not yet read — P3 s43 | Continuous: 1.405 open/forthcoming topics on 13.09.2026 | **Low** for metadata. Eligible countries live in the linked call-document PDF, not the JSON | **2** |
-| 3 | **Агенција за вработување на РСМ** (`av.gov.mk`) | SME employment | **JSON endpoint** behind the listing: `POST /services/ServiceJobAnnouncements.asmx/GetActiveEmploymentMeasures` (full archive since 2016) and `…DescriptionForBusinessMk` with `{detailId}` (full call text as HTML). The HTML listing itself is empty without JavaScript | robots allows `/services/`; **disallows `*.pdf`**, which the JSON makes unnecessary. No ToS published | 20–44 announcements/year (2016–2025); 10 so far in 2026. Peaks May–June and September | **Low-medium** — clean JSON; description HTML splits numbers across spans (§6.3) | 3 |
+| 3 | **Агенција за вработување на РСМ** (`av.gov.mk`) | SME employment | **JSON endpoint** behind the listing: `POST /services/ServiceJobAnnouncements.asmx/GetActiveEmploymentMeasures` (full archive since 2016) and `…DescriptionForBusinessMk` with `{detailId}` (full call text as HTML). The HTML listing itself is empty without JavaScript | robots allows `/services/`; **disallows `*.pdf`**, which the JSON makes unnecessary. No ToS published | 20–44 announcements/year (2016–2025); 10 so far in 2026. Peaks May–June and September | **Low-medium** — clean JSON; description HTML splits numbers across spans (§6.3) | ~~3~~ **1** — built in P1 s11 (§6.1) |
 | 4 | **Министерство за економија и труд** (`www.economy.gov.mk`, attachments on `portal.mdt.gov.mk`) | SME / trade | Server-rendered HTML: "Јавни огласи" and "Завршени јавни огласи" are separate listings, so call-vs-news is **not** a problem. Call page = title, deadline, attachment links. Call text is in PDF or DOCX attachments | robots: only `/login` disallowed on both hosts. No ToS published | ~14 closed calls with deadlines in 2024–2026 (3 / 8 / 3); archive starts 2024. Deadlines cluster Aug and Nov | **High** — both open calls' PDFs have **no text layer** (glyphs exported as images); one call is DOCX only (§6.2) | 4 |
 | 5 | **Град Скопје** (`skopje.gov.mk`) | NGO / municipal | Server-rendered HTML "Јавни повици", each entry a direct link to a PDF. Only a deadline ("Отворен до") is shown, no publication date. Procurement tenders are mixed in | No robots.txt (404). No ToS published | ~40 entries over the listed year (deadlines 31.10.2025–30.11.2026) | **High** — all three sampled PDFs are **scanner output with no text** (§6.2). Tenders must be filtered out | 5 |
 | 6 | **АФПЗРР / IPARD** (`www.ipardpa.gov.mk` — bare domain returns 404 on every path) | Agriculture / rural | Server-rendered HTML. "Програма 2021-2027" lists calls; each call page links a ПРЕТХОДНА НАЈАВА, then the call (short and long version) and annexes | No robots.txt (404). "© All rights reserved" footer, no ToS | IPARD 2021–2027: 1 call in 2023, 2 in 2024, 3 in 2025, none yet in 2026. National-programmes tab empty on 13.09.2026 | **High** — advance notices have text; both call versions of 01/2025 have **no text layer** (§6.2) | 6 |
 
 ### Why this six, and why in this order
 
-- **FITR and the EU portal are built first, together.** They are the two extremes: one hard HTML
+- **FITR and the EU portal are built first, together.** *(Superseded 16.09.2026: FITR is unreachable
+  from a datacenter, so AV — also a domestic source, and JSON rather than HTML — took its slot. See
+  §6.1.)* They are the two extremes: one hard HTML
   scrape of a domestic site, one structured international feed. Getting the fetcher, normaliser and
   extractor interfaces to serve both is what proves the abstraction. If they only ever served FITR,
   source #2 would break them.
@@ -122,6 +124,11 @@ ranges. That matters beyond reconnaissance: **the production crawler also runs f
 Before building the FITR fetcher (P1 s11), check from a Macedonian home connection and from the EU
 VPS. If the VPS is blocked too, FITR becomes a `manual` source (§3) or needs to be asked to allow
 the crawler — and the priority-1 slot should go to AV, which has the cleanest access of the six.
+
+**16.09.2026:** still timing out from the Codespace, and there is no EU VPS yet to test from (P0.5 s4
+not done). AV took the priority-1 slot and is the fetcher built end to end in P1 s11
+(`app/ingestion/sources/av.py`). FITR stays in `config/sources.yaml` at priority 3, inactive, until it
+has been checked from a Macedonian connection and from the VPS.
 
 ### 6.2 Most domestic call documents have no text layer
 

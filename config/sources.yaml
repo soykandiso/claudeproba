@@ -35,8 +35,10 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: no terms published; robots disallows *.pdf, JSON endpoint allowed
-    priority: 3
-    active: false
+    # Priority 1 since 16.09.2026: FITR still does not answer from a datacenter,
+    # so AV took the first end-to-end fetcher slot (docs/sources.md §6.1).
+    priority: 1
+    active: true
 
   - slug: economy
     name_mk: Министерство за економија и труд
@@ -91,5 +93,5 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: UNVERIFIED -- host did not respond from a datacenter (sources.md §6.1)
-    priority: 1
+    priority: 3
     active: false

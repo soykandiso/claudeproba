@@ -8,13 +8,13 @@ scripted with the hand-written replies in tests/cassettes/extract_call/.
 import json
 
 import pytest
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import sessionmaker
 
 from app.ai.gateway import Gateway, InvalidModelOutput, ProviderReply
 from app.config import load_settings
 from app.ingestion.extract import TASK, Document, extract_call
-from app.models import ModelCall, ReviewQueueItem
+from app.models import ModelCall, ModelCallPayload, ReviewQueueItem
 from app.models.enums import ReviewKind
 from tests.test_extract_schema import CASES, cassette, fixture_text
 from tests.test_gateway import DATABASE_AVAILABLE
@@ -43,7 +43,15 @@ def session_factory():
     engine = create_engine(settings.sqlalchemy_url)
     connection = engine.connect()
     transaction = connection.begin()
-    yield sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
+    factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
+    with factory() as s:
+        # Real runs leave audit rows and review items in the development database;
+        # these tests count them, so they start from none (all rolled back below).
+        s.execute(delete(ModelCallPayload))
+        s.execute(delete(ModelCall))
+        s.execute(delete(ReviewQueueItem))
+        s.commit()
+    yield factory
     transaction.rollback()
     connection.close()
     engine.dispose()

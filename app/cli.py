@@ -1,5 +1,6 @@
 """Operator commands. Cron runs these as `docker compose exec web flask ...`."""
 
+import datetime as dt
 import sys
 
 import click
@@ -12,6 +13,7 @@ from app.ingestion.extract import Document, extract_call
 from app.ingestion.fetcher import CrawlContext, Fetcher, run_fetcher
 from app.ingestion.normalise.pdf import TesseractOcr
 from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapshots
+from app.ingestion.pipeline import ERROR, UNCHANGED, due_sources, run_source
 from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers
@@ -40,15 +42,46 @@ def sync_sources_command():
     click.echo("\n".join(changes) or "source_feed already matches config/sources.yaml")
 
 
-@ingest.command("run", help="Crawl one source with its registered fetcher.")
+@ingest.command(
+    "run",
+    help="Crawl one source, then normalise, extract and write every call it found "
+    "(unpublished, queued for review).",
+)
 @click.argument("slug")
-def run_command(slug):
+@click.option(
+    "--allow-inactive", is_flag=True, help="Run a source still `active: false`, to check it."
+)
+def run_command(slug, allow_inactive):
     available = fetchers()
     if slug not in available:
         raise click.ClickException(
             f"no fetcher for {slug!r}; have: {', '.join(available) or 'none'}"
         )
-    _run(available[slug]())
+    if not _run_source(available[slug](), allow_inactive=allow_inactive):
+        sys.exit(1)
+
+
+@ingest.command(
+    "due", help="Run every active source whose last run failed or is more than 20 hours old."
+)
+def due_command():
+    settings = _settings()
+    available = fetchers()
+    with session_factory(settings)() as session:
+        slugs = due_sources(session, dt.datetime.now(dt.UTC))
+    failed = False
+    for slug in slugs:
+        if slug not in available:
+            # Active in config but no code: a deploy mistake, and loud on purpose.
+            click.echo(f"{slug}: active in config/sources.yaml but has no fetcher", err=True)
+            failed = True
+            continue
+        click.echo(f"== {slug}")
+        failed |= not _run_source(available[slug]())
+    if not slugs:
+        click.echo("nothing due")
+    if failed:
+        sys.exit(1)
 
 
 @ingest.command(
@@ -94,8 +127,15 @@ def normalise_command(snapshot_id, limit):
         registered = fetchers()
         for snapshot in snapshots:
             fetcher_cls = registered.get(session.get(SourceFeed, snapshot.source_feed_id).slug)
-            root = fetcher_cls().html_root(snapshot.url) if fetcher_cls else None
-            outcome = normalise_snapshot(session, store, snapshot, ocr=ocr, html_root=root)
+            fetcher = fetcher_cls() if fetcher_cls else None
+            outcome = normalise_snapshot(
+                session,
+                store,
+                snapshot,
+                ocr=ocr,
+                html_root=fetcher.html_root(snapshot.url) if fetcher else None,
+                unwrap=fetcher.unwrap if fetcher else None,
+            )
             session.commit()  # one document at a time: OCR is slow, keep what is done
             flag = f" -> review item {outcome.review_item_id}" if outcome.review_item_id else ""
             click.echo(f"snapshot {outcome.snapshot_id}: {outcome.detail}{flag}")
@@ -140,6 +180,36 @@ def extract_command(snapshot_ids):
         click.echo(f"-> review item {extraction.review_item_id}", err=True)
         sys.exit(1)
     click.echo(f"all {len(extraction.citations)} quotes located", err=True)
+
+
+def _run_source(fetcher: Fetcher, allow_inactive: bool = False) -> bool:
+    settings = _settings()
+    sessions = session_factory(settings)
+    result = run_source(
+        fetcher,
+        settings=settings,
+        sessions=sessions,
+        store=SnapshotStore(settings.snapshot_dir),
+        gateway=lambda: Gateway(sessions, AnthropicProvider()),
+        require_active=not allow_inactive,
+        ocr=TesseractOcr(),
+    )
+    run = result.run
+    click.echo(
+        f"ingestion_run {run.run_id}: fetch {'ok' if run.ok else 'FAILED'}, "
+        f"{len(run.changed)} changed, {len(run.found)} calls listed, {result.closed} closed"
+    )
+    if run.error:
+        click.echo(run.error, err=True)
+    for p in result.processed:
+        if p.outcome == UNCHANGED:
+            continue
+        where = f"call {p.call_id}" if p.call_id else "no call"
+        item = f", review item {p.review_item_id}" if p.review_item_id else ""
+        detail = f": {p.detail}" if p.detail else ""
+        line = f"  {p.outcome}: snapshots {list(p.found.snapshot_ids)}, {where}{item}{detail}"
+        click.echo(line, err=p.outcome == ERROR)
+    return result.ok
 
 
 def _run(fetcher: Fetcher, allow_inactive: bool = False) -> None:
