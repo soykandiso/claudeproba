@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 16.09.2026, after P1 s18, before P1 s19.
+**Last updated:** 16.09.2026, after P1 s19, before P1 s20.
 
 ---
 
@@ -22,7 +22,7 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy done. **Next: s19, Град Скопје** (scanned PDFs, tenders mixed into the listing: `sources.md` §1, §6.2–6.3) |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje done. **Next: s20, АФПЗРР / IPARD** (hardest parse: advance notice then call, PDFs without text layer, tabular eligibility; `sources.md` §1, §6.2–6.3) |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
@@ -39,6 +39,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | 16.09 | P1 s14 | `bc6848e` | `flask ingest health` + healthchecks.io; delivery drill waits for the VPS |
 | 16.09 | P1 s15 | `4ad9ef6` | `/admin` review queue; approval re-checks citations, fills prefilter columns. Not in production until D11 |
 | 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
+| 16.09 | P1 s19 | `git log --grep 'session 19'` | Skopje via generic `municipal.py` + `options` in sources.yaml (the one change outside sources/). Live: 1 open call, OCR 92.75 |
 | 16.09 | P1 s18 | `git log --grep 'session 18'` | Economy fetcher: call text only; empty listing is normal; Livewire tokens stripped. Found: bilingual MK/AL PDFs fail the D9 OCR confidence rule on every page |
 | 16.09 | P1 s17 | `git log --grep 'session 17'` | FITR re-checked from the host: still no TCP connection. Slot deferred, nothing built |
 | 16.09 | P1 s16 | `git log --grep 'session 16'` | Manual entry by URL: `/admin/rachen-vnes` → RQ job (the first one) → pipeline; failures answer in the queue. Live-checked through the real worker |
@@ -53,6 +54,8 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 - `app/retrieval/` — chunker, local embedder, hybrid search.
 - `app/matching/` — `operators.py` vocabulary, `hard_filter.py` interpreter + `prefilter_columns`,
   `taxonomy.py` verdicts. Scoring and verification are P2.
+- `app/ingestion/sources/economy.py`; `municipal.py` registers one fetcher per `sources.yaml` entry
+  with `options.kind: municipal_listing` (Skopje today).
 - `app/ingestion/sources/manual.py` — pasted URLs; `run_entry` (always answers in the queue),
   `job` (RQ), `enqueue`. The only RQ job so far; queue `ingest`.
 - `app/review/extraction.py` — every review decision. `app/web/admin/` only renders and posts
@@ -91,6 +94,8 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   delete what they need to start clean. **Clear `ModelCall`/`ModelCallPayload` in any fixture that
   scripts model replies**: the gateway's content-hash cache otherwise replays a stored reply
   (bit s15 after the dev DB held real calls).
+- **A backgrounded `pytest … | tail` always exits 0**: read the summary line for `failed`, never
+  the exit code.
 - The full suite takes several minutes (retrieval paraphrase tests embed with the local model): run it
   with `run_in_background` and wait on the notification.
 - CLI outside cron: `uv run flask --app "app:create_app()" ingest <command>`. Scripts that import
@@ -100,6 +105,11 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   (so `flask ingest health` reports AV failing; that is true).
 - **The chrome-devtools MCP cannot start here (no X server).** Visual checks use the Playwright
   headless shell and Node over CDP instead — see §7.
+- **Tests that quote OCR text use `RecordedOcr`** (`tests/test_extract_schema.py`), replaying a
+  recorded Tesseract output (`tests/fixtures/skopje/call-12149.ocr.json`); OCR differs between
+  Tesseract versions. Tesseract 5.3.4 with `mkd` is installed on the host and in the image.
+- Hand-written extraction cassettes live in `tests/cassettes/extract_call/`; adding one to `CASES`
+  in `test_extract_schema.py` also runs it through the scrubbing gateway and the retrieval tests.
 - Pillow is in the venv (`uv run python`), useful for cropping tall screenshots before reading them.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
 
@@ -108,8 +118,8 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 1. Code with docstrings that explain *why*, matching the surrounding style.
 2. Tests: unit tests without the database where possible; database tests via the rollback fixtures;
    acceptance of the roadmap row proven by a test whenever it can be.
-3. `uv run ruff check . && uv run ruff format --check .` and the full suite green (the one strict
-   `xfail` in `test_retrieval_paraphrase.py` is expected).
+3. `uv run ruff check . && uv run ruff format --check .` and the full suite green (the strict
+   `xfail`s listed in `KNOWN_MISSES` in `test_retrieval_paraphrase.py` are expected).
 4. UI touched → load the design-system skill first; afterwards the §7 check at 375/768/1440, fix,
    re-check. Keep `/demo/vodic` rows true.
 5. Docs in the same commit: roadmap row marker (*built dd.mm.yyyy: …*), README status line, and
@@ -167,7 +177,7 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   are incomplete by construction. **P2 s24 must not let such a call reach `eligible` or
   `likely_eligible`** (invariant 3); human approval is the only guard today.
 - **Cross-language retrieval**: a Macedonian label over an English quote retrieves poorly across
-  documents (strict xfail `CROSS_LANGUAGE_MISS`); P2 s30 decides the query for non-Macedonian text.
+  documents; standard clauses repeat across calls; a condition stated twice ranks its other chunk first. All three are strict xfails in `KNOWN_MISSES` (`tests/test_retrieval_paraphrase.py`); P2 s30 decides.
 - **Stage-1 SQL** (P2 s24) must treat the prefilter columns as a superset filter only
   (`hard_filter.prefilter_columns` docstring). `min/max_company_age_months` are exact numbers; how a
   banded profile is compared to them is s24's to get right.

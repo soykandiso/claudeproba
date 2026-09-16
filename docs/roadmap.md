@@ -44,7 +44,7 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 16 | Manual source entry (`access_method='manual'`) — *built 16.09.2026: `/admin/rachen-vnes` queues an RQ job, `flask ingest manual` runs it now; every entry answers in the review queue* | Paste a URL → snapshot → extraction → review, same citation quality |
 | 17 | Агенција за вработување fetcher — *built in s11; this slot goes to FITR once it is reachable. 16.09.2026: FITR still times out (`sources.md` §6.1); slot deferred, P1 continues with s18* | Calls in registry with citations |
 | 18 | Министерство за економија fetcher — *built 16.09.2026: call text only (forms listed for the reviewer); bilingual MK/AL PDFs OCR at mean confidence ~70, so each call also raises an OCR-doubt item (`sources.md` §6.7)* | Calls in registry; news items correctly *not* ingested |
-| 19 | Град Скопје fetcher | Calls in registry; the fetcher is configurable enough that a second municipality is config, not code |
+| 19 | Град Скопје fetcher — *built 16.09.2026 as `sources/municipal.py`: a municipality with the same page shape is an `options` block in `sources.yaml` (tested with a second, invented one)* | Calls in registry; the fetcher is configurable enough that a second municipality is config, not code |
 | 20 | АФПЗРР / IPARD fetcher (hardest parse, PDF tables) | Calls in registry; tabular eligibility extracted or explicitly routed to manual review |
 | 21 | **Demand test** — landing page, email capture, a deep report offered at a real price and fulfilled *by hand* | Page live; ≥20 emails captured **or** a clear negative signal; ≥5 prospects have given you a yes or a no at the real price |
 
@@ -77,7 +77,7 @@ each feature to its session. The demo was tried and approved on 16.09.2026; P1 c
 | 27 | Stage 2 scoring + `config/weights/v1.yaml` | Tier A green; rank quality ≥ 90%; **zero false `eligible`** |
 | 28 | Shortlist page: verdict badges, reasons, deadlines, `last_verified_at`, citation links | p50 latency < 3 s measured on the VPS |
 | 29 | Verification prompt, `VerificationResult` schema, verdict clamping, verbatim-quote check | Tier B green against cassettes; a paraphrased "quote" is rejected |
-| 30 | Retrieval tuning for verification — *includes the query for documents not in Macedonian: a Macedonian label over an English EU quote ranks other documents' clauses first (`CROSS_LANGUAGE_MISS` in `tests/test_retrieval_paraphrase.py`)* | Correct clause in top 6 for ≥ 90% of criteria |
+| 30 | Retrieval tuning for verification — *includes the query for documents not in Macedonian: a Macedonian label over an English EU quote ranks other documents' clauses first (`KNOWN_MISSES` in `tests/test_retrieval_paraphrase.py`, which also lists standard clauses repeated across calls and conditions stated twice in one call)* | Correct clause in top 6 for ≥ 90% of criteria |
 | 31 | Stage 3 orchestration on RQ | Enqueue → outcomes and evidence persisted for top 5 calls |
 | 32 | Report composer (MK prose) + banned-phrase lint + citation completeness check | Lint blocks a deliberately bad draft containing "гарантирано" |
 | 33 | Report review UI with the quote highlighted in the stored snapshot | You can approve or edit a full report in under 45 minutes |

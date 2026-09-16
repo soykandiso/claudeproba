@@ -13,6 +13,7 @@ the in-code citation check against real documents; they say nothing about how we
 | `economy-call-3.json` | `tests/fixtures/economy/call-3-javen-povik.docx` |
 | `av-measure-819.json` | `tests/fixtures/av/measure-819-business-mk.json` (the `d` field) |
 | `ipard-notice-03-2025.json` | `tests/fixtures/ipardpa/call-34-najava-03-2025.pdf` |
+| `skopje-call-12149.json` | `tests/fixtures/skopje/call-12149.pdf`, as read by the recorded OCR in `call-12149.ocr.json` |
 | `eu-digital-2026-skills-10-edtech.json` | `tests/fixtures/eu_portal/topic-digital-2026-skills-10-edtech.json`, as rendered by `EuPortalFetcher.unwrap` |
 
 The roadmap asked for three FITR fixtures; FITR did not respond during reconnaissance

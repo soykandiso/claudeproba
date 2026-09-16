@@ -73,8 +73,20 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: no robots.txt, no terms published; calls are scanned PDFs
+    # Built in P1 s19 (16.09.2026) as a configured municipal listing: another
+    # municipality with the same shape of page is a copy of this entry with its own
+    # selectors (app/ingestion/sources/municipal.py, docs/sources.md §6.8).
+    options:
+      kind: municipal_listing
+      listing_url: https://skopje.gov.mk/mk/apliciraj/javni-povici/
+      item: div.app-box
+      title: div.app-title a
+      deadline: div.app-year
+      attachments: div.app-text a
+      document_labels: [критериуми]
+      exclude_titles: [набавка]
     priority: 5
-    active: false
+    active: true
 
   - slug: ipard
     name_mk: Агенција за финансиска поддршка во земјоделството и руралниот развој

@@ -269,3 +269,29 @@ existed for.
   doubt" and marks each OCR quote. The fix belongs to the normaliser, not this fetcher: judge
   confidence over the Macedonian part only, or evaluate `mkd+sqi` against the D9 finding that adding
   a Latin-script model corrupted Cyrillic. Needs a decision and a test set (`decisions.md` D9).
+
+### 6.8 Skopje and municipal listings, as built — 16.09.2026 (P1 s19)
+
+`app/ingestion/sources/municipal.py`, one fetcher class registered per `sources.yaml` entry with
+`access_method: pdf_index` and an `options` block of `kind: municipal_listing` (listing URL, CSS
+selectors for the item, its title link, deadline and attachments, which attachment labels are call
+documents, which title words mean procurement). A second municipality whose page has that shape is
+a copy of the entry with its own selectors; a test builds one with entirely different markup.
+
+**The one change outside `sources/`** is `SourceEntry.options` in `app/ingestion/source_config.py`:
+a free-form block, validated by the fetcher that reads it and never written to the database. It is
+the smallest thing that lets configuration carry what differs between municipalities, and it is the
+abstraction change this session was expected to reveal.
+
+- **The listing is an archive of a year** (38 entries on 16.09.2026, deadlines 31.10.2025 to
+  30.11.2026, identical bytes on two fetches). Scope is "Отворен до" today or later in Skopje, so
+  a call leaves scope when its date passes and is closed.
+- **Only one funding call was open on 16.09.2026**: craft subsidies until 30.11.2026. Live OCR
+  read it at mean confidence 92.75 with no review flag (a Macedonian-only scan, unlike §6.7).
+- **Titles containing "набавка" are not fetched**: the two open tenders (RAR/ZIP dossiers) and a
+  closed call for an expert to evaluate procurements. Everything else goes to the model, which will
+  meet taxi licences, urban furniture locations and board nominations and should call them "not a
+  funding call"; a reviewer then closes them. Add words to `exclude_titles` only for the unmistakable.
+- **"Критериуми" attachments are documents of the call** (festival and project calls keep their
+  scoring criteria there); forms and the general rulebook ("Правилник") are listed for the reviewer.
+- The call document is linked from the listing itself, so its URL is also the public URL cited.

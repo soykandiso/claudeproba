@@ -2,6 +2,7 @@
 
 import datetime as dt
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
@@ -30,6 +31,9 @@ class SourceEntry(BaseModel):
     terms_note: str | None = None
     priority: int = 100
     active: bool = False
+    # Source-specific settings, read by the source's fetcher and never stored in the
+    # database (app/ingestion/sources/municipal.py validates its own).
+    options: dict[str, Any] = {}
 
 
 def load_sources(path: Path = DEFAULT_PATH) -> list[SourceEntry]:

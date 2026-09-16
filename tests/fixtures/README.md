@@ -34,6 +34,7 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 | `ipardpa/listing-ipard-povici.html` | https://www.ipardpa.gov.mk/mk/Home/JavniPovici/1 | retrieved 12.09.2026 | `a09ae608fc70c746…` |
 | `skopje/call-12094.pdf` | https://skopje.gov.mk/media/12094/javen-povik.pdf | scanned, no text layer | `ee9981aaf7683150…` |
 | `skopje/call-12134.pdf` | https://skopje.gov.mk/media/12134/јавен-повик-за-млади-за-2026-мкд.pdf | scanned, no text layer | `00241e5067576608…` |
+| `skopje/call-12149.ocr.json` | Tesseract 5.3.4 `mkd`, 300 dpi, over `skopje/call-12149.pdf` | **recorded 16.09.2026, not a source response**: replayed by `RecordedOcr` in tests, because OCR output varies between Tesseract versions | `926aceee5a51d288…` |
 | `skopje/call-12149.pdf` | https://skopje.gov.mk/media/12149/јавен-повик-субвенции-на-занаети.pdf | scanned, no text layer | `60df3a26f79d9ca7…` |
 | `skopje/listing-javni-povici.html` | https://skopje.gov.mk (Јавни повици) | retrieved 12.09.2026 | `cc0b271ce65da2c3…` |
 

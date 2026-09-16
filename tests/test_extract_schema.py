@@ -30,6 +30,9 @@ def fixture_text(name: str) -> str:
         return normalise_html(detail).text
     if name == "ipard-notice-03-2025":
         return normalise((FIXTURES / "ipardpa/call-34-najava-03-2025.pdf").read_bytes()).text
+    if name == "skopje-call-12149":
+        pdf = (FIXTURES / "skopje/call-12149.pdf").read_bytes()
+        return normalise(pdf, ocr=RecordedOcr("skopje/call-12149.ocr.json")).text
     if name == "eu-digital-2026-skills-10-edtech":
         from app.ingestion.sources.eu_portal import EuPortalFetcher
 
@@ -43,7 +46,33 @@ CASES = [
     "av-measure-819",
     "ipard-notice-03-2025",
     "eu-digital-2026-skills-10-edtech",
+    "skopje-call-12149",
 ]
+
+
+class RecordedOcr:
+    """Tesseract's output for a scanned fixture, recorded once (tests/fixtures/README.md).
+
+    OCR output differs between Tesseract versions, so tests that quote OCR text read
+    the recording instead of running the engine.
+    """
+
+    def __init__(self, recording: str):
+        self.data = json.loads((FIXTURES / recording).read_text(encoding="utf-8"))
+        self.engine = self.data["engine"]
+
+    def read_pages(self, pdf: bytes, page_numbers: list[int]) -> dict:
+        from app.ingestion.normalise.pdf import OcrPage
+
+        pages = self.data["pages"]
+        return {
+            n: OcrPage(
+                pages[str(n)]["text"],
+                pages[str(n)]["mean_confidence"],
+                pages[str(n)]["low_confidence_share"],
+            )
+            for n in page_numbers
+        }
 
 
 def cassette(name: str) -> str:

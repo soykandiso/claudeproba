@@ -72,11 +72,21 @@ EXACT = [
 ]
 
 
-# A Macedonian label over an English quote: across all four documents the label pulls
-# Macedonian exclusion clauses ahead. Searched within its own call, as production does,
-# the chunk is first; the quote alone is first either way (16.09.2026). P2 s30 decides
-# the query for documents not in Macedonian.
-CROSS_LANGUAGE_MISS = "4. Financial and operational capacity and exclusion"
+# Criteria whose chunk is not first, each for a reason production does not share or that
+# P2 s30 decides (16.09.2026). Strict: if one starts passing, the test says so.
+KNOWN_MISSES = {
+    # A Macedonian label over an English quote: across all documents the label pulls
+    # Macedonian exclusion clauses ahead. Within its own call, as production searches,
+    # the chunk is first; the quote alone is first either way.
+    "4. Financial and operational capacity and exclusion": "cross-language query",
+    # A standard required document, worded almost the same in the Economy call: first
+    # within its own call, second across documents.
+    "Тековна состојба од Централниот регистар на Република Северна Македонија не постара "
+    "од 6 (шест) месеци;": "the same standard clause in another call",
+    # The call states this condition twice; the other statement, without the OCR error
+    # "Дане", ranks first even within the call. Right clause, other chunk.
+    "Дане користеле средства од Град Скопје во тековната година;": "condition stated twice",
+}
 
 
 def verification_queries():
@@ -85,8 +95,8 @@ def verification_queries():
         reply = json.loads((CASSETTES / f"{name}.json").read_text(encoding="utf-8"))
         for criterion in reply["criteria"]:
             args = (name, f"{criterion['label_mk']} {criterion['quote']}", criterion["quote"])
-            if criterion["quote"] == CROSS_LANGUAGE_MISS:
-                reason = "cross-language query across documents; see CROSS_LANGUAGE_MISS"
+            if criterion["quote"] in KNOWN_MISSES:
+                reason = f"{KNOWN_MISSES[criterion['quote']]}; see KNOWN_MISSES"
                 yield pytest.param(*args, marks=pytest.mark.xfail(strict=True, reason=reason))
             else:
                 yield args
