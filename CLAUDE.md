@@ -110,6 +110,7 @@ six and later arrives as a separate scheduled container (`docs/architecture.md` 
 | Why is the schema shaped that way? | `docs/data-model.md` |
 | Where do calls come from? | `docs/sources.md` |
 | How does matching work? | `docs/matching.md` |
+| Where did the last session stop? What was learned? | `docs/handoff.md` — **read first when resuming**, update at the end of every session |
 | What am I building next? | `docs/roadmap.md` |
 | What could go wrong? | `docs/risks.md` |
 | What is still undecided? | `docs/decisions.md` |
