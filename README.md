@@ -12,7 +12,18 @@ the application documents. North Macedonia first, international programmes along
 Status: **P1 session 12** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV fetcher end to end, and chunking, local embeddings and hybrid
-retrieval. No matching or real UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
+retrieval. See [`docs/roadmap.md`](docs/roadmap.md).
+
+**Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
+database: profile, cited shortlist, report, order and proforma invoice, human review in an admin
+queue, document package draft and monitoring alerts. The stage-1 rule interpreter
+(`app/matching/hard_filter.py`), the verdict taxonomy and the banned-phrase lint are real code; the
+rest is simulated. `/demo/vodic` lists, feature by feature, what is real and which session makes the
+rest real. `/demo` is never registered in production.
+
+```bash
+uv run flask --app "app:create_app()" run   # then open http://127.0.0.1:5000/demo/vodic
+```
 
 ## Running it locally
 

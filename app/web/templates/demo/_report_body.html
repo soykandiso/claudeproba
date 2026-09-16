@@ -1,0 +1,38 @@
+{# The report's content: shared by the customer's copy and the reviewer's pre-delivery checks. #}
+{% import "demo/_macros.html" as ui with context %}
+{% set call = m.call %}
+<section class="stack-lg" aria-labelledby="crit-h">
+  <h2 id="crit-h">1. Услови од повикот</h2>
+  <div>
+    {% for r in m.results %}
+    <article class="criterion stack">
+      <span class="outcome">{{ criterion_labels[r.verdict] }}, {{ decided_by_labels[r.decision.decided_by] }}</span>
+      <h3 class="criterion__title">{{ r.criterion.label }}</h3>
+      {% if r.note %}<p class="soft">{{ r.note }}</p>{% endif %}
+      {% if r.citation %}{{ ui.excerpt(r.citation) }}{% else %}<p class="soft">Цитатот не можеше да се потврди во документот, па условот останува за проверка.</p>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="stack-lg" aria-labelledby="gaps-h">
+  <h2 id="gaps-h">2. Што треба да подготвите</h2>
+  <ol class="clauses">
+    {% if call.cofinancing_pct %}
+    <li><div class="stack"><h3>Сопствено учество од најмалку {{ call.cofinancing_pct }}%</h3><p class="soft">При барање од {{ call.max_eur|thousands }} EUR, фирмата обезбедува најмалку {{ (call.max_eur * call.cofinancing_pct / (100 - call.cofinancing_pct))|round|int|thousands }} EUR од сопствени средства.</p></div></li>
+    {% endif %}
+    {% for r in m.open_items %}
+    <li><div class="stack"><span class="outcome">{% if r.verdict == 'likely_eligible' %}Потврдете{% elif r.verdict == 'not_eligible' %}Не е исполнето{% else %}Проверете{% endif %}</span><h3>{{ r.criterion.label }}</h3>{% if r.note %}<p class="soft">{{ r.note }}</p>{% endif %}</div></li>
+    {% endfor %}
+    {% if not call.cofinancing_pct and not m.open_items %}
+    <li><div class="stack"><h3>Нема отворени услови</h3><p class="soft">Сите услови што може да се проверат се исполнети. Подгответе ги документите од делот 3.</p></div></li>
+    {% endif %}
+  </ol>
+</section>
+
+<section class="stack-lg" aria-labelledby="docs-h">
+  <h2 id="docs-h">3. Документи што се бараат</h2>
+  <ul class="checklist">
+    {% for d in call.documents %}<li>{{ d }}</li>{% endfor %}
+  </ul>
+</section>

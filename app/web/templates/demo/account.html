@@ -1,0 +1,61 @@
+{% extends "demo/base.html" %}
+{% block title %}Сметка{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Сметка</h1>
+    <p class="soft">Во демото нема најава. Профилот и нарачките се чуваат во колачето на овој прелистувач.</p>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="profile-h">
+    <h2 id="profile-h">Профил на фирмата</h2>
+    {% if profile %}
+    <dl class="facts facts--wide">
+      <div><dt>Вид на субјект</dt><dd>{{ profile.form_label }}</dd></div>
+      <div><dt>Дејност</dt><dd>{{ profile.answers.nace or 'не е внесена' }}</dd></div>
+      <div><dt>Општина</dt><dd>{{ profile.municipality }}</dd></div>
+      <div><dt>Основана</dt><dd>{{ profile.answers.founded }}</dd></div>
+      <div><dt>Вработени</dt><dd>{{ profile.employees_label }}</dd></div>
+      <div><dt>Инвестиција</dt><dd>{{ profile.amount_label }}</dd></div>
+    </dl>
+    <div class="actions">
+      <a class="btn btn--quiet" href="{{ url_for('demo.intake') }}">Измени го профилот</a>
+      <a class="btn btn--quiet" href="{{ url_for('demo.shortlist') }}">Листа на повици</a>
+    </div>
+    {% else %}
+    <p>Нема профил. <a href="{{ url_for('demo.intake') }}">Внесете го профилот на фирмата</a> за да ја видите листата на повици.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack-lg" aria-labelledby="orders-h">
+    <h2 id="orders-h">Нарачки</h2>
+    {% if orders %}
+    <ul class="rows">
+      {% for o in orders %}
+      <li>
+        <div class="stack" style="--gap: 4px">
+          <a href="{{ url_for('demo.order_detail', no=o.no) }}"><strong>{{ products[o.product][0] }}</strong>, {{ calls[o.slug].reference }}</a>
+          <span class="small soft">{{ calls[o.slug].title }}</span>
+        </div>
+        <div class="rows__meta">
+          <span>{{ order_state_labels[o.state] }}</span>
+          <span class="small soft">Профактура <span class="id">{{ o.invoice }}</span>, {{ (o.net + o.vat)|thousands }} МКД</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нема нарачки. Деталниот извештај се нарачува од страницата на повикот, преку <a href="{{ url_for('demo.shortlist') }}">листата на повици</a>.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack-lg" aria-labelledby="sub-h">
+    <h2 id="sub-h">Следење</h2>
+    {% if sub %}
+    <p>Вклучено од {{ sub.since|mkdate }}. <a href="{{ url_for('demo.monitoring') }}">Известувања и откажување</a></p>
+    {% else %}
+    <p>Не е вклучено. <a href="{{ url_for('demo.monitoring') }}">Вклучете следење</a> за да ве известиме за нови повици.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

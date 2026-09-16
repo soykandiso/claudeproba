@@ -1,0 +1,19 @@
+{% extends "demo/base.html" %}
+{% block title %}Документ: {{ call.reference }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ request.referrer or url_for('demo.shortlist') }}">Назад</a>
+  <div class="report-head stack">
+    <p class="small soft">Зачувана снимка на изворниот документ</p>
+    <h1>{{ call.title }}</h1>
+    <dl class="facts">
+      <div><dt>Снимка</dt><dd class="id id--14">{{ call.snapshot_id }}</dd></div>
+      <div><dt>Преземено</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+      <div><dt>Извор</dt><dd class="break">{{ call.source_url.split('/')[2] }}</dd></div>
+      {% if start is not none %}<div><dt>Позиција на цитатот</dt><dd class="id id--14">{{ start }}–{{ end }}</dd></div>{% endif %}
+    </dl>
+    {% if start is not none %}<p class="small soft">Означениот текст е точно од знак {{ start }} до знак {{ end }} во зачуваната снимка. Така се проверува секој цитат.</p>{% endif %}
+  </div>
+  <div class="document">{{ before }}{% if quoted %}<mark id="quote">{{ quoted }}</mark>{{ after }}{% endif %}</div>
+</div>
+{% endblock %}

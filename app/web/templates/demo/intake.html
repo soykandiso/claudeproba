@@ -1,4 +1,5 @@
 {% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
 {% block title %}Профил на фирмата{% endblock %}
 {% block main %}
 <div class="wrap">
@@ -7,91 +8,93 @@
     <p class="soft">Десет прашања. Одговорите служат само за да се споредат со условите на повиците.</p>
   </div>
 
-  <form class="form stack-lg" method="post" action="{{ url_for('demo.shortlist') }}"
-        onsubmit="this.querySelector('[type=submit]').setAttribute('aria-busy','true')">
+  {% if errors %}
+  <div class="notice" role="alert" tabindex="-1" id="form-errors">
+    <p><strong>Профилот не е зачуван.</strong> {{ errors|length }} {{ 'поле треба' if errors|length == 1 else 'полиња треба' }} да се поправи. Пораката е под секое поле.</p>
+  </div>
+  {% endif %}
+
+  <form class="form stack-lg" method="post" action="{{ url_for('demo.intake') }}" novalidate {{ ui.busy_form() }}>
     <div>
       <div class="field">
         <label for="entity">Вид на субјект</label>
-        <select class="select" id="entity" name="entity">
-          <option>ДООЕЛ</option><option>ДОО</option><option>АД</option>
-          <option>Трговец поединец</option><option>Земјоделско стопанство</option>
-          <option>Здружение на граѓани</option>
+        <select class="select" id="entity" name="entity" {{ ui.invalid(errors, 'entity') }}>
+          {% for key, label in entity_forms.items() %}<option value="{{ key }}" {% if key == a.entity %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
+        {{ ui.field_error(errors, 'entity') }}
       </div>
 
       <div class="field">
         <label for="nace">Главна дејност</label>
-        <input class="input" id="nace" name="nace" list="nace-list" value="{{ profile.nace }}" autocomplete="off">
+        <input class="input" id="nace" name="nace" list="nace-list" value="{{ a.nace }}" autocomplete="off" {{ ui.invalid(errors, 'nace') }}>
         <datalist id="nace-list">
-          <option value="62.01 Компјутерско програмирање">
-          <option value="10.71 Производство на леб и свежи пецива">
-          <option value="01.13 Одгледување зеленчук">
-          <option value="55.10 Хотели и слично сместување">
+          {% for n in nace_examples %}<option value="{{ n }}">{% endfor %}
         </datalist>
-        <span class="hint">Шифрата по НКД е во решението од Централниот регистар.</span>
+        <span class="hint">Шифрата по НКД е во решението од Централниот регистар. Без шифра, условите за дејност ќе бидат означени за проверка.</span>
+        {{ ui.field_error(errors, 'nace') }}
       </div>
 
       <div class="field">
         <label for="municipality">Општина на седиштето</label>
-        <select class="select" id="municipality" name="municipality">
-          <option>Центар</option><option>Карпош</option><option>Битола</option>
-          <option>Куманово</option><option>Тетово</option><option>Штип</option>
+        <select class="select" id="municipality" name="municipality" {{ ui.invalid(errors, 'municipality') }}>
+          {% for key, m in municipalities.items() %}<option value="{{ key }}" {% if key == a.municipality %}selected{% endif %}>{{ m[0] }}</option>{% endfor %}
         </select>
+        {{ ui.field_error(errors, 'municipality') }}
       </div>
 
       <div class="two-col">
         <div class="field">
           <label for="founded">Година на основање</label>
-          <input class="input" id="founded" name="founded" inputmode="numeric" pattern="[0-9]{4}" value="{{ profile.founded }}">
+          <input class="input" id="founded" name="founded" inputmode="numeric" maxlength="4" value="{{ a.founded }}" {{ ui.invalid(errors, 'founded') }}>
+          {{ ui.field_error(errors, 'founded') }}
         </div>
         <div class="field">
           <label for="employees">Број на вработени</label>
-          <select class="select" id="employees" name="employees">
-            <option>0–1</option><option selected>2–9</option><option>10–49</option><option>50–249</option><option>250 и повеќе</option>
+          <select class="select" id="employees" name="employees" {{ ui.invalid(errors, 'employees') }}>
+            {% for key, e in employees.items() %}<option value="{{ key }}" {% if key == a.employees %}selected{% endif %}>{{ e[0] }}</option>{% endfor %}
           </select>
+          {{ ui.field_error(errors, 'employees') }}
         </div>
       </div>
 
       <div class="field">
         <label for="turnover">Годишен промет, минатата година</label>
-        <select class="select" id="turnover" name="turnover">
-          <option selected>до 10 милиони МКД</option><option>10–50 милиони МКД</option>
-          <option>50–150 милиони МКД</option><option>над 150 милиони МКД</option>
+        <select class="select" id="turnover" name="turnover" {{ ui.invalid(errors, 'turnover') }}>
+          {% for key, label in turnover.items() %}<option value="{{ key }}" {% if key == a.turnover %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
+        {{ ui.field_error(errors, 'turnover') }}
       </div>
 
       <fieldset class="field">
         <legend>Што планирате да финансирате</legend>
         <div class="choices">
-          <label class="choice"><input type="checkbox" name="inv" value="digital" checked> Дигитализација</label>
-          <label class="choice"><input type="checkbox" name="inv" value="equipment" checked> Опрема и машини</label>
-          <label class="choice"><input type="checkbox" name="inv" value="jobs"> Нови вработувања</label>
-          <label class="choice"><input type="checkbox" name="inv" value="rnd"> Истражување и развој</label>
-          <label class="choice"><input type="checkbox" name="inv" value="green"> Енергетска ефикасност</label>
-          <label class="choice"><input type="checkbox" name="inv" value="export"> Извоз и нови пазари</label>
+          {% for key, label in purposes.items() %}
+          <label class="choice"><input type="checkbox" name="inv" value="{{ key }}" {% if key in a.inv %}checked{% endif %}> {{ label|capitalize }}</label>
+          {% endfor %}
         </div>
       </fieldset>
 
       <div class="two-col">
         <div class="field">
           <label for="amount">Приближен износ на инвестицијата</label>
-          <select class="select" id="amount" name="amount">
-            <option>до 1 милион МКД</option><option selected>1–3 милиони МКД</option>
-            <option>3–10 милиони МКД</option><option>над 10 милиони МКД</option>
+          <select class="select" id="amount" name="amount" {{ ui.invalid(errors, 'amount') }}>
+            {% for key, am in amounts.items() %}<option value="{{ key }}" {% if key == a.amount %}selected{% endif %}>{{ am[0] }}</option>{% endfor %}
           </select>
+          {{ ui.field_error(errors, 'amount') }}
         </div>
         <div class="field">
           <label for="timeline">Кога планирате да започнете</label>
-          <select class="select" id="timeline" name="timeline">
-            <option>Веднаш</option><option selected>Во наредните 6 месеци</option><option>За повеќе од 6 месеци</option>
+          <select class="select" id="timeline" name="timeline" {{ ui.invalid(errors, 'timeline') }}>
+            {% for key, label in timelines.items() %}<option value="{{ key }}" {% if key == a.timeline %}selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
+          {{ ui.field_error(errors, 'timeline') }}
         </div>
       </div>
 
       <div class="field">
-        <label for="keywords">Опишете го проектот во неколку зборови</label>
-        <textarea class="textarea" id="keywords" name="keywords">Софтвер за управување со залихи за мали продавници</textarea>
-        <span class="hint">Не внесувајте имиња, адреси или телефони.</span>
+        <label for="description">Опишете го проектот во неколку зборови</label>
+        <textarea class="textarea" id="description" name="description" maxlength="300">{{ a.description }}</textarea>
+        <span class="hint">Не внесувајте имиња, адреси или телефони. Ако ги внесете, се бришат пред текстот да стигне до автоматската анализа.</span>
       </div>
     </div>
 

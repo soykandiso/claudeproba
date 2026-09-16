@@ -1,0 +1,74 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% block title %}Следење на повици{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Следење на нови повици</h1>
+    <p class="soft">Кога ќе се објави нов повик што одговара на профилот, добивате е-пошта со истите причини и цитати како во листата. Повиците излегуваат во сезони, па во тивките месеци не праќаме ништо.</p>
+  </div>
+
+  {% if not profile %}
+  <div class="stack">
+    <p>За следење е потребен профил на фирмата.</p>
+    <div class="actions"><a class="btn" href="{{ url_for('demo.intake') }}">Внеси профил на фирмата</a></div>
+  </div>
+  {% elif not sub %}
+  <form class="form stack-lg" method="post" {{ ui.busy_form() }}>
+    <fieldset class="field">
+      <legend>Колку често да ви пишуваме</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="frequency" value="weekly" checked> Неделен преглед, во понеделник</label>
+        <label class="choice"><input type="radio" name="frequency" value="instant"> Веднаш по објавата</label>
+      </div>
+    </fieldset>
+    <dl class="facts">
+      <div><dt>Цена</dt><dd>1.200 МКД месечно<br><span class="small soft">или 12.000 МКД годишно, без ДДВ</span></dd></div>
+      <div><dt>Откажување</dt><dd>Со едно кликнување, во секое време</dd></div>
+    </dl>
+    <div class="actions"><button class="btn" type="submit">Вклучи следење</button></div>
+  </form>
+  {% else %}
+  <section class="stack-lg" aria-labelledby="sub-h">
+    <div class="stack">
+      <h2 id="sub-h">Следењето е вклучено</h2>
+      <p class="soft">Од {{ sub.since|mkdate }}, {{ 'неделен преглед во понеделник' if sub.frequency == 'weekly' else 'известување веднаш по објавата' }}. Профил: {{ profile.form_label }}{% if profile.nace_code %}, {{ profile.nace_code }}{% endif %}, {{ profile.municipality }}.</p>
+    </div>
+    <form method="post"><input type="hidden" name="action" value="cancel"><button class="btn btn--quiet" type="submit">Откажи следење</button></form>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="alerts-h">
+    <h2 id="alerts-h">Известувања</h2>
+    {% if alerts %}
+    {% for m in alerts %}
+    <article class="email stack">
+      <dl class="email__head">
+        <div><dt>До</dt><dd>вашата е-пошта</dd></div>
+        <div><dt>Наслов</dt><dd>Нов јавен повик за вашата фирма: {{ m.call.title }}</dd></div>
+      </dl>
+      <div class="stack">
+        {{ ui.verdict(m.verdict) }}
+        <h3 class="criterion__title">{{ m.call.title }}</h3>
+        <p class="soft small">{{ m.call.institution }}</p>
+        {{ ui.call_facts(m.call) }}
+        {% for r in m.results %}
+        <div class="stack">
+          <p><span class="outcome">{{ criterion_labels[r.verdict] }}</span>{{ r.criterion.label }}</p>
+          {% if r.citation %}{{ ui.excerpt(r.citation, compact=true) }}{% endif %}
+        </div>
+        {% endfor %}
+        <p class="small soft">Го добивате ова известување затоа што го вклучивте следењето. <a href="{{ url_for('demo.monitoring') }}">Откажи</a></p>
+      </div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="stack">
+      <p>Нема нов повик за вашиот профил од {{ sub.since|mkdate }}.</p>
+      <p class="small soft">Во демото: во админот прифатете го повикот што чека преглед. Штом е објавен, известувањето се појавува тука, ако повикот одговара на профилот.</p>
+      <div class="actions"><a class="btn btn--quiet" href="{{ url_for('demo.admin') }}">Отвори го админот</a></div>
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% block title %}Нарачка {{ o.no }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.account') }}">Сите нарачки</a>
+  <div class="report-head stack">
+    <p class="small soft">Нарачка {{ o.no }}, {{ o.created|mkdate }}</p>
+    <h1>{{ product_name }}</h1>
+    <p class="soft">{{ call.title }}</p>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="status-h">
+    <h2 id="status-h">Каде е нарачката</h2>
+    <ol class="steps">
+      {% for s in states %}
+      {% set reached = loop.index0 <= states.index(o.state) or (s == 'paid' and o.paid_ref) %}
+      <li class="step{% if reached %} step--done{% endif %}{% if s == o.state %} step--current{% endif %}" {% if s == o.state %}aria-current="step"{% endif %}>
+        <span>{{ order_state_labels[s] }}</span>
+        <span class="small soft">
+          {% if s == 'invoiced' %}{{ o.created|mkdate }}
+          {% elif s == 'paid' and o.paid_on %}{{ o.paid_on|mkdate }}, извод <span class="id">{{ o.paid_ref }}</span>
+          {% elif s == 'in_progress' and o.state == 'in_progress' %}{% if review and review.outcome == 'rejected' %}Консултантот го врати на доработка{% else %}Чека преглед од консултант{% endif %}
+          {% elif s == 'delivered' and o.delivered_on %}{{ o.delivered_on|mkdate }}{% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ol>
+
+    {% if o.state == 'invoiced' %}
+    <form class="stack demo-action" method="post" action="{{ url_for('demo.order_pay', no=o.no) }}" {{ ui.busy_form() }}>
+      <p><strong>Симулација на уплата.</strong> Вистински, уплатата се поврзува рачно со изводот од банката (P4 s51).</p>
+      <div class="field field--inline">
+        <label for="bank_ref">Број на извод</label>
+        <input class="input id-input" id="bank_ref" name="bank_ref" value="ИЗВ-{{ '%03d' % (o.no * 17 % 1000) }}" maxlength="40">
+      </div>
+      <div class="actions"><button class="btn" type="submit">Означи како уплатено</button></div>
+    </form>
+    {% elif o.state == 'in_progress' %}
+    <div class="stack demo-action">
+      <p><strong>Следен чекор во демото:</strong> извештајот е подготвен и чека човечки преглед. Отворете го админот и прегледајте го.</p>
+      <div class="actions"><a class="btn btn--quiet" href="{{ url_for('demo.admin_order', no=o.no) }}">Отвори го прегледот во админ</a></div>
+    </div>
+    {% elif o.state == 'delivered' %}
+    <div class="actions">
+      {% if o.product == 'report' %}
+      <a class="btn" href="{{ url_for('demo.order_report', no=o.no) }}">Отвори го извештајот</a>
+      {% else %}
+      <a class="btn" href="{{ url_for('demo.order_package', no=o.no) }}">Отвори го пакетот документи</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="stack-lg" aria-labelledby="invoice-h">
+    <div class="stack">
+      <h2 id="invoice-h">Профактура <span class="id id--20">{{ o.invoice }}</span></h2>
+      <p class="small soft">Издадена {{ o.created|mkdate }}. Рок за плаќање: осум дена. Испратена на {{ o.buyer.email }}.</p>
+    </div>
+    <div class="invoice">
+      <dl class="parties">
+        <div>
+          <dt>Издавач</dt>
+          <dd>{{ seller.name }}<br>ЕДБ <span class="id">{{ seller.edb }}</span><br>ЕМБС <span class="id">{{ seller.embs }}</span></dd>
+        </div>
+        <div>
+          <dt>Купувач</dt>
+          <dd>{{ o.buyer.name }}, {{ o.buyer.city }}<br>ЕДБ <span class="id">{{ o.buyer.edb }}</span><br>ЕМБС <span class="id">{{ o.buyer.embs }}</span></dd>
+        </div>
+      </dl>
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead><tr><th scope="col">Опис</th><th scope="col" class="num">Износ, МКД</th></tr></thead>
+          <tbody>
+            <tr><td>{{ product_name }}: {{ call.reference }}</td><td class="num">{{ o.net|thousands }}</td></tr>
+            <tr><td class="soft">ДДВ 18%</td><td class="num">{{ o.vat|thousands }}</td></tr>
+          </tbody>
+          <tfoot><tr><th scope="row">Вкупно за плаќање</th><td class="num"><strong>{{ (o.net + o.vat)|thousands }}</strong></td></tr></tfoot>
+        </table>
+      </div>
+      <dl class="facts">
+        <div><dt>Жиро сметка</dt><dd class="id id--14">{{ seller.account }}</dd></div>
+        <div><dt>Банка</dt><dd>{{ seller.bank }}</dd></div>
+        <div><dt>Цел на дознака</dt><dd>Профактура <span class="id">{{ o.invoice }}</span></dd></div>
+      </dl>
+      <p class="small soft">Издавачот и сметката се измислени. Вистинскиот издавач е одлука D4, а полињата ги потврдува сметководител пред P4 s49.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

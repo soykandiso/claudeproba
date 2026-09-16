@@ -1,0 +1,74 @@
+{% extends "demo/base.html" %}
+{% block title %}Админ: {{ call.reference }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.admin') }}">Назад кон редот</a>
+  <div class="report-head stack">
+    <p class="small soft">Извлекување на повик, чека преглед</p>
+    <h1>{{ call.title }}</h1>
+    <p class="soft">{{ call.institution }}, <span class="id id--14">{{ call.reference }}</span>, снимка <span class="id id--14">{{ call.snapshot_id }}</span></p>
+    {% if review %}<p class="review-stamp">{{ 'Прифатено и објавено' if review.outcome == 'accepted' else 'Отфрлено' }}, {{ review.at }}{% if review.note %}: {{ review.note }}{% endif %}</p>{% endif %}
+  </div>
+
+  <section class="stack-lg" aria-labelledby="fields-h">
+    <h2 id="fields-h">Извлечени податоци</h2>
+    <dl class="facts facts--wide">
+      <div><dt>Рок</dt><dd>{% if call.max_eur %}<span class="deadline">{{ call.deadline|mkdate }}</span>{% else %}не е пронајден{% endif %}</dd></div>
+      <div><dt>Најмногу по барател</dt><dd>{% if call.max_eur %}{{ call.max_eur|thousands }} EUR{% else %}не е пронајден{% endif %}</dd></div>
+      <div><dt>Преземено</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+    </dl>
+    <p>{{ call.summary }}</p>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="crit-h">
+    <div class="stack">
+      <h2 id="crit-h">Услови и цитати</h2>
+      <p class="soft">Секој цитат се бара дословно во зачуваната снимка. Ако не е таму, повикот не може да се објави додека не се поправи.</p>
+    </div>
+    {% if not rows %}
+    <p><strong>Не се извлечени услови за учество.</strong> Документот најверојатно не е јавен повик.</p>
+    {% endif %}
+    {% for row in rows %}
+    <article class="criterion stack">
+      <span class="outcome">{{ row.c.kind }}{% if row.c.field %}, <span class="id">{{ row.c.field }} {{ row.c.operator }} {{ row.c.value }}</span>{% endif %}</span>
+      <h3 class="criterion__title">{{ row.c.label }}</h3>
+      {% if row.citation %}
+      <p class="small"><span class="cite-mark">Цитатот е пронајден дословно</span>, знаци <span class="id">{{ row.citation.char_start }}–{{ row.citation.char_end }}</span></p>
+      <div class="document document--context">{{ row.context }}</div>
+      {% else %}
+      <div class="notice stack">
+        <p><strong>Цитатот не е пронајден во документот.</strong> Моделот напишал:</p>
+        <p class="document document--context">„{{ row.c.quote }}“</p>
+        {% if row.c.corrected_quote %}
+        <p>Во {{ row.c.clause }} стои: „{{ row.c.corrected_quote }}“</p>
+        <form method="post" action="{{ url_for('demo.admin_fix_quote', slug=call.slug, key=row.c.key) }}">
+          <button class="btn btn--quiet" type="submit">Замени со текстот од документот</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+
+  {% if not review %}
+  <section class="stack-lg" aria-labelledby="decide-h">
+    <h2 id="decide-h">Одлука</h2>
+    <form class="stack" method="post" action="{{ url_for('demo.admin_call_decide', slug=call.slug) }}">
+      <div class="actions">
+        <button class="btn" type="submit" name="action" value="accept" {% if blocked %}disabled aria-describedby="blocked-why"{% endif %}>Прифати и објави</button>
+      </div>
+      {% if blocked %}<p class="small" id="blocked-why">Не може да се објави: има цитат што не е во документот.</p>{% endif %}
+    </form>
+    <form class="stack form-narrow" method="post" action="{{ url_for('demo.admin_call_decide', slug=call.slug) }}">
+      <div class="field">
+        <label for="note">Причина за отфрлање</label>
+        <input class="input" id="note" name="note" value="{% if not rows %}Вест, не јавен повик{% endif %}">
+        <span class="hint">Отфрлањето станува случај за евалуација (P2 s34).</span>
+      </div>
+      <div class="actions"><button class="btn btn--quiet" type="submit" name="action" value="reject">Отфрли</button></div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

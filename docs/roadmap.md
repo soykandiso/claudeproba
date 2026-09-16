@@ -54,6 +54,18 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 
 ---
 
+## Demo stage — 16.09.2026, between P1 s12 and s13
+
+Paused P1 to make the whole product clickable before building more of it: `/demo` runs every
+phase's customer and operator screens on invented calls, with state in the session cookie. Built for
+real along the way, ahead of their sessions and with tests: the stage-1 rule interpreter and
+verdict taxonomy (part of **s24**) and the banned-phrase lint (part of **s32**). Everything else on
+`/demo` is simulated and is replaced, not extended, when its session arrives. `/demo/vodic` maps
+each feature to its session. Next: try the demo, then choose whether P1 s13 or a P2 session goes
+first.
+
+---
+
 ## P2 — Matching · 16 sessions · → ~12 Nov 2026
 
 | # | Task | Acceptance |
