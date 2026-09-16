@@ -9,10 +9,10 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P1 session 10** — container stack, schema, backups, source reconnaissance, LLM gateway,
-snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), and call extraction with
-citations located in code. No source fetchers, matching or UI yet. See
-[`docs/roadmap.md`](docs/roadmap.md).
+Status: **P1 session 12** — container stack, schema, backups, source reconnaissance, LLM gateway,
+snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
+citations located in code, the AV fetcher end to end, and chunking, local embeddings and hybrid
+retrieval. No matching or real UI yet. See [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Running it locally
 
@@ -126,6 +126,8 @@ flask ingest run <slug>                   # crawl one source; new calls → unpu
 flask ingest snapshot <slug> <url>        # fetch one URL and store it, for checks
 flask ingest normalise                    # stored snapshots → text for citations (OCR if needed)
 flask ingest extract --snapshot-id N      # one call's documents → CallExtraction (needs ANTHROPIC_API_KEY)
+flask ingest fetch-model                  # once per machine: the embedding model, ~2.2 GB, into GRANTS_MODEL_DIR
+flask ingest index                        # chunk new documents and embed chunks (also runs after run/due)
 ```
 
 In the dev stack, prefix with `docker compose -f docker-compose.yml -f docker-compose.dev.yml exec web`.
@@ -136,6 +138,11 @@ unpublished, with cited unapproved criteria and one review item; anything the pi
 for (unreadable document, invalid model output, a quote not found verbatim) becomes a review item
 instead of a call. Extraction needs `ANTHROPIC_API_KEY`; without it, changed calls are reported as
 errors and retried on the next run.
+
+After the sources, `run` and `due` chunk every newly normalised document and embed the chunks with a
+local model (`app/retrieval/`). Without `flask ingest fetch-model` first, that step fails loudly and
+the command exits non-zero; chunks are kept and embedded on the next run. The retrieval acceptance
+test (`tests/test_retrieval_paraphrase.py`) skips until the model is present.
 
 ## Configuration
 
@@ -154,9 +161,10 @@ app/
   cli.py         operator commands (flask ingest ...)
   ai/            LLM gateway and identity scrubber -- the only path to a model
   ingestion/     polite HTTP, robots.txt, snapshot store, fetcher base class
+  retrieval/     chunking, local embeddings, hybrid vector + trigram search
   models/        SQLAlchemy models (the schema's source of truth)
   web/           blueprints
-config/          models.yaml (task routing), sources.yaml (ingestion sources)
+config/          models.yaml (task routing, embedding model), sources.yaml (ingestion sources)
 prompts/         versioned prompt files
 tests/
 docs/            design documents (see docs/README.md)

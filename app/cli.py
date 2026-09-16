@@ -18,6 +18,8 @@ from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers
 from app.models import RawSnapshot, SourceFeed
+from app.retrieval.embedder import LocalEmbedder
+from app.retrieval.index import index_pending
 
 
 def register_cli(app: Flask) -> None:
@@ -57,7 +59,8 @@ def run_command(slug, allow_inactive):
         raise click.ClickException(
             f"no fetcher for {slug!r}; have: {', '.join(available) or 'none'}"
         )
-    if not _run_source(available[slug](), allow_inactive=allow_inactive):
+    ok = _run_source(available[slug](), allow_inactive=allow_inactive)
+    if not (_index() and ok):
         sys.exit(1)
 
 
@@ -80,8 +83,32 @@ def due_command():
         failed |= not _run_source(available[slug]())
     if not slugs:
         click.echo("nothing due")
+    # Also when nothing was due: an earlier run may have stopped before embedding.
+    failed |= not _index()
     if failed:
         sys.exit(1)
+
+
+@ingest.command(
+    "index",
+    help="Chunk normalised snapshots that have no chunks, and embed chunks that have no "
+    "vector from the current model.",
+)
+def index_command():
+    if not _index():
+        sys.exit(1)
+
+
+@ingest.command(
+    "fetch-model",
+    help="Download the embedding model into GRANTS_MODEL_DIR (~2.2 GB). Once per machine, "
+    "and again after changing it in config/models.yaml.",
+)
+def fetch_model_command():
+    embedder = LocalEmbedder(_settings().model_dir)
+    embedder.download()
+    embedder.passages(["проверка"])  # loads the way indexing will, offline
+    click.echo(f"{embedder.name} ready in {_settings().model_dir}")
 
 
 @ingest.command(
@@ -210,6 +237,21 @@ def _run_source(fetcher: Fetcher, allow_inactive: bool = False) -> bool:
         line = f"  {p.outcome}: snapshots {list(p.found.snapshot_ids)}, {where}{item}{detail}"
         click.echo(line, err=p.outcome == ERROR)
     return result.ok
+
+
+def _index() -> bool:
+    settings = _settings()
+    try:
+        result = index_pending(session_factory(settings), LocalEmbedder(settings.model_dir))
+    except Exception as exc:
+        # Chunks written so far are kept; the next run embeds the rest.
+        click.echo(f"index FAILED: {type(exc).__name__}: {exc}", err=True)
+        return False
+    click.echo(
+        f"index: {result.chunks_written} chunks from {result.snapshots_chunked} snapshots, "
+        f"{result.chunks_embedded} embedded"
+    )
+    return True
 
 
 def _run(fetcher: Fetcher, allow_inactive: bool = False) -> None:

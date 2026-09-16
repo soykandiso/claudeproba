@@ -328,7 +328,6 @@ ALTER SEQUENCE public.call_document_id_seq OWNED BY public.call_document.id;
 CREATE TABLE public.chunk (
     id bigint NOT NULL,
     snapshot_id bigint NOT NULL,
-    call_id uuid,
     ordinal integer NOT NULL,
     char_start integer NOT NULL,
     char_end integer NOT NULL,
@@ -1405,20 +1404,6 @@ CREATE INDEX ix_call_title_trgm ON public.call USING gin (title_mk public.gin_tr
 
 
 --
--- Name: ix_chunk_call; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX ix_chunk_call ON public.chunk USING btree (call_id);
-
-
---
--- Name: ix_chunk_embedding; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX ix_chunk_embedding ON public.chunk USING hnsw (embedding public.vector_cosine_ops);
-
-
---
 -- Name: ix_chunk_text_trgm; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1597,14 +1582,6 @@ ALTER TABLE ONLY public.call
 
 ALTER TABLE ONLY public.call
     ADD CONSTRAINT fk_call_source_feed_id_source_feed FOREIGN KEY (source_feed_id) REFERENCES public.source_feed(id);
-
-
---
--- Name: chunk fk_chunk_call_id_call; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.chunk
-    ADD CONSTRAINT fk_chunk_call_id_call FOREIGN KEY (call_id) REFERENCES public.call(id) ON DELETE CASCADE;
 
 
 --

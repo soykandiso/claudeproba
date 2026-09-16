@@ -26,3 +26,23 @@ tasks:
     model: claude-sonnet-5
     prompt_version: "2026-09-13.1"
     max_tokens: 16000
+
+# Embeddings for retrieval (app/retrieval/embedder.py, P1 s12). Not a task: the
+# model runs locally on CPU, so no text leaves the machine, there is no provider,
+# no cost row and no scrubbing to do.
+#
+# Chosen on 16.09.2026 over paraphrase-multilingual-MiniLM-L12-v2 and
+# paraphrase-multilingual-mpnet-base-v2 with 26 hand-written Macedonian
+# paraphrase queries over the three extraction fixtures: the only one of the
+# three that kept every clause in the top 3 at 900-character chunks. ~2.2 GB on
+# disk, ~1.5 GB of memory while loaded, MIT licence (docs/architecture.md §3.1).
+#
+# `dimensions` must equal the chunk.embedding column; a different model means a
+# migration. Changing `model` re-embeds every chunk on the next index run, and
+# retrieval ignores vectors from any other model until then.
+embedding:
+  model: intfloat/multilingual-e5-large
+  dimensions: 1024
+  # E5 was trained with these prefixes; without them, ranking gets worse.
+  query_prefix: "query: "
+  passage_prefix: "passage: "

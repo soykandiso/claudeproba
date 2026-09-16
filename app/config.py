@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # off-site by ops/backup.sh.
     snapshot_dir: str = "snapshots"
 
+    # The local embedding model's files (app/retrieval/embedder.py), fetched once
+    # with `flask ingest fetch-model`. About 2.2 GB; a Docker volume on the VPS.
+    model_dir: str = "models"
+
     # Where a site operator can read what the crawler does and ask it to stop.
     # Becomes https://<domain>/crawler once the domain exists (decisions.md D2).
     crawler_contact_url: str = "https://github.com/soykandiso/claudeproba"

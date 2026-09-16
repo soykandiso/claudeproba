@@ -41,8 +41,13 @@ place an eligibility verdict can be produced.
 │   │   │   └── manual.py        admin-pasted URL, same pipeline, same citation quality
 │   │   ├── normalise.py         HTML/PDF → text WITH character offsets preserved
 │   │   ├── extract.py           snapshot → CallExtraction (schema-validated)
-│   │   ├── chunking.py          chunk + embed changed documents only
 │   │   └── health.py            staleness SLA, alerting, heartbeat ping
+│   │
+│   ├── retrieval/               shared by ingestion (writes) and stage 3 (reads)
+│   │   ├── chunker.py           normalised_text → overlapping spans, offsets exact
+│   │   ├── embedder.py          local multilingual model; nothing leaves the machine
+│   │   ├── index.py             chunk + embed changed documents only
+│   │   └── search.py            hybrid vector + trigram, rank-fused, per call
 │   │
 │   ├── matching/
 │   │   ├── normalise.py         stage 0 — NACE, region, SME band

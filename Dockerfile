@@ -30,10 +30,10 @@ COPY prompts ./prompts
 COPY migrations ./migrations
 COPY alembic.ini ./
 
-# /srv/snapshots exists in the image so a fresh named volume inherits its owner.
+# The volume mount points exist in the image so a fresh named volume inherits their owner.
 RUN useradd --system --uid 10001 grants \
-    && mkdir -p /srv/snapshots \
-    && chown -R grants:grants /srv/app /srv/snapshots
+    && mkdir -p /srv/snapshots /srv/models \
+    && chown -R grants:grants /srv/app /srv/snapshots /srv/models
 USER grants
 
 EXPOSE 8000

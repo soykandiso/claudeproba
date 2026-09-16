@@ -91,7 +91,7 @@
 | **Change detector** | Compares content hash to the last snapshot for that URL. Unchanged → stop, costs nothing | This is the single biggest cost control in the system. |
 | **Normaliser** | HTML → text (`selectolax`), DOCX → text (standard library), PDF → text (`pypdf` text layer per page, Tesseract `mkd` for pages without one — `decisions.md` D9). Pages separated by `\f`. Written once per snapshot and never rewritten | Citations index into this text by offset, so it must be faithful (inline markup joins without spaces), deterministic, and immutable once cited. `pdfplumber` for tables waits for IPARD (P1 s20). |
 | **Extractor** | LLM gateway call producing a `CallExtraction` Pydantic model: dates, budget, eligibility criteria, required documents | Schema failure → retry once → review queue. Never published unvalidated. |
-| **Chunker + embedder** | Splits normalised text into overlapping chunks with offsets; embeds each; writes to `chunk` with a `vector` column | Only on changed documents. |
+| **Chunker + embedder** | `app/retrieval/`. Splits normalised text into overlapping ~900-character chunks whose offsets index it exactly; embeds each with `intfloat/multilingual-e5-large` **on the VPS's CPU** (fastembed/ONNX, no provider, nothing leaves the machine); writes to `chunk` | Only on changed documents, after each ingestion run and by `flask ingest index`. The model (~2.2 GB) is fetched once with `flask ingest fetch-model` into the `models` volume; indexing peaks at ~1.9 GB of memory for the duration of the run. |
 | **Health monitor** | Per-source freshness SLA. A source that returns nothing new past its expected cadence raises an alert | A silently dead scraper is the primary business failure mode (`risks.md` R1). |
 
 ### 3.2 Registry
@@ -221,7 +221,7 @@ models €5–20/mo depending on volume. **Total €15–30/mo**, not €15 (see
 
 | Concern | Implementation |
 |---|---|
-| Residency | Postgres, snapshots and backups all in the EU. Nothing personal is stored outside it. |
+| Residency | Postgres, snapshots and backups all in the EU. Nothing personal is stored outside it. Embeddings are computed on the VPS itself, so retrieval adds no processor and no transfer. |
 | Minimisation to the model | The LLM gateway is the only egress path and scrubs identity fields first. The model receives the *shape* of an applicant — sector code, size band, region code, investment band — never a name, EMBS/EDB, address or contact detail. |
 | Transfers | The model provider is a US processor under SCCs, disclosed in the subprocessor list. Cloudflare terminates TLS in transit and is disclosed for the same reason. |
 | Consent | `consent_record` rows with purpose, text version, timestamp, IP. Marketing consent is separate from service consent. |

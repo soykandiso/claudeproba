@@ -97,6 +97,15 @@ docker compose up -d
 curl -fsS https://<domain>/readyz                   # both dependencies must report ok
 ```
 
+**First deploy, and after changing `embedding.model` in `config/models.yaml`:**
+
+```bash
+docker compose run --rm web flask ingest fetch-model   # ~2.2 GB into the models volume
+docker compose exec -T web flask ingest index          # embeds whatever is waiting
+```
+
+The `models` volume is not backed up: it is a public download and can be fetched again.
+
 Migrations run before the new containers take traffic. If a migration fails, the
 old containers are still serving and nothing is broken yet — fix forward, do not
 restart into a half-migrated state.
@@ -112,6 +121,8 @@ restart into a half-migrated state.
 | `/readyz` says not ready | It names the failing dependency. `docker compose logs postgres` or `redis` |
 | Jobs not processing | `docker compose logs worker`; is Redis healthy; is the queue name right |
 | No new calls for days | `flask ingest health` — the source is probably blocking or has changed layout |
+| `index FAILED: ModelNotDownloaded` in the ingest log | The `models` volume is empty or was recreated: `docker compose run --rm web flask ingest fetch-model` |
+| Ingest run killed, `Killed` or exit 137 | Out of memory while embedding (~1.9 GB peak). `free -m`; stop what else is large, run `flask ingest index` again — it resumes |
 | Backup heartbeat silent | `/var/log/grants-backup.log`. The heartbeat only fires on success, so silence means failure |
 | Disk filling | `docker system prune` for old images; check `backups/` pruning is working |
 

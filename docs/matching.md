@@ -127,6 +127,12 @@ score(profile, call) -> (value, breakdown):
 on every `match_run`. Changing weights is therefore a reviewable diff whose effect the evaluation
 harness measures before it ships.
 
+**Where the embedding comes from (open for P2 s27).** The embedding model runs locally and needs
+~1.9 GB while loaded (`app/retrieval/embedder.py`), so it cannot live in the gunicorn workers that
+serve stages 0–2. Call summary embeddings can be computed at ingestion; the project description
+needs either a small second model in the web process, or the embedding moved to the worker with
+`semantic_fit` filled in asynchronously. Decide when building stage 2, with the < 5 s budget measured.
+
 **`semantic_fit` is capped at 0.10 deliberately.** It is the only component that is not fully
 explainable, and it must never be able to move a call from rank 8 to rank 1 on its own. Embedding
 similarity is a tiebreaker here, not a decision procedure.
@@ -144,10 +150,14 @@ Top 5 results only. For each call, for each criterion the rules could not settle
 ```
 verify(profile, call, criterion) -> outcome:
     query  = criterion.label_mk + ' ' + criterion.source_quote
-    chunks = hybrid_retrieve(call, query, k=6)
+    chunks = hybrid_retrieve(call, query, k=6)      # app/retrieval/search.py
              # pgvector cosine on chunk.embedding  UNION  pg_trgm on chunk.text
              # reciprocal-rank-fused; trigram exists because Postgres has no
-             # Macedonian FTS dictionary and codes/dates need exact matching
+             # Macedonian FTS dictionary and codes/dates need exact matching.
+             # Trigram votes only at word_similarity >= 0.6: below that it is
+             # noise that outvotes the vectors on paraphrased questions (P1 s12).
+             # An incomplete retrieval (unembedded or unindexed documents)
+             # is a failed retrieval: needs_verification.
 
     payload = {
         'criterion':  criterion.label_mk,

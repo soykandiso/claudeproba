@@ -18,10 +18,14 @@ x-app: &app
     GRANTS_DATABASE_URL: postgresql://${POSTGRES_USER:-grants}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-grants}
     GRANTS_REDIS_URL: redis://redis:6379/0
     GRANTS_SNAPSHOT_DIR: /srv/snapshots
+    GRANTS_MODEL_DIR: /srv/models
   volumes:
     # Raw fetched bytes, content-addressed and write-once. Public documents, no
     # personal data; copied off-site by ops/backup.sh.
     - snapshots:/srv/snapshots
+    # The local embedding model (~2.2 GB), fetched once with `flask ingest
+    # fetch-model`. Not backed up: a public download, fetched again if lost.
+    - models:/srv/models
 
 services:
   postgres:
@@ -89,6 +93,7 @@ services:
 
 volumes:
   snapshots:
+  models:
   postgres-data:
   redis-data:
   caddy-data:

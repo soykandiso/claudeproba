@@ -308,24 +308,25 @@ class EligibilityCriterion(Base):
 
 
 class Chunk(Base):
-    """Retrieval unit: one chunk of one snapshot, with offsets back into it.
+    """Retrieval unit: one span of one snapshot's normalised_text.
+
+    Belongs to the snapshot, not to a call: written once, never rewritten, like
+    the text it points into (app/retrieval/__init__.py). A call's chunks are those
+    of its current documents, found through call_document at query time.
 
     Hybrid retrieval -- vector for prose, trigram for codes, numbers and dates.
     pgvector earns its place here for a specific reason: PostgreSQL has no
     Macedonian full-text dictionary, so lexical-only retrieval over Cyrillic
     would be weak.
+
+    No vector index, on purpose: retrieval always scans one call's few dozen
+    chunks exactly, and an approximate (HNSW) index under a WHERE filter can
+    silently return fewer rows than asked for (app/retrieval/search.py).
     """
 
     __tablename__ = "chunk"
     __table_args__ = (
         UniqueConstraint("snapshot_id", "ordinal", name="uq_chunk_snapshot_ordinal"),
-        Index("ix_chunk_call", "call_id"),
-        Index(
-            "ix_chunk_embedding",
-            "embedding",
-            postgresql_using="hnsw",
-            postgresql_ops={"embedding": "vector_cosine_ops"},
-        ),
         Index(
             "ix_chunk_text_trgm",
             "text",
@@ -338,10 +339,11 @@ class Chunk(Base):
     snapshot_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("raw_snapshot.id", ondelete="CASCADE")
     )
-    call_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("call.id", ondelete="CASCADE"))
     ordinal: Mapped[int] = mapped_column(Integer)
     char_start: Mapped[int] = mapped_column(Integer)
     char_end: Mapped[int] = mapped_column(Integer)
+    # Always normalised_text[char_start:char_end], copied so trigram search can index it.
     text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(1024))
+    # Embedder.name: model and fastembed version. Vectors are only compared under one name.
     embedding_model: Mapped[str | None] = mapped_column(Text)
