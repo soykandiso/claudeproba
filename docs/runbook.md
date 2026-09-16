@@ -217,6 +217,16 @@ customer until it is approved here. Not available in production until operator s
    snapshot, if a customer-facing text has a banned phrase, or if a newer item exists for the same call.
 6. Not a funding call after all: close it with a reason.
 
+**Entering a call by hand** ("Рачен внес"): paste the call's URLs, the page or document with the
+call text first, attachments after, up to five; name the institution as customers should see it.
+The entry is queued for the worker and answers in the queue within a minute or two: a call to
+approve as above, or a "Рачен внес" item saying the URLs could not be fetched (wrong address,
+robots.txt refuses), could not be processed (enter them again once the cause is fixed), or are
+already known (it links the existing item). If nothing appears, the worker is not running:
+`docker compose ps`, `docker compose logs worker`. After changing code, `docker compose restart
+worker`: RQ does not reload. From a shell, `flask ingest manual <url>... --institution "…"` does
+the same synchronously.
+
 **Anything else** (the model says it is not a call, quotes not found, invalid model output, an
 unreadable document) has nothing to publish. Read why, and close it with a reason. The same document
 is not sent to the model again until it changes at the source; if the model was wrong, the fix is a

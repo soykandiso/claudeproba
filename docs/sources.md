@@ -67,6 +67,14 @@ sources the same citation quality as automated ones, at the cost of two minutes 
 it in P1b — it is cheap, and it stops you from writing a bad scraper for a source that publishes four
 times a year.
 
+**Built in P1 s16 (16.09.2026)** as `app/ingestion/sources/manual.py`: paste up to five URLs (the
+call first, then attachments) at `/admin/rachen-vnes`, or run `flask ingest manual <url>...`. The
+`manual` row in `config/sources.yaml` is inactive on purpose, so it is never scheduled and never
+judged by the health check; instead every entry answers in the review queue, including a failed
+fetch or an already-known call. One change was needed outside `sources/`: the pipeline now takes a
+call's programme institution from the listing when it names one (`pipeline._singleton_programme`),
+because a pasted call comes from whoever published it, not from "manual entry".
+
 ---
 
 ## 4. Reconnaissance protocol (P1, session 1)

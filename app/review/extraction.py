@@ -54,12 +54,13 @@ from app.models import (
 from app.models.enums import CriterionKind, ReviewKind, ReviewState
 from app.reports.lint import find_banned
 
-APPROVE_CALL, NOT_A_CALL, EXTRACT, INVALID_OUTPUT, NORMALISE = (
+APPROVE_CALL, NOT_A_CALL, EXTRACT, INVALID_OUTPUT, NORMALISE, MANUAL_ENTRY = (
     "approve_call",
     "not_a_call",
     "extract",
     "invalid_output",
     "normalise",
+    "manual_entry",  # app/ingestion/sources/manual.py: an entry that produced no call to approve
 )
 
 

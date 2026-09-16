@@ -19,7 +19,7 @@ from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapsho
 from app.ingestion.pipeline import ERROR, UNCHANGED, due_sources, run_source
 from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
-from app.ingestion.sources import fetchers
+from app.ingestion.sources import fetchers, manual
 from app.models import RawSnapshot, SourceFeed
 from app.retrieval.embedder import LocalEmbedder
 from app.retrieval.index import index_pending
@@ -100,6 +100,38 @@ def due_command():
     # a flaky ministry server needs; a failure here would email every 4 hours.
     click.echo(ping(settings.heartbeat_ingest_url, ok=True, body="\n".join(summary)))
     if failed:
+        sys.exit(1)
+
+
+@ingest.command(
+    "manual",
+    help="Enter a call by URL: the call's own page or document first, then its attachments. "
+    "Runs the whole pipeline now; the answer lands in the review queue.",
+)
+@click.argument("urls", nargs=-1, required=True)
+@click.option("--institution", default="", help="Who published the call, as it should be shown.")
+@click.option("--note", default="", help="Where you heard about it, for the reviewer.")
+def manual_command(urls, institution, note):
+    settings = _settings()
+    try:
+        parsed = manual.parse_urls("\n".join(urls))
+    except manual.InvalidEntry as exc:
+        raise click.ClickException(str(exc)) from exc
+    sessions = session_factory(settings)
+    result = manual.run_entry(
+        parsed,
+        institution=institution,
+        note=note,
+        settings=settings,
+        sessions=sessions,
+        store=SnapshotStore(settings.snapshot_dir),
+        gateway=lambda: Gateway(sessions, AnthropicProvider()),
+        ocr=TesseractOcr(),
+    )
+    detail = f": {result.detail}" if result.detail else ""
+    click.echo(f"{result.outcome}, review item {result.review_item_id}{detail}")
+    # Chunks and embeddings for the new snapshots, as `due` does after a crawl.
+    if not _index():
         sys.exit(1)
 
 

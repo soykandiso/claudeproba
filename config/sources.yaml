@@ -9,7 +9,8 @@
 #                          alerts after 30 hours regardless (app/ingestion/health.py).
 #   rate_limit_rps         requests per second per host; 0.2 is one per 5 s
 #
-# A source is `active: false` until its fetcher exists in app/ingestion/sources/.
+# A source is `active: false` until its fetcher exists in app/ingestion/sources/,
+# or when it is never scheduled (manual: run on demand from /admin).
 
 sources:
   - slug: eu-portal
@@ -100,4 +101,21 @@ sources:
     terms_url: null
     terms_note: UNVERIFIED -- host did not respond from a datacenter (sources.md §6.1)
     priority: 3
+    active: false
+
+  # Calls the operator pastes by URL (docs/sources.md §3, app/ingestion/sources/manual.py).
+  # Inactive on purpose: never scheduled, never judged by `flask ingest health`; each
+  # entry answers in the review queue instead. Cadence and SLA are unused.
+  - slug: manual
+    name_mk: Рачен внес
+    name_en: Manual entry
+    institution: Рачен внес
+    base_url: manual  # no site of its own; each call keeps the URL it was entered with
+    access_method: manual
+    expected_cadence_days: 30
+    staleness_sla_days: 365
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: pasted by the operator; robots.txt of each URL is still obeyed
+    priority: 90
     active: false

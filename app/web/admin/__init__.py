@@ -31,6 +31,7 @@ from flask import (
 from markupsafe import Markup
 
 from app.db import session_factory
+from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
 from app.models.enums import CriterionKind, ReviewState
@@ -44,6 +45,13 @@ STAGE_LABELS = {
     review.EXTRACT: "Цитати што не се пронајдени дословно",
     review.INVALID_OUTPUT: "Одговорот на моделот не ја помина шемата",
     review.NORMALISE: "Документот не може да се прочита",
+    review.MANUAL_ENTRY: "Рачен внес без повик за објава",
+}
+
+MANUAL_OUTCOMES = {
+    manual.FETCH_FAILED: "Адресите не можеа да се преземат.",
+    manual.PROCESSING_FAILED: "Документите се преземени, но повикот не можеше да се обработи.",
+    manual.ALREADY_KNOWN: "Ништо ново: овие документи веќе се повик или веќе чекаат преглед.",
 }
 
 STATE_LABELS = {
@@ -220,6 +228,7 @@ def _titles(db, items) -> dict[int, str]:
             or extracted.get("value")
             or payload.get("public_url")
             or payload.get("url")
+            or (payload.get("urls") or [None])[0]
             or item.reason
         )
     return titles
@@ -251,7 +260,7 @@ def _render_item(db, item, *, error: str | None = None, open_form: str | None = 
         "fields": list(ProfileField),
         "operators": list(Operator),
         "field_operators": {f.value: sorted(o.value for o in FIELDS[f].operators) for f in FIELDS},
-        "snapshot_texts": {},
+        "manual_outcomes": MANUAL_OUTCOMES,
     }
     if call is not None:
         documents = review.call_documents(db, call)
@@ -396,3 +405,43 @@ def remove_criterion(item_id: int, criterion_id: uuid.UUID):
         return "Условот е отстранет."
 
     return _decide(item_id, act) or redirect(url_for("admin.item", item_id=item_id))
+
+
+# -- manual entry -------------------------------------------------------------------------
+
+
+@bp.get("/rachen-vnes")
+def manual_entry():
+    return render_template("admin/manual.html", typed={}, error=None, max_urls=manual.MAX_URLS)
+
+
+@bp.post("/rachen-vnes")
+def manual_entry_submit():
+    form = request.form
+    try:
+        urls = manual.parse_urls(form.get("urls", ""))
+        manual.enqueue(
+            _settings(), urls, form.get("institution", "").strip(), form.get("note", "").strip()
+        )
+    except manual.InvalidEntry as exc:
+        return _manual_form_error(str(exc), 422)
+    except Exception as exc:  # Redis unreachable: say so, keep what was typed
+        current_app.logger.warning("manual entry not queued: %s", exc)
+        return _manual_form_error(
+            "Редот за обработка не е достапен, внесот не е испратен. "
+            "Проверете дали работат redis и worker (docker compose ps).",
+            503,
+        )
+    flash(
+        f"Внесот е испратен на обработка ({len(urls)} "
+        f"{'адреса' if len(urls) == 1 else 'адреси'}). Одговорот ќе се појави во редот, "
+        "обично за една до две минути."
+    )
+    return redirect(url_for("admin.queue"))
+
+
+def _manual_form_error(message: str, status: int):
+    page = render_template(
+        "admin/manual.html", typed=request.form.to_dict(), error=message, max_urls=manual.MAX_URLS
+    )
+    return page, status

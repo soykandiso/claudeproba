@@ -6,7 +6,7 @@
   <a class="back" href="{{ url_for('admin.queue') }}">Назад кон редот</a>
   <div class="report-head stack">
     <p class="small soft">{{ stage_label }}, ставка <span class="id id--14">{{ item.id }}</span></p>
-    <h1 class="break">{% if call %}{{ call.title_mk }}{% else %}{{ (payload.extraction or {}).get('title_mk', {}).get('value') or payload.public_url or payload.url or item.reason }}{% endif %}</h1>
+    <h1 class="break">{% if call %}{{ call.title_mk }}{% else %}{{ (payload.extraction or {}).get('title_mk', {}).get('value') or payload.public_url or payload.url or (payload.urls or [None])[0] or item.reason }}{% endif %}</h1>
     <p class="soft break">{{ item.reason }}</p>
     {% if not pending %}
     <p class="review-stamp">{{ state_label }}, {{ item.resolved_at|datetime_mk }}{% if item.reviewer_note %}: {{ item.reviewer_note }}{% endif %}</p>
@@ -173,6 +173,26 @@
   </section>
   {% endif %}
 
+  {% if stage == 'manual_entry' %}
+  <section class="stack-lg" aria-labelledby="manual-h">
+    <h2 id="manual-h">Рачен внес</h2>
+    <p><strong>{{ manual_outcomes.get(payload.outcome, payload.outcome) }}</strong></p>
+    {% if payload.detail %}<p class="break small">{{ payload.detail }}</p>{% endif %}
+    {% if payload.outcome == 'fetch_failed' %}
+    <p class="soft">Ако адресата е погрешна, внесете ја повторно. Ако robots.txt не дозволува преземање, повикот не може да се внесе автоматски.</p>
+    {% elif payload.outcome == 'processing_failed' %}
+    <p class="soft">Снимките се зачувани. Внесете ги истите адреси повторно кога причината ќе се реши (на пример, клучот за моделот).</p>
+    {% elif payload.existing_item_id %}
+    <p><a href="{{ url_for('admin.item', item_id=payload.existing_item_id) }}">Ставка {{ payload.existing_item_id }}</a> веќе ги покрива овие документи.</p>
+    {% endif %}
+    <dl class="breakdown">
+      {% for url in payload.urls or [] %}<div><dt>{{ 'Повик' if loop.first else 'Прилог' }}</dt><dd><span class="id break">{{ url }}</span></dd></div>{% endfor %}
+      {% if payload.institution %}<div><dt>Институција</dt><dd>{{ payload.institution }}</dd></div>{% endif %}
+      {% if payload.note %}<div><dt>Белешка</dt><dd class="break">{{ payload.note }}</dd></div>{% endif %}
+    </dl>
+  </section>
+  {% endif %}
+
   {# ------------------------------------------------------------------ what the pipeline left #}
   {% set notes = (payload.notes or []) + ([payload.extraction.notes_for_reviewer] if payload.extraction and payload.extraction.notes_for_reviewer else []) %}
   {% if notes or payload.listing or payload.failures or payload.errors or payload.reasons %}
@@ -239,7 +259,11 @@
       </div>
     </form>
     {% else %}
+    {% if stage == 'manual_entry' %}
+    <p>Оваа ставка нема повик за објавување. Затворете ја откако ќе ја прочитате; адресите може да се внесат повторно.</p>
+    {% else %}
     <p>Оваа ставка нема повик за објавување. Прочитајте ја причината и затворете ја. Истиот документ нема повторно да се праша додека не се промени на изворот.</p>
+    {% endif %}
     {% endif %}
     <form class="stack form-narrow" method="post" action="{{ url_for('admin.reject', item_id=item.id) }}">
       <input type="hidden" name="csrf" value="{{ csrf_token() }}">

@@ -265,7 +265,7 @@ class _Pipeline:
         was_published = bool(call and call.is_published)
         if created:
             call = Call(
-                programme_id=_singleton_programme(session, source, primary, out).id,
+                programme_id=_singleton_programme(session, source, primary, out, found).id,
                 source_feed_id=source.id,
             )
             session.add(call)
@@ -462,12 +462,20 @@ def _waiting_item(session: Session, snapshots: list[RawSnapshot]) -> ReviewQueue
 
 
 def _singleton_programme(
-    session: Session, source: SourceFeed, primary: RawSnapshot, out: CallExtraction
+    session: Session,
+    source: SourceFeed,
+    primary: RawSnapshot,
+    out: CallExtraction,
+    found: FoundCall,
 ) -> Programme:
     """Every new call starts in a programme of its own (docs/data-model.md).
 
     Joining recurring calls into one durable programme is a human decision; a
     wrong merge would carry one call's history onto another.
+
+    The institution is the source's, unless the listing names one: a manually
+    entered call (sources/manual.py) comes from whoever published it, not from
+    "manual entry".
     """
     slug = f"{source.slug}-{hashlib.sha256(primary.url.encode()).hexdigest()[:12]}"
     programme = session.scalars(select(Programme).where(Programme.slug == slug)).first()
@@ -476,7 +484,7 @@ def _singleton_programme(
             source_feed_id=source.id,
             slug=slug,
             name_mk=out.title_mk.value,
-            institution=source.institution,
+            institution=found.listing.get("institution") or source.institution,
             is_singleton=True,
         )
         session.add(programme)

@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 16.09.2026, after P1 s15, before P1 s16.
+**Last updated:** 16.09.2026, after P1 s16, before P1 s17.
 
 ---
 
@@ -22,11 +22,10 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s15 done (s11 built AV instead of FITR). **Next: s16, manual source entry** |
+| P1 | s6–s16 done (s11 built AV instead of FITR). **Next: s17** — its slot was FITR, still unreachable (`sources.md` §6.1) and AV is already built, so check FITR from the host first; if it still times out, record that and move to s18 (Economy) |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
-Then P1 s17 (FITR slot, still unreachable: `sources.md` §6.1; AV already built), s18 Economy,
-s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
+Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 
 ### Session log
 
@@ -39,6 +38,8 @@ s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | 16.09 | P1 s13 | `ae67c40` | EU portal fetcher; scope is D10 (39 topics). Call-document PDFs not extracted |
 | 16.09 | P1 s14 | `bc6848e` | `flask ingest health` + healthchecks.io; delivery drill waits for the VPS |
 | 16.09 | P1 s15 | `4ad9ef6` | `/admin` review queue; approval re-checks citations, fills prefilter columns. Not in production until D11 |
+| 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
+| 16.09 | P1 s16 | `git log --grep 'session 16'` | Manual entry by URL: `/admin/rachen-vnes` → RQ job (the first one) → pipeline; failures answer in the queue. Live-checked through the real worker |
 
 ## 3. What is built, in one screen
 
@@ -50,7 +51,10 @@ s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 - `app/retrieval/` — chunker, local embedder, hybrid search.
 - `app/matching/` — `operators.py` vocabulary, `hard_filter.py` interpreter + `prefilter_columns`,
   `taxonomy.py` verdicts. Scoring and verification are P2.
-- `app/review/extraction.py` — every review decision. `app/web/admin/` only renders and posts.
+- `app/ingestion/sources/manual.py` — pasted URLs; `run_entry` (always answers in the queue),
+  `job` (RQ), `enqueue`. The only RQ job so far; queue `ingest`.
+- `app/review/extraction.py` — every review decision. `app/web/admin/` only renders and posts
+  (queue, item, manual entry form).
 - `app/heartbeat.py` — healthchecks.io pings. `app/cli.py` — `flask ingest …` (what cron runs).
 - `app/web/demo/` — simulated; **replace, do not extend**.
 
@@ -73,8 +77,13 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **The dev stack is already running** in Docker (`./run.py --detach`): web on port 8080 through
   Caddy, Postgres on `localhost:5432`, live reload. Browser URL:
   `https://$CODESPACE_NAME-8080.app.github.dev` (port private to the user).
-- **Containers cannot reach the internet** in the Codespace (README troubleshooting); the host can.
-  Live probes of sources run on the host with `uv run python`, never through the containers.
+- **Containers reach the internet now** (16.09.2026: the worker fetched economy.gov.mk). The README
+  troubleshooting note about iptables applies if that changes. Live probes are still simplest on
+  the host with `uv run python`.
+- **The RQ worker does not reload code**: `docker compose restart worker` after changing anything it
+  imports. The web container reloads itself (a request during the reload gets a 404).
+- A new source row in `config/sources.yaml` reaches the dev DB only after
+  `uv run flask --app "app:create_app()" ingest sync-sources`.
 - **Tests run against the development database** inside a transaction that is rolled back. Fixtures
   delete what they need to start clean. **Clear `ModelCall`/`ModelCallPayload` in any fixture that
   scripts model replies**: the gateway's content-hash cache otherwise replays a stored reply
@@ -168,4 +177,10 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   and make Caddy refuse `/admin` from outside.
 - **AV `staleness_sla_days: 45`** may raise quiet alerts in December–January.
 - **FITR** is still unreachable from datacenters; check from the VPS once it exists.
+- **Manual entry normalises the whole page body** (no content selector is known for an arbitrary
+  site), so navigation text can reach citations; the reviewer is the guard. New chunks for a manual
+  entry are embedded by the next `flask ingest due` (its index step), not by the job.
+- **Manual URL safety** refuses non-http(s), bare hostnames, `localhost`/`.internal`/`.local` and
+  non-global IP literals; it does not resolve DNS, so a public name pointing inward is not caught.
+  Acceptable while the admin is operator-only (D11).
 - The alert **delivery drill** (`runbook.md` §4) and the backup heartbeat both wait for the VPS.
