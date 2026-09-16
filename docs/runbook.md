@@ -198,7 +198,36 @@ again, the next ping clears the check.
 
 ---
 
-## 5. If you are unavailable for a while
+## 5. The review queue
+
+`/admin/` lists what waits for a decision, previously published calls first. Nothing reaches a
+customer until it is approved here. Not available in production until operator sign-in is decided
+(`docs/decisions.md` D11).
+
+**A call to publish** ("Повик за објава"):
+
+1. Read each condition's quote in its context. The highlighted words are exactly what the stored
+   snapshot says at the recorded offsets.
+2. Wrong kind, wrong rule, weak label: "Измени го условот". The edit is checked by the same schema
+   extraction uses, and the quote must be found verbatim in the call's documents again, or nothing is
+   saved. Copy quotes from one line.
+3. A condition that is not a condition: "Отстрани го условот".
+4. Title or deadline wrong (compare with "Што вели листата на изворот"): "Измени наслов или рок".
+5. "Прифати и објави". It is refused, with the reasons listed, if any quote no longer matches its
+   snapshot, if a customer-facing text has a banned phrase, or if a newer item exists for the same call.
+6. Not a funding call after all: close it with a reason.
+
+**Anything else** (the model says it is not a call, quotes not found, invalid model output, an
+unreadable document) has nothing to publish. Read why, and close it with a reason. The same document
+is not sent to the model again until it changes at the source; if the model was wrong, the fix is a
+prompt change (a new version file and an evaluation run), not a retry.
+
+Every edit and every reason is kept on the item (`corrected_payload`, `reviewer_note`); P2 s34 turns
+them into evaluation cases.
+
+---
+
+## 6. If you are unavailable for a while
 
 The bus-factor plan (`docs/risks.md` R7). Ingestion needs no human and continues
 on its own. What must not happen is a customer paying and then waiting with no

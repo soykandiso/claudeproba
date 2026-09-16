@@ -1,0 +1,257 @@
+{% extends "admin/base.html" %}
+{% block title %}Ставка {{ item.id }}{% endblock %}
+{% set pending = item.state.value == 'pending' %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('admin.queue') }}">Назад кон редот</a>
+  <div class="report-head stack">
+    <p class="small soft">{{ stage_label }}, ставка <span class="id id--14">{{ item.id }}</span></p>
+    <h1 class="break">{% if call %}{{ call.title_mk }}{% else %}{{ (payload.extraction or {}).get('title_mk', {}).get('value') or payload.public_url or payload.url or item.reason }}{% endif %}</h1>
+    <p class="soft break">{{ item.reason }}</p>
+    {% if not pending %}
+    <p class="review-stamp">{{ state_label }}, {{ item.resolved_at|datetime_mk }}{% if item.reviewer_note %}: {{ item.reviewer_note }}{% endif %}</p>
+    {% endif %}
+  </div>
+
+  {% if error %}
+  <div class="notice stack" role="alert" id="error" tabindex="-1">
+    <p><strong>Не е зачувано.</strong> {{ error }}</p>
+    {% if open_form and open_form.startswith('criterion:') %}<p><a href="#uslov-{{ open_form[10:] }}">Кон условот, со внесеното</a></p>{% elif open_form == 'call' %}<p><a href="#call-h">Кон насловот и рокот, со внесеното</a></p>{% endif %}
+  </div>
+  {% endif %}
+  {% if superseded_by %}
+  <div class="notice"><p>Документот е повторно променет по оваа ставка. Одлучете на <a href="{{ url_for('admin.item', item_id=superseded_by) }}">ставка {{ superseded_by }}</a>; оваа ќе се затвори сама.</p></div>
+  {% endif %}
+
+  {% if call %}
+  {# ------------------------------------------------------------------ the call #}
+  <section class="stack-lg" aria-labelledby="call-h">
+    <h2 id="call-h">Повикот</h2>
+    <dl class="facts facts--wide">
+      <div><dt>Рок</dt><dd>{% if deadline_local %}<span class="deadline">{{ deadline_local|date_mk }}{% if deadline_local.strftime('%H:%M:%S') != '23:59:59' %}, {{ deadline_local.strftime('%H:%M') }}{% endif %}</span>{% if days_left %}<br><span class="small">{{ days_left }}</span>{% endif %}{% else %}не е пронајден{% endif %}</dd></div>
+      <div><dt>Број</dt><dd>{% if call.reference_code %}<span class="id id--14 break">{{ call.reference_code }}</span>{% else %}нема{% endif %}</dd></div>
+      <div><dt>Објавен</dt><dd>{{ call.published_at|date_mk or 'не е пронајдено' }}</dd></div>
+      <div><dt>Отворен од</dt><dd>{{ call.opens_at|date_mk or 'не е пронајдено' }}</dd></div>
+      <div><dt>Најмногу по барател</dt><dd>{% if call.grant_max_mkd %}{{ call.grant_max_mkd|amount }} МКД{% else %}не е пронајдено{% endif %}</dd></div>
+      <div><dt>Вкупен буџет</dt><dd>{% if call.total_budget_mkd %}{{ call.total_budget_mkd|amount }} МКД{% elif call.total_budget_eur %}{{ call.total_budget_eur|amount }} EUR{% else %}не е пронајдено{% endif %}</dd></div>
+      <div><dt>Последна проверка</dt><dd>{{ call.last_verified_at|date_mk }}</dd></div>
+      <div><dt>Објавен на платформата</dt><dd>{{ 'да' if call.is_published else 'не' }}</dd></div>
+    </dl>
+    <p class="small">{{ source.name_mk }}: <a class="break" href="{{ call.canonical_url }}" rel="noopener noreferrer" target="_blank">{{ call.canonical_url }}</a></p>
+
+    {% if pending and not superseded_by %}
+    <details class="why"{% if open_form == 'call' %} open{% endif %}>
+      <summary>Измени наслов или рок</summary>
+      {% set t = typed if open_form == 'call' else {} %}
+      <form class="form-narrow" method="post" action="{{ url_for('admin.edit_call', item_id=item.id) }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="title_mk">Наслов</label>
+          <input class="input" id="title_mk" name="title_mk" value="{{ t.get('title_mk', call.title_mk) }}" required>
+          <span class="hint">Го гледаат корисниците. Како што стои во документот.</span>
+        </div>
+        <div class="two-col">
+          <div class="field">
+            <label for="deadline_date">Рок, датум</label>
+            <input class="input" id="deadline_date" name="deadline_date" inputmode="numeric" placeholder="дд.мм.гггг" value="{{ t.get('deadline_date', deadline_local|date_mk if deadline_local else '') }}">
+          </div>
+          <div class="field">
+            <label for="deadline_time">Рок, време</label>
+            <input class="input" id="deadline_time" name="deadline_time" inputmode="numeric" placeholder="чч:мм" value="{{ t.get('deadline_time', deadline_local.strftime('%H:%M') if deadline_local and deadline_local.strftime('%H:%M:%S') != '23:59:59' else '') }}">
+            <span class="hint">Празно: крајот на денот.</span>
+          </div>
+        </div>
+        <div class="actions"><button class="btn btn--quiet" type="submit">Зачувај наслов и рок</button></div>
+      </form>
+    </details>
+    {% endif %}
+  </section>
+
+  {% if cited %}
+  <section class="stack-lg" aria-labelledby="cited-h">
+    <div class="stack">
+      <h2 id="cited-h">Од каде се податоците</h2>
+      <p class="soft">Цитатите што ги даде моделот, пронајдени во документот при извлекувањето.</p>
+    </div>
+    <dl class="breakdown">
+      {% for c in cited %}
+      <div><dt>{{ c.label }}</dt><dd>{% if c.context %}<div class="document document--context document--lines">{{ c.context }}</div>{% else %}снимката не е достапна{% endif %}</dd></div>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endif %}
+
+  {# ------------------------------------------------------------------ criteria #}
+  <section class="stack-lg" aria-labelledby="crit-h">
+    <div class="stack">
+      <h2 id="crit-h">Услови за учество, {{ rows|length }}</h2>
+      <p class="soft">Секој услов се објавува со својот цитат. Изменет цитат мора повторно да се најде дословно во документот, инаку не се зачувува.</p>
+    </div>
+    {% if not rows %}
+    <p><strong>Не се извлечени услови.</strong> Корисниците ќе видат „потребна е проверка“ за овој повик.</p>
+    {% endif %}
+    <div>
+    {% for row in rows %}
+    {% set c = row.c %}
+    {% set form_id = 'criterion:' ~ c.id %}
+    {% set t = typed if open_form == form_id else {} %}
+    <article class="criterion stack" id="uslov-{{ c.id }}">
+      <span class="outcome">{{ kind_labels[c.kind] }}{% if c.is_approved %}, прифатен претходно{% endif %}{% if c.field %}, <span class="id">{{ c.field }} {{ c.operator }} {{ c.value_json|tojson }}</span>{% endif %}</span>
+      <h3 class="criterion__title">{{ c.label_mk }}</h3>
+      {% if row.holds %}
+      <p class="small"><span class="cite-mark">Цитатот стои дословно во документот</span>, снимка <span class="id">{{ c.snapshot_id }}</span>, знаци <span class="id">{{ c.quote_start }}–{{ c.quote_end }}</span>{% if c.confidence is not none %}, сигурност {{ '%.2f'|format(c.confidence) }}{% endif %}</p>
+      <div class="document document--context document--lines">{{ row.context }}</div>
+      {% else %}
+      <div class="notice stack"><p><strong>Цитатот не стои на запишаното место во документот.</strong> Поправете го цитатот или отстранете го условот.</p>{% if c.source_quote %}<p class="break">„{{ c.source_quote }}“</p>{% endif %}</div>
+      {% endif %}
+
+      {% if pending and not superseded_by %}
+      <details class="why"{% if open_form == form_id %} open{% endif %}>
+        <summary>Измени го условот</summary>
+        <div class="stack">
+        <form class="form-narrow" method="post" action="{{ url_for('admin.edit_criterion', item_id=item.id, criterion_id=c.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <div class="field">
+            <label for="kind-{{ c.id }}">Вид</label>
+            <select class="select" id="kind-{{ c.id }}" name="kind">
+              {% for k in kinds %}<option value="{{ k.value }}" {% if t.get('kind', c.kind.value) == k.value %}selected{% endif %}>{{ kind_labels[k] }}</option>{% endfor %}
+            </select>
+            <span class="hint">„Правило над профилот“ може да исклучи барател, затоа важи само ако условот се однесува на секој барател и точно одговара на поле од профилот.</span>
+          </div>
+          <div class="field">
+            <label for="label-{{ c.id }}">Опис за корисникот</label>
+            <input class="input" id="label-{{ c.id }}" name="label_mk" value="{{ t.get('label_mk', c.label_mk) }}" required>
+          </div>
+          <div class="field">
+            <label for="quote-{{ c.id }}">Цитат</label>
+            <textarea class="textarea" id="quote-{{ c.id }}" name="quote" required>{{ t.get('quote', c.source_quote or '') }}</textarea>
+            <span class="hint">Дословно, од еден ред на документот.</span>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="field-{{ c.id }}">Поле од профилот</label>
+              <select class="select" id="field-{{ c.id }}" name="field">
+                <option value="">нема</option>
+                {% for f in fields %}<option value="{{ f.value }}" {% if t.get('field', c.field or '') == f.value %}selected{% endif %}>{{ f.value }}: {{ field_operators[f.value]|join(', ') }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label for="operator-{{ c.id }}">Оператор</label>
+              <select class="select" id="operator-{{ c.id }}" name="operator">
+                <option value="">нема</option>
+                {% for o in operators %}<option value="{{ o.value }}" {% if t.get('operator', c.operator or '') == o.value %}selected{% endif %}>{{ o.value }}</option>{% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="values-{{ c.id }}">Вредности</label>
+            <input class="input id-input" id="values-{{ c.id }}" name="values" value="{{ t.get('values', row['values']) }}">
+            <span class="hint">За in, not_in, prefix_in, prefix_not_in, одделени со запирка: micro, small или C, 10.71.</span>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="min-{{ c.id }}">Најмалку</label>
+              <input class="input" id="min-{{ c.id }}" name="minimum" inputmode="decimal" value="{{ t.get('minimum', (c.value_json or {}).get('min', '')) }}">
+            </div>
+            <div class="field">
+              <label for="max-{{ c.id }}">Најмногу</label>
+              <input class="input" id="max-{{ c.id }}" name="maximum" inputmode="decimal" value="{{ t.get('maximum', (c.value_json or {}).get('max', '')) }}">
+            </div>
+          </div>
+          <div class="actions"><button class="btn btn--quiet" type="submit">Зачувај го условот</button></div>
+        </form>
+        <form method="post" action="{{ url_for('admin.remove_criterion', item_id=item.id, criterion_id=c.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <div class="actions"><button class="btn btn--quiet" type="submit">Отстрани го условот</button></div>
+        </form>
+        </div>
+      </details>
+      {% endif %}
+    </article>
+    {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ------------------------------------------------------------------ what the pipeline left #}
+  {% set notes = (payload.notes or []) + ([payload.extraction.notes_for_reviewer] if payload.extraction and payload.extraction.notes_for_reviewer else []) %}
+  {% if notes or payload.listing or payload.failures or payload.errors or payload.reasons %}
+  <section class="stack-lg" aria-labelledby="notes-h">
+    <h2 id="notes-h">Белешки за прегледот</h2>
+    {% if notes %}
+    <ul class="reasons">{% for note in notes %}<li class="break">{{ note }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if payload.failures %}
+    <div class="stack">
+      <h3>Цитати што не се пронајдени</h3>
+      <dl class="breakdown">
+        {% for f in payload.failures %}
+        <div><dt><span class="id">{{ f.path }}</span></dt><dd>„{{ f.quote }}“<br><span class="small soft">{{ f.reason }}, документ {{ f.document }}</span></dd></div>
+        {% endfor %}
+      </dl>
+    </div>
+    {% endif %}
+    {% if payload.errors %}
+    <div class="stack">
+      <h3>Грешки при проверка на шемата</h3>
+      <ul class="reasons">{% for e in payload.errors %}<li class="break">{{ e }}</li>{% endfor %}</ul>
+      <p class="small soft">Задача <span class="id">{{ payload.task }}</span>, промпт <span class="id">{{ payload.prompt_version }}</span></p>
+    </div>
+    {% endif %}
+    {% if payload.reasons %}
+    <div class="stack">
+      <h3>Зошто документот не е прочитан</h3>
+      <ul class="reasons">{% for r in payload.reasons %}<li class="break">{{ r }}</li>{% endfor %}</ul>
+      <p class="small soft break">Снимка <span class="id">{{ payload.snapshot_id }}</span>, <span class="id">{{ payload.url }}</span></p>
+    </div>
+    {% endif %}
+    {% if payload.listing %}
+    <div class="stack">
+      <h3>Што вели листата на изворот</h3>
+      <p class="small soft">Не е цитат и не се објавува; служи за споредба.</p>
+      <dl class="breakdown">
+        {% for key, value in payload.listing.items() %}{% if value %}<div><dt><span class="id">{{ key }}</span></dt><dd class="break">{{ value }}</dd></div>{% endif %}{% endfor %}
+      </dl>
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# ------------------------------------------------------------------ decision #}
+  {% if pending %}
+  <section class="stack-lg" aria-labelledby="decide-h">
+    <h2 id="decide-h">Одлука</h2>
+    {% if stage == 'approve_call' %}
+    <form class="stack form-narrow" method="post" action="{{ url_for('admin.approve', item_id=item.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {% if problems %}
+      <div class="notice stack" id="problems">
+        <p><strong>Не може да се објави:</strong></p>
+        <ul class="reasons">{% for p in problems %}<li>{{ p }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      <div class="field">
+        <label for="approve-note">Белешка, ако има</label>
+        <input class="input" id="approve-note" name="note">
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit" {% if problems %}disabled aria-describedby="problems"{% endif %}>Прифати и објави</button>
+      </div>
+    </form>
+    {% else %}
+    <p>Оваа ставка нема повик за објавување. Прочитајте ја причината и затворете ја. Истиот документ нема повторно да се праша додека не се промени на изворот.</p>
+    {% endif %}
+    <form class="stack form-narrow" method="post" action="{{ url_for('admin.reject', item_id=item.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {% set t = typed if open_form == 'reject' else {} %}
+      <div class="field">
+        <label for="reject-note">Причина за затворање</label>
+        <input class="input" id="reject-note" name="note" value="{{ t.get('note', '') }}" required>
+        <span class="hint">Повикот останува необјавен. Причината станува случај за евалуација (P2 s34).</span>
+      </div>
+      <div class="actions"><button class="btn btn--quiet" type="submit">Затвори без објавување</button></div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

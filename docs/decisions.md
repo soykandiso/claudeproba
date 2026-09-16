@@ -1,6 +1,6 @@
 # Open decisions — yours to make
 
-Everything else in `/docs` I decided and justified. These ten I cannot decide for you, because they
+Everything else in `/docs` I decided and justified. These eleven I cannot decide for you, because they
 depend on your market judgement, your risk appetite, or facts about your business I do not have.
 
 Each has a **recommendation**, the **reasoning**, and the **consequence of each option** so you can
@@ -273,6 +273,37 @@ reviewable, at the cost of missing Horizon partner opportunities a competitor ma
 
 ---
 
+## D11 — How the operator signs in to the admin
+
+> **Needed before the first production deploy that ingests real calls.** Until then the admin is
+> simply not registered in production (`app/__init__.py`), like `/demo`.
+
+The review queue (P1 s15) publishes calls: the most consequential action in the system. The roadmap
+puts sign-in at P3 s44 (magic link, "no password anywhere in the system"), 29 sessions after the
+admin exists.
+
+**Options:**
+
+- **A. Magic link to the operator's email**, built with s44: an `account` flagged as operator, a
+  one-time link, a session cookie. No password anywhere. Needs transactional email, which needs the
+  domain (D2).
+- **B. SSH tunnel.** Production serves `/admin` only on a port bound to the VPS's localhost, and Caddy
+  refuses `/admin` from outside. You reach it with `ssh -L 8001:localhost:8001 <vps>` and open
+  `http://localhost:8001/admin/`. Authentication is your SSH key; no auth code is written. Laptop
+  only, in practice.
+- **C. Caddy `basic_auth` on `/admin`** over HTTPS. Works from a phone the day it is set up, but it is
+  a password (no lockout, no second factor) and contradicts s44's acceptance.
+
+**Recommendation: B at the first deploy, A when s44 lands.** B costs one Caddyfile rule and a compose
+port, and its failure mode is "you cannot reach the admin", never "someone else can". Reviewing is an
+evening task at a computer anyway: approving a call means reading its quotes in context.
+
+Whichever you choose, the forms already carry CSRF tokens and the session cookie is `SameSite=Lax`,
+so the admin is ready for a cookie-based login. `review_queue_item.reviewer_id` stays empty until
+there is an account to point at.
+
+---
+
 ## Summary — what to decide, and by when
 
 | # | Decision | Needed by | My recommendation |
@@ -287,6 +318,7 @@ reviewable, at the cost of missing Horizon partner opportunities a competitor ma
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
 | D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026** | Tesseract `mkd` locally; OCR citations always reviewed |
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
+| D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

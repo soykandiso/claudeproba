@@ -339,6 +339,8 @@ mark {
   scroll-margin-top: var(--s-96);
 }
 .document--context mark { background: var(--paper); }
+/* The reviewer copies quotes from one line, so the lines are shown as stored. */
+.document--lines { white-space: pre-line; }
 
 /* Rows: an order list, the review queue */
 

@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block title %}Ред за преглед{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Ред за преглед</h1>
+    <p class="soft">Ниту еден повик не е видлив за корисник додека не го прифатите тука. Прифаќањето повторно проверува секој цитат во зачуваната снимка.</p>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="pending-h">
+    <h2 id="pending-h">Чека одлука{% if pending %}, {{ pending|length }}{% endif %}</h2>
+    {% if pending %}
+    <ul class="rows">
+      {% for item in pending %}
+      {% set stage = stage_of(item) %}
+      <li>
+        <div class="stack">
+          <span class="small soft">{{ stage_labels.get(stage, stage) }}{% if item.priority < 100 %}, <strong>беше објавен, сега е скриен</strong>{% endif %}</span>
+          <a class="break" href="{{ url_for('admin.item', item_id=item.id) }}"><strong>{{ titles[item.id] }}</strong></a>
+          <span class="small soft break">{{ item.reason }}</span>
+        </div>
+        <div class="rows__meta small">
+          <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
+          <span class="soft">{{ item.created_at|datetime_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нема ништо за преглед. Новите повици стигнуваат по секое преземање од изворите (<span class="id id--14">flask ingest due</span>).</p>
+    {% endif %}
+  </section>
+
+  {% if decided %}
+  <section class="stack-lg" aria-labelledby="decided-h">
+    <h2 id="decided-h">Последни одлуки</h2>
+    <ul class="rows">
+      {% for item in decided %}
+      <li class="rows--closed">
+        <div class="stack">
+          <span class="small">{{ state_labels[item.state] }}</span>
+          <a class="break" href="{{ url_for('admin.item', item_id=item.id) }}">{{ titles[item.id] }}</a>
+          {% if item.reviewer_note %}<span class="small break">{{ item.reviewer_note }}</span>{% endif %}
+        </div>
+        <div class="rows__meta small">
+          <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
+          <span>{{ item.resolved_at|datetime_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

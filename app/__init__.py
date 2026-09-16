@@ -18,6 +18,9 @@ def create_app(settings: Settings | None = None) -> Flask:
     app.config["SECRET_KEY"] = settings.secret_key
     app.config["DEBUG"] = settings.debug
     app.config["TESTING"] = settings.env == "testing"
+    # Forms that change data also carry a CSRF token (app/web/admin); Lax keeps the
+    # session cookie off cross-site POSTs as a second line.
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
     # Kept as the single source of truth for configuration. Flask's own config dict
     # stays limited to the keys Flask itself reads, so there is one place to look.
@@ -38,6 +41,12 @@ def create_app(settings: Settings | None = None) -> Flask:
         from app.web.demo import bp as demo_bp
 
         app.register_blueprint(demo_bp)
+
+    # Publishes calls, and there is no operator sign-in yet (docs/decisions.md D11).
+    if not settings.is_production:
+        from app.web.admin import bp as admin_bp
+
+        app.register_blueprint(admin_bp)
 
     from app.cli import register_cli
 

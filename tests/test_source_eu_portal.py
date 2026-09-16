@@ -33,7 +33,7 @@ from app.ingestion.sources.eu_portal import (
     parse_search,
     search_request,
 )
-from app.models import Call, RawSnapshot, ReviewQueueItem, SourceFeed
+from app.models import Call, ModelCall, ModelCallPayload, RawSnapshot, ReviewQueueItem, SourceFeed
 from app.models.enums import CallStatus
 from tests.test_extract import ScriptedProvider
 from tests.test_extract_schema import cassette, fixture_text
@@ -207,6 +207,9 @@ def sessions():
         sync_sources(s, load_sources())
         source = s.scalars(select(SourceFeed).where(SourceFeed.slug == "eu-portal")).one()
         source.is_active = True
+        # A cached model reply for the same documents would replace the scripted one.
+        s.execute(delete(ModelCallPayload))
+        s.execute(delete(ModelCall))
         s.execute(delete(ReviewQueueItem))
         s.execute(delete(Call).where(Call.source_feed_id == source.id))
         s.execute(delete(RawSnapshot).where(RawSnapshot.source_feed_id == source.id))

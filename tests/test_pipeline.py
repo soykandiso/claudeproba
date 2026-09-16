@@ -29,6 +29,8 @@ from app.models import (
     CallDocument,
     EligibilityCriterion,
     IngestionRun,
+    ModelCall,
+    ModelCallPayload,
     Programme,
     RawSnapshot,
     ReviewQueueItem,
@@ -104,6 +106,10 @@ def sessions():
         av = s.scalars(select(SourceFeed).where(SourceFeed.slug == "av")).one()
         av.is_active = True
         # The development database may hold real rows; this test starts from none.
+        # Model calls too: a cached reply for the same documents would be replayed
+        # instead of the scripted one (the gateway's content-hash cache).
+        s.execute(delete(ModelCallPayload))
+        s.execute(delete(ModelCall))
         s.execute(delete(ReviewQueueItem))
         s.execute(delete(Call).where(Call.source_feed_id == av.id))
         s.execute(delete(RawSnapshot).where(RawSnapshot.source_feed_id == av.id))

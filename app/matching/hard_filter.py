@@ -16,11 +16,12 @@ points it at the call_criterion rows without changing the evaluation.
 """
 
 import enum
+import math
 from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
-from app.matching.operators import FIELDS, NUMBER_OPERATORS, Operator, ProfileField
+from app.matching.operators import FIELDS, LIST_OPERATORS, NUMBER_OPERATORS, Operator, ProfileField
 
 
 class RuleResult(enum.StrEnum):
@@ -150,3 +151,91 @@ def evaluate(criterion: StructuredCriterion, profile: Profile) -> RuleResult:
         return OPERATORS[criterion.operator](actual, criterion.value)
     except (TypeError, ValueError):
         return RuleResult.UNCLEAR
+
+
+@dataclass(frozen=True)
+class Prefilter:
+    """The denormalised hard-filter columns on `call` (docs/matching.md §3, stage 1a)."""
+
+    allowed_entity_types: list[str]
+    allowed_nace_prefixes: list[str]
+    allowed_regions: list[str]
+    min_company_age_months: int | None
+    max_company_age_months: int | None
+
+
+def prefilter_columns(criteria: Collection[StructuredCriterion]) -> Prefilter:
+    """What stage 1a's SQL may exclude on, from a call's approved hard_structured criteria.
+
+    The SQL runs before the interpreter above and throws rows away, so it must never
+    exclude a profile the interpreter would keep or call unclear. It is a coarse
+    superset, and the interpreter stays the judge:
+
+    - one `in` on entity_type becomes allowed_entity_types; the SQL overlap test is
+      exactly `_in`. Two of them are a conjunction the overlap cannot express
+      (a startup that is also micro satisfies `in [startup]` and `in [micro]`), so
+      they, and every `not_in`, leave the column empty.
+    - one `prefix_in` on nace_code becomes allowed_nace_prefixes, for the same reason.
+    - numeric bounds on age_months are a true conjunction: the largest minimum and
+      the smallest maximum, rounded outward so no boundary profile is lost.
+    - regions have no profile field yet (app/matching/operators.py), so no restriction.
+
+    Filled when a human approves the call (app/review/extraction.py), never from
+    unapproved extraction.
+    """
+    by_field: dict[ProfileField, list[StructuredCriterion]] = {}
+    for criterion in criteria:
+        by_field.setdefault(ProfileField(criterion.field), []).append(criterion)
+
+    def single_list(field: ProfileField, operator: Operator) -> list[str]:
+        found = by_field.get(field, [])
+        if len(found) == 1 and found[0].operator == operator:
+            return sorted(str(v) for v in found[0].value)  # type: ignore[union-attr]
+        return []
+
+    minimums, maximums = [], []
+    for criterion in by_field.get(ProfileField.AGE_MONTHS, []):
+        value = criterion.value
+        if criterion.operator == Operator.GTE:
+            minimums.append(float(value))  # type: ignore[arg-type]
+        elif criterion.operator == Operator.LTE:
+            maximums.append(float(value))  # type: ignore[arg-type]
+        elif criterion.operator == Operator.BETWEEN:
+            low, high = (float(x) for x in value)  # type: ignore[union-attr]
+            minimums.append(low)
+            maximums.append(high)
+
+    return Prefilter(
+        allowed_entity_types=single_list(ProfileField.ENTITY_TYPE, Operator.IN),
+        allowed_nace_prefixes=single_list(ProfileField.NACE_CODE, Operator.PREFIX_IN),
+        allowed_regions=[],
+        min_company_age_months=math.floor(max(minimums)) if minimums else None,
+        max_company_age_months=math.ceil(min(maximums)) if maximums else None,
+    )
+
+
+@dataclass(frozen=True)
+class Stored:
+    """A stored criterion's predicate in the shape evaluate() reads.
+
+    eligibility_criterion.value_json is {"values": [...]} for list operators and
+    {"min": x, "max": y} for numbers (app/ai/schemas.py ExtractedCriterion.value_json).
+    """
+
+    field: ProfileField
+    operator: Operator
+    value: object
+
+    @classmethod
+    def from_row(cls, field: str, operator: str, value_json: Mapping | None) -> "Stored":
+        op = Operator(operator)
+        data = value_json or {}
+        if op in LIST_OPERATORS:
+            value: object = list(data.get("values") or [])
+        elif op == Operator.GTE:
+            value = data.get("min")
+        elif op == Operator.LTE:
+            value = data.get("max")
+        else:
+            value = (data.get("min"), data.get("max"))
+        return cls(ProfileField(field), op, value)
