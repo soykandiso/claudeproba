@@ -1,6 +1,6 @@
 # Open decisions — yours to make
 
-Everything else in `/docs` I decided and justified. These nine I cannot decide for you, because they
+Everything else in `/docs` I decided and justified. These ten I cannot decide for you, because they
 depend on your market judgement, your risk appetite, or facts about your business I do not have.
 
 Each has a **recommendation**, the **reasoning**, and the **consequence of each option** so you can
@@ -237,6 +237,42 @@ enter the evidence chain unnoticed.
 
 ---
 
+## D10 — Which EU portal topics to ingest
+
+> **Default in place since 16.09.2026 (P1 s13); yours to confirm or widen.** It is `SCOPE` in
+> `app/ingestion/sources/eu_portal.py`, a one-line edit either way.
+
+The portal listed 1.341 open or forthcoming items on 16.09.2026: 1.142 grant topics, 176 cascade-funding
+calls and 23 other calls for proposals. **966 were Horizon Europe**, most of them research topics for
+consortia. Every new call waits for your approval before it is published (P1 s15), so the scope is
+really a question about your evenings.
+
+**Default: grant topics from five programme areas North Macedonia takes part in** — Digital Europe,
+the Single Market Programme, Creative Europe, Erasmus+, and the EIC part of Horizon Europe
+(Accelerator, Pathfinder, STEP, prizes). That was 39 topics with a deadline still ahead, about one
+evening of first approvals and a trickle after. Participation was checked on 16.09.2026 by web
+search: Commission and EEAS announcements for Horizon Europe, Digital Europe and Creative Europe, the
+Erasmus+ country page, and reports that North Macedonia signed up to SMP. The portal's
+per-programme "list of participating countries" was not read and is the authority; read the SMP one
+before approving the first SMP call.
+
+**Left out, with reasons:**
+- **The rest of Horizon Europe** (~930 topics). Real opportunities for Macedonian partners, but a
+  company rarely leads them and the volume would bury the queue. Revisit when a paying customer asks
+  for research consortia.
+- **LIFE, CERV, EU4Health and others.** North Macedonia's participation was not confirmed in the
+  session. Add each once its participating-countries list names North Macedonia.
+- **Cascade funding (type 8, 176 calls).** Often the most SME-relevant money on the portal — open
+  calls run by EU projects — but it has no topic JSON; the text lives in the search result and the
+  project's own site. It needs its own document shape, so it is a session of its own.
+
+**Consequences:** wider scope means more calls in the shortlist and more first approvals, and more
+model spend on extraction. It also means English call text in front of a customer whose report is
+in Macedonian (`CLAUDE.md`: human review of any AI Macedonian). Narrower scope is cheaper and
+reviewable, at the cost of missing Horizon partner opportunities a competitor may list.
+
+---
+
 ## Summary — what to decide, and by when
 
 | # | Decision | Needed by | My recommendation |
@@ -250,6 +286,7 @@ enter the evidence chain unnoticed.
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
 | D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026** | Tesseract `mkd` locally; OCR citations always reviewed |
+| D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

@@ -21,8 +21,10 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: robots allows portal paths; reuse terms not yet read (P3 s43)
+    # Built in P1 s13 (16.09.2026). Which programmes are crawled is SCOPE in
+    # app/ingestion/sources/eu_portal.py (docs/decisions.md D10).
     priority: 2
-    active: false
+    active: true
 
   - slug: av
     name_mk: Агенција за вработување на Република Северна Македонија

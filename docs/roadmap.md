@@ -38,7 +38,7 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 10 | Extraction prompt v1 + `CallExtraction` schema | On 3 FITR fixtures, criteria extract with citations; a malformed response lands in the review queue |
 | 11 | **FITR fetcher, end to end** — *built for AV instead (16.09.2026): FITR unreachable, `sources.md` §6.1* | **Brief's own P1 criterion:** a newly published FITR call is in the database within 24 hours, with a snapshot and working citations |
 | 12 | Chunker, embedder, hybrid retrieval query (vector + trigram) | A clause retrieved by paraphrase appears in the top 3 |
-| 13 | EU Funding & Tenders fetcher | Same pipeline, different access method. Any interface change this forces is the point of building it second |
+| 13 | EU Funding & Tenders fetcher — *built 16.09.2026, no interface change needed; scope is `decisions.md` D10, linked call documents not yet extracted (`sources.md` §6.6)* | Same pipeline, different access method. Any interface change this forces is the point of building it second |
 | 14 | Source health, staleness SLA, alerting, external heartbeat | Break a source deliberately in staging → alert reaches you **outside the app** within its SLA |
 | 15 | Admin review queue UI (extraction items) | Approve / edit / reject works; only approved calls get `is_published = true` |
 | 16 | Manual source entry (`access_method='manual'`) | Paste a URL → snapshot → extraction → review, same citation quality |
@@ -61,8 +61,7 @@ phase's customer and operator screens on invented calls, with state in the sessi
 real along the way, ahead of their sessions and with tests: the stage-1 rule interpreter and
 verdict taxonomy (part of **s24**) and the banned-phrase lint (part of **s32**). Everything else on
 `/demo` is simulated and is replaced, not extended, when its session arrives. `/demo/vodic` maps
-each feature to its session. Next: try the demo, then choose whether P1 s13 or a P2 session goes
-first.
+each feature to its session. The demo was tried and approved on 16.09.2026; P1 continued with s13.
 
 ---
 
@@ -72,13 +71,13 @@ first.
 |---|------|-----------|
 | 22 | Reference data (NACE, municipalities, regions) + `normalise()` | 30 fixture intakes normalise correctly; reference data is versioned files, not production rows |
 | 23 | Intake form in Macedonian, HTMX, mobile-first | A real person completes it in **under 3 minutes**, timed |
-| 24 | Stage 1: SQL filter + rule interpreter | Unit tests for all 9 operators; missing profile data yields `needs_verification`, never `not_eligible` |
+| 24 | Stage 1: SQL filter + rule interpreter — *also: a call whose eligibility lives in a document not yet extracted (EU call-document PDFs, `sources.md` §6.6) never reaches `eligible`* | Unit tests for all 9 operators; missing profile data yields `needs_verification`, never `not_eligible` |
 | 25 | Evaluation harness tier A skeleton + 10 generated boundary profiles | Harness runs in CI (red, with no cases yet) |
 | 26 | **Your session: mark expected verdicts for ~40 cases** | Cases committed with a one-line reason each. Highest-value evening in P2 |
 | 27 | Stage 2 scoring + `config/weights/v1.yaml` | Tier A green; rank quality ≥ 90%; **zero false `eligible`** |
 | 28 | Shortlist page: verdict badges, reasons, deadlines, `last_verified_at`, citation links | p50 latency < 3 s measured on the VPS |
 | 29 | Verification prompt, `VerificationResult` schema, verdict clamping, verbatim-quote check | Tier B green against cassettes; a paraphrased "quote" is rejected |
-| 30 | Retrieval tuning for verification | Correct clause in top 6 for ≥ 90% of criteria |
+| 30 | Retrieval tuning for verification — *includes the query for documents not in Macedonian: a Macedonian label over an English EU quote ranks other documents' clauses first (`CROSS_LANGUAGE_MISS` in `tests/test_retrieval_paraphrase.py`)* | Correct clause in top 6 for ≥ 90% of criteria |
 | 31 | Stage 3 orchestration on RQ | Enqueue → outcomes and evidence persisted for top 5 calls |
 | 32 | Report composer (MK prose) + banned-phrase lint + citation completeness check | Lint blocks a deliberately bad draft containing "гарантирано" |
 | 33 | Report review UI with the quote highlighted in the stored snapshot | You can approve or edit a full report in under 45 minutes |

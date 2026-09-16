@@ -30,10 +30,20 @@ def fixture_text(name: str) -> str:
         return normalise_html(detail).text
     if name == "ipard-notice-03-2025":
         return normalise((FIXTURES / "ipardpa/call-34-najava-03-2025.pdf").read_bytes()).text
+    if name == "eu-digital-2026-skills-10-edtech":
+        from app.ingestion.sources.eu_portal import EuPortalFetcher
+
+        topic = (FIXTURES / "eu_portal/topic-digital-2026-skills-10-edtech.json").read_bytes()
+        return normalise(*EuPortalFetcher().unwrap(topic, "application/json")).text
     raise KeyError(name)
 
 
-CASES = ["economy-call-3", "av-measure-819", "ipard-notice-03-2025"]
+CASES = [
+    "economy-call-3",
+    "av-measure-819",
+    "ipard-notice-03-2025",
+    "eu-digital-2026-skills-10-edtech",
+]
 
 
 def cassette(name: str) -> str:

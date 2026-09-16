@@ -21,7 +21,7 @@ the proven pattern.
 | # | Source | Segment | Access (observed) | Legal check | Cadence (observed) | Parsing difficulty | Priority |
 |---|--------|---------|-------------------|-------------|--------------------|--------------------|----------|
 | 1 | **ФИТР** — Фонд за иновации и технолошки развој (`fitr.mk`) | Startups / tech | HTML listing → per-call page + PDF guidelines `UNVERIFIED` — **host did not respond** (§6.1) | robots + ToS `UNVERIFIED` | Bursty: several calls/year, clustered `UNVERIFIED` | **Medium** `UNVERIFIED` | ~~1~~ **3** (§6.1) |
-| 2 | **EU Funding & Tenders Portal** (Horizon Europe, SMP, IPA III) | All / international | **JSON search API** (`api.tech.ec.europa.eu/search-api`, public key `SEDIA`) + per-topic JSON (`…/data/topicDetails/<id>.json`). No HTML scraping needed | robots: portal paths allowed. Reuse terms not yet read — P3 s43 | Continuous: 1.405 open/forthcoming topics on 13.09.2026 | **Low** for metadata. Eligible countries live in the linked call-document PDF, not the JSON | **2** |
+| 2 | **EU Funding & Tenders Portal** (Horizon Europe, SMP, IPA III) | All / international | **JSON search API** (`api.tech.ec.europa.eu/search-api`, public key `SEDIA`) + per-topic JSON (`…/data/topicDetails/<id>.json`). No HTML scraping needed | robots: portal paths allowed. Reuse terms not yet read — P3 s43 | Continuous: 1.405 open/forthcoming topics on 13.09.2026 | **Low** for metadata. Eligible countries live in the linked call-document PDF, not the JSON | **2** — built in P1 s13 for the scope in `decisions.md` D10 (§6.6) |
 | 3 | **Агенција за вработување на РСМ** (`av.gov.mk`) | SME employment | **JSON endpoint** behind the listing: `POST /services/ServiceJobAnnouncements.asmx/GetActiveEmploymentMeasures` (full archive since 2016) and `…DescriptionForBusinessMk` with `{detailId}` (full call text as HTML). The HTML listing itself is empty without JavaScript | robots allows `/services/`; **disallows `*.pdf`**, which the JSON makes unnecessary. No ToS published | 20–44 announcements/year (2016–2025); 10 so far in 2026. Peaks May–June and September | **Low-medium** — clean JSON; description HTML splits numbers across spans (§6.3) | ~~3~~ **1** — built in P1 s11 (§6.1) |
 | 4 | **Министерство за економија и труд** (`www.economy.gov.mk`, attachments on `portal.mdt.gov.mk`) | SME / trade | Server-rendered HTML: "Јавни огласи" and "Завршени јавни огласи" are separate listings, so call-vs-news is **not** a problem. Call page = title, deadline, attachment links. Call text is in PDF or DOCX attachments | robots: only `/login` disallowed on both hosts. No ToS published | ~14 closed calls with deadlines in 2024–2026 (3 / 8 / 3); archive starts 2024. Deadlines cluster Aug and Nov | **High** — both open calls' PDFs have **no text layer** (glyphs exported as images); one call is DOCX only (§6.2) | 4 |
 | 5 | **Град Скопје** (`skopje.gov.mk`) | NGO / municipal | Server-rendered HTML "Јавни повици", each entry a direct link to a PDF. Only a deadline ("Отворен до") is shown, no publication date. Procurement tenders are mixed in | No robots.txt (404). No ToS published | ~40 entries over the listed year (deadlines 31.10.2025–30.11.2026) | **High** — all three sampled PDFs are **scanner output with no text** (§6.2). Tenders must be filtered out | 5 |
@@ -195,3 +195,37 @@ year. The demand test in P1 s21 should avoid December–January, when almost not
 - Economy call PDFs (2.0–2.5 MB) and the IPARD long call (5.2 MB) were not committed as fixtures;
   their URLs and SHA-256 are in `tests/fixtures/README.md`.
 
+### 6.6 EU portal, as built — 16.09.2026 (P1 s13)
+
+`app/ingestion/sources/eu_portal.py`. It needed no change outside `app/ingestion/sources/` and
+`config/sources.yaml`: `unwrap`, `significant` and `listing_is_complete` from the AV fetcher were
+enough for a paginated API with a JSON document per call. That is the abstraction check this session
+existed for.
+
+- **The portal's status field is stale.** 23 of 31 EIC topics listed as "Open" or "Forthcoming" had
+  their last deadline in 2023. The fetcher keeps a topic only while a deadline is today or later, so
+  a call whose deadlines have all passed drops out of the listing and is closed.
+- **Paging is checked, not trusted.** Results are sorted by `identifier` (the API honours it), every
+  page is read, and a scope whose results do not add up to `totalResults`, or that returns none,
+  fails the run. A failed run closes nothing.
+- **Deadline times in the JSON are unreliable:** 00:00 UTC for 2026 topics, 17:00 UTC for 2023 ones.
+  Only the date is rendered, and the pipeline reads a date as the end of that day in Skopje.
+- **Eligibility is mostly in another document.** Most topics say "Eligible countries: described in
+  section 6 of the call document"; the topic JSON gives title, dates, description and where to look,
+  and cannot say whether a Macedonian company may apply. Of the 39 topics crawled live, 14 had no
+  "call document" link: EIC topics point to the EIC Work Programme (and state much of their
+  eligibility inline, which is extracted), Chips JU topics to `chips-ju.europa.eu`, a separate host
+  with its own robots.txt. Every link in the conditions goes into the review item's
+  `listing.condition_links`. Fetching and extracting that PDF (one document is often shared by
+  several topics) is still to do. **Until it is, an EU call's criteria are incomplete by construction.**
+  A call with no criteria already comes out `needs_verification` (`taxonomy.call_verdict`), but a
+  call with a few satisfied criteria could add up to `eligible` while the country rule sits unread in
+  the PDF. The approval in P1 s15 is the guard for now; P2 s24 must not let such a call reach
+  `eligible` or `likely_eligible` (invariant 3).
+- **The text is English.** Titles are stored as the document states them. A Macedonian label over an
+  English quote retrieves poorly across documents (roadmap P2 s30).
+- **Change detection ignores call news.** A topic's `latestInfos` changes whenever anything happens
+  in its call; `significant` compares the rendered document instead, so news costs no tokens.
+- **Live check, 16.09.2026:** 41 requests (2 search pages, 39 topics), all 39 topics normalised
+  without review; rendered text 2.039 to 19.428 characters, median 6.702. Under 4 minutes at one
+  request per 5 s.

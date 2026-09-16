@@ -20,6 +20,7 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 | `economy/listing-javni-oglasi.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi | retrieved 12.09.2026 | `852b4aadcf5263ee…` |
 | `economy/listing-zavrseni.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/zavrseni-javni-oglasi | retrieved 12.09.2026 | `0248f8160ab29962…` |
 | `eu_portal/search-open-sme.json` | POST https://api.tech.ec.europa.eu/search-api/prod/rest/search?apiKey=SEDIA&text=SME (open+forthcoming; trimmed to 5 results) |  | `a7efddd1aa9922eb…` |
+| `eu_portal/search-scope-horizon-eic.json` | POST https://api.tech.ec.europa.eu/search-api/prod/rest/search?apiKey=SEDIA&text=***&pageSize=100&pageNumber=1 with `search_request(SCOPE[1], 1)` from `app/ingestion/sources/eu_portal.py` | retrieved 16.09.2026; 23 of 31 "Open"/"Forthcoming" topics have 2023 deadlines | `581f7fadd89f4ab9…` |
 | `eu_portal/topic-digital-2026-skills-10-edtech.json` | https://ec.europa.eu/info/funding-tenders/opportunities/data/topicDetails/digital-2026-skills-10-edtech.json |  | `ebb67dc9b50c3694…` |
 | `eu_portal/topic-horizon-cl6-2026-01-circbio-07.json` | https://ec.europa.eu/info/funding-tenders/opportunities/data/topicDetails/horizon-cl6-2026-01-circbio-07.json |  | `0ce656d2b820e573…` |
 | `eu_portal/topic-smp-cosme-2024-cluster-01.json` | https://ec.europa.eu/info/funding-tenders/opportunities/data/topicDetails/smp-cosme-2024-cluster-01.json |  | `0d970537e3439558…` |
