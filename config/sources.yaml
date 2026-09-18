@@ -99,8 +99,9 @@ sources:
     rate_limit_rps: 0.2
     terms_url: null
     terms_note: no robots.txt; footer says all rights reserved
+    # Built in P1 s20 (16.09.2026): app/ingestion/sources/ipard.py, IPARD 2021-2027.
     priority: 6
-    active: false
+    active: true
 
   - slug: fitr
     name_mk: Фонд за иновации и технолошки развој

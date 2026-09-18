@@ -209,6 +209,14 @@ setting where both failures are cheap.
 > page. Options: measure confidence over the Macedonian text only; or OCR with `mkd+sqi`, which must
 > first be tested against the Cyrillic corruption that `mkd+eng` caused. `sources.md` §6.7.
 
+> **And a second gap (18.09.2026, P1 s20):** the `mkd` model's character set has no `%`. "60%"
+> is read as "609", "75%" as "755" or "7595", at confidences that raise no flag. The verbatim check
+> passes, because the quote matches the OCR text; the number in it is wrong. `mkd+eng` reads `%`
+> but turned "ЕУ" into Latin "EY" in the same test. Options: a second, `eng`-only pass over number
+> tokens followed by a `%` substitution when the second pass is confident; or a fine-tuned `mkd`
+> model with `%` added. Either is a normaliser version bump with a test set of real rates. Until then,
+> every OCR-derived number next to a rate is a reviewer's check. `sources.md` §6.9.
+
 Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
 mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image
 (Economy, IPARD). `pypdf` returns nothing. AV and the EU portal are unaffected.

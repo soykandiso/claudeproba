@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 16.09.2026, after P1 s19, before P1 s20.
+**Last updated:** 18.09.2026, after P1 s20, before P1 s21.
 
 ---
 
@@ -22,10 +22,10 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje done. **Next: s20, АФПЗРР / IPARD** (hardest parse: advance notice then call, PDFs without text layer, tabular eligibility; `sources.md` §1, §6.2–6.3) |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Next: s21, demand test — blocked** on D1 (price) and on a live page (D2 domain, VPS). Ask the user: decide D1/D2, or take unblocked work meanwhile — the OCR `%` fix (§8, D9) is the most valuable; P2 s22 (reference data) is low-regret |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
-Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
+Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as specified if s21 is negative.
 
 ### Session log
 
@@ -39,6 +39,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | 16.09 | P1 s14 | `bc6848e` | `flask ingest health` + healthchecks.io; delivery drill waits for the VPS |
 | 16.09 | P1 s15 | `4ad9ef6` | `/admin` review queue; approval re-checks citations, fills prefilter columns. Not in production until D11 |
 | 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
+| 18.09 | P1 s20 | `git log --grep 'session 20'` | IPARD: call page is the call (notice → published updates one call); ranking = out of scope and closed; tables routed by a note on every item. Live: 3 calls (02/2024 published but never ranked, deadline 20.12.2024). **Found: `mkd` OCR cannot read `%`** (§8) |
 | 16.09 | P1 s19 | `git log --grep 'session 19'` | Skopje via generic `municipal.py` + `options` in sources.yaml (the one change outside sources/). Live: 1 open call, OCR 92.75 |
 | 16.09 | P1 s18 | `git log --grep 'session 18'` | Economy fetcher: call text only; empty listing is normal; Livewire tokens stripped. Found: bilingual MK/AL PDFs fail the D9 OCR confidence rule on every page |
 | 16.09 | P1 s17 | `git log --grep 'session 17'` | FITR re-checked from the host: still no TCP connection. Slot deferred, nothing built |
@@ -54,7 +55,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 - `app/retrieval/` — chunker, local embedder, hybrid search.
 - `app/matching/` — `operators.py` vocabulary, `hard_filter.py` interpreter + `prefilter_columns`,
   `taxonomy.py` verdicts. Scoring and verification are P2.
-- `app/ingestion/sources/economy.py`; `municipal.py` registers one fetcher per `sources.yaml` entry
+- `app/ingestion/sources/economy.py`; `ipard.py` (call page = primary document, stages by file label); `municipal.py` registers one fetcher per `sources.yaml` entry
   with `options.kind: municipal_listing` (Skopje today).
 - `app/ingestion/sources/manual.py` — pasted URLs; `run_entry` (always answers in the queue),
   `job` (RQ), `enqueue`. The only RQ job so far; queue `ingest`.
@@ -71,7 +72,7 @@ Then s18 Economy, s19 Skopje, s20 IPARD, s21 demand test. P2 starts at s22.
 | D2 | Domain and brand | P0.5 s4 deploy, transactional email, magic link |
 | D10 | EU portal scope — default in code, user to confirm or widen | first EU approvals |
 | D11 | Operator sign-in — recommended SSH tunnel, then magic link at s44 | production admin |
-| D9 (reopened) | OCR confidence on bilingual MK/AL documents | noise in the queue for every Economy call; extraction reads garbled Albanian |
+| D9 (reopened) | OCR confidence on bilingual MK/AL documents; and `mkd` has no `%` (18.09) | noise in the queue for every Economy call; extraction reads garbled Albanian; every OCR'd rate is a wrong number |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
 | — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
 
@@ -104,7 +105,12 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   The dev DB currently holds items 347–349 from it, and AV runs that failed for lack of an API key
   (so `flask ingest health` reports AV failing; that is true).
 - **The chrome-devtools MCP cannot start here (no X server).** Visual checks use the Playwright
-  headless shell and Node over CDP instead — see §7.
+  headless shell and Node over CDP instead — see §7 (the sandbox works; do not pass `--no-sandbox`, auto mode refuses it).
+- **After a Codespace restart the containers cannot reach each other** (Caddy 503 "no upstreams",
+  worker restarting on a Redis timeout) unless the stack was started by `./run.py`. Add the three
+  `iptables-legacy` rules in README troubleshooting (18.09.2026), or restart with `./run.py`.
+- **A first IPARD run takes ~10 minutes** (OCR of a 26-page long version, then embeddings); run it
+  with `run_in_background`. Later runs skip unchanged PDFs by content hash.
 - **Tests that quote OCR text use `RecordedOcr`** (`tests/test_extract_schema.py`), replaying a
   recorded Tesseract output (`tests/fixtures/skopje/call-12149.ocr.json`); OCR differs between
   Tesseract versions. Tesseract 5.3.4 with `mkd` is installed on the host and in the image.
@@ -135,7 +141,7 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 
 ```bash
 CH=~/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell
-"$CH" --no-sandbox --disable-gpu --hide-scrollbars --window-size=375,3000 \
+"$CH" --disable-gpu --hide-scrollbars --window-size=375,3000 \
   --screenshot=/path/in/scratchpad/page-375.png http://localhost:8080/admin/
 ```
 
@@ -145,7 +151,7 @@ Console messages, failed requests and horizontal overflow per width, over CDP (N
 ```js
 import { spawn } from "node:child_process";
 const CH = process.env.HOME + "/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell";
-const proc = spawn(CH, ["--no-sandbox", "--disable-gpu", "--remote-debugging-port=9333", "about:blank"], { stdio: "ignore" });
+const proc = spawn(CH, ["--disable-gpu", "--remote-debugging-port=9333", "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let targets;
 for (let i = 0; i < 50; i++) { try { targets = await (await fetch("http://127.0.0.1:9333/json/list")).json(); break; } catch { await sleep(200); } }
@@ -185,6 +191,13 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   delivered reports). A proper "retire" needs a column; decide when P2 writes outcomes.
 - **D9 rule 2 flags every bilingual MK/AL page** (`sources.md` §6.7). Fix in the normaliser (bump
   `NORMALISER_VERSION`), with a small test set of bilingual pages; not in a fetcher.
+- **OCR cannot read `%`** (`sources.md` §6.9, D9): the `mkd` model has no such character, so
+  "75%" becomes "755"/"7595" at high confidence and a quote with the wrong number still matches
+  verbatim. Affects every OCR-derived document. Only IPARD's reviewer note warns about it today.
+  Fix in the normaliser (version bump + test set of real rates) **before any OCR'd number reaches a
+  customer**; P2 s29's verbatim check cannot catch it.
+- **IPARD 02/2024** was never given a ranking on the site, so it stays in scope; the pipeline closes
+  it from its extracted deadline, a reviewer rejects it. Notice-only calls stay ANNOUNCED until rejected.
 - **D9 rule 1 is only half built**: the admin marks OCR quotes and links the document, but does not
   show the page image beside the quote.
 - **A closed review item is never re-asked** for the same snapshots. A retry path (e.g. after a prompt

@@ -295,3 +295,34 @@ abstraction change this session was expected to reveal.
 - **"Критериуми" attachments are documents of the call** (festival and project calls keep their
   scoring criteria there); forms and the general rulebook ("Правилник") are listed for the reviewer.
 - The call document is linked from the listing itself, so its URL is also the public URL cited.
+
+### 6.9 IPARD, as built — 18.09.2026 (P1 s20)
+
+`app/ingestion/sources/ipard.py`. Outside `sources/`, only `snapshots.without_aspnet_state` learned
+one more token name (below); no interface change.
+
+- **The call page is the call.** The programme page (IPARD 2021-2027, `/mk/Home/Ipard/5`) lists all
+  six calls with no dates. Each call page (`/mk/Home/IpardPovici/<id>`) gains files in stages on the
+  same URL: advance notice, then short and long versions with forms and guides, then a ranking. The
+  page is the primary document, so publishing the call **updates** the announced call instead of
+  adding a second one. Only the content section (`section.section.mb-3`) is normalised.
+- **Scope is "no ranking yet".** A page listing "РАНГ ЛИСТА" is decided: not fetched, and closed if
+  it was ingested earlier. Live on 18.09.2026 that left three calls: 03/2025 and 02/2025 (advance
+  notice only, text layer, extracted as `advance_notice` → ANNOUNCED) and **02/2024**, published,
+  deadline 20.12.2024, never given a ranking on the site. Its extracted deadline closes it in the
+  pipeline; it stays in the queue until a reviewer rejects it. Notice-only calls stay announced
+  until a reviewer rejects them: the site gives no date to judge them by.
+- **Tables go to a human explicitly.** Eligibility, eligible costs and scoring sit in tables in the
+  long version, a PDF with no text layer. OCR reads tables row by row, so every IPARD review item
+  carries a note (`listing.note`) to check each criterion against the table in the PDF. The long
+  version of 02/2024 (26 pages) took most of a 10.5-minute first run to OCR; unchanged, it is never
+  read again (content hash). One page raised an OCR-doubt item.
+- **OCR cannot read `%`.** The `mkd` model's character set (86 characters) has no percent sign:
+  "75% ЕУ учество" arrives as "755 ЕУ учество", "до 60%" as "до 60“", "10%" as "105". Confidence
+  stays high, so no flag is raised, and a quote containing the wrong number still matches verbatim.
+  Reproduced on a rendered line: `mkd` gives "609 (7595, ЕУ …", `mkd+eng` gives "60% (75% EY …".
+  This affects every OCR-derived document from every source; IPARD is where rates decide
+  eligibility. The IPARD reviewer note says so. The fix is the normaliser's (`decisions.md` D9).
+- **ASP.NET MVC adds a fresh `__RequestVerificationToken`** to every page; it joins `__VIEWSTATE`
+  in `without_aspnet_state`.
+- Forms, guides and annexes are listed for the reviewer (`listing.other_files`), not extracted.

@@ -39,7 +39,8 @@ def all_bytes(content: bytes) -> bytes:
 
 
 _ASPNET_STATE = re.compile(
-    rb'(<input[^>]*name="__(?:VIEWSTATE|VIEWSTATEGENERATOR|EVENTVALIDATION|REQUESTDIGEST)"'
+    rb'(<input[^>]*name="__(?:VIEWSTATE|VIEWSTATEGENERATOR|EVENTVALIDATION|REQUESTDIGEST'
+    rb'|RequestVerificationToken)"'
     rb'[^>]*value=")[^"]*(")',
     re.IGNORECASE,
 )
@@ -50,7 +51,8 @@ def without_aspnet_state(content: bytes) -> bytes:
 
     Observed on av.gov.mk on 13.09.2026: the same listing returned different bytes
     seven seconds apart, identical except for that field. Hashing raw bytes would
-    call such a page changed on every run.
+    call such a page changed on every run. ASP.NET MVC's anti-forgery field,
+    __RequestVerificationToken, does the same (ipardpa.gov.mk, 16.09.2026).
     """
     return _ASPNET_STATE.sub(rb"\1\2", content)
 
