@@ -4,7 +4,7 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 21.09.2026, after the out-of-order OCR `%` fix, before P1 s21.
+**Last updated:** 21.09.2026, after the two out-of-order OCR fixes that closed D9, before P1 s21.
 
 ---
 
@@ -22,7 +22,7 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. The **OCR `%` fix is done** (21.09, out of roadmap order, `sources.md` §6.10). **Next: s21, demand test — still blocked** on D1 (price) and on a live page (D2 domain, VPS). Ask the user: decide D1/D2, or take unblocked work meanwhile — P2 s22 (reference data) is low-regret; the other open half of D9 (bilingual MK/AL confidence, §4) is the next accuracy bug |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, out of roadmap order, `sources.md` §6.10 and §6.11). **Next: s21, demand test — still blocked** on D1 (price) and on a live page (D2 domain, VPS). Ask the user: decide D1/D2, or take unblocked work meanwhile — P2 s22 (reference data) is the low-regret option, and §8 now lists no known accuracy bug |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as specified if s21 is negative.
@@ -31,6 +31,7 @@ Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as spec
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 21.09 | Bilingual OCR | `git log --grep "Albanian"` | The other half of D9. `mkd` cannot read Albanian, so every bilingual Economy call was flagged on every page and extraction indexed nonsense. Tesseract already segments the two languages into **separate blocks**, so a page with an unreadable block is re-read with `sqi` and whole blocks are swapped where the gap is unambiguous. Over all 20 pages of both calls the block sets matched and no block was within the margin; call 1 end to end: mean 71.03 → 90.31, review reasons **12 → 2**. Cost 155 s → 263 s (1.7×). `sqi` and `eng` added to the image. **D9 is now closed.** New: a model can quote Albanian into a criterion — a second reason for D7's named reviewer |
 | 21.09 | OCR `%` fix | `git log --grep "percent"` | Out of roadmap order (s21 blocked on D1/D2). `mkd` has no `%`, so every OCR'd rate was a wrong number that passed the verbatim check. Fixed by a second `mkd+eng` pass over the same image, matched **by box**, carrying across nothing but `%`. 6 of 6 rates on the IPARD fixture; diffed against the single pass, those six tokens were the only changes in three pages. `NORMALISER_VERSION` → `2026-09-21.1`. **Bilingual MK/AL confidence (the other half of D9) untouched** |
 | 13.09 | P1 s6–s10 | `7b86575`…`cf7f80a` | Reconnaissance, gateway + scrubber, snapshots, normaliser + OCR, extraction schema |
 | 16.09 | P1 s11 | `f7da509` | AV fetcher end to end (FITR unreachable from datacenters) |
@@ -42,7 +43,7 @@ Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as spec
 | 16.09 | Handoff | `01c46f0` | This file; `ops/dev/seed_review_queue.py` |
 | 18.09 | P1 s20 | `git log --grep 'session 20'` | IPARD: call page is the call (notice → published updates one call); ranking = out of scope and closed; tables routed by a note on every item. Live: 3 calls (02/2024 published but never ranked, deadline 20.12.2024). **Found: `mkd` OCR cannot read `%`** — fixed 21.09 |
 | 16.09 | P1 s19 | `git log --grep 'session 19'` | Skopje via generic `municipal.py` + `options` in sources.yaml (the one change outside sources/). Live: 1 open call, OCR 92.75 |
-| 16.09 | P1 s18 | `git log --grep 'session 18'` | Economy fetcher: call text only; empty listing is normal; Livewire tokens stripped. Found: bilingual MK/AL PDFs fail the D9 OCR confidence rule on every page |
+| 16.09 | P1 s18 | `git log --grep 'session 18'` | Economy fetcher: call text only; empty listing is normal; Livewire tokens stripped. Found: bilingual MK/AL PDFs fail the D9 OCR confidence rule on every page — fixed 21.09 |
 | 16.09 | P1 s17 | `git log --grep 'session 17'` | FITR re-checked from the host: still no TCP connection. Slot deferred, nothing built |
 | 16.09 | P1 s16 | `git log --grep 'session 16'` | Manual entry by URL: `/admin/rachen-vnes` → RQ job (the first one) → pipeline; failures answer in the queue. Live-checked through the real worker |
 
@@ -73,7 +74,7 @@ Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as spec
 | D2 | Domain and brand | P0.5 s4 deploy, transactional email, magic link |
 | D10 | EU portal scope — default in code, user to confirm or widen | first EU approvals |
 | D11 | Operator sign-in — recommended SSH tunnel, then magic link at s44 | production admin |
-| D9 (still half open) | OCR confidence on bilingual MK/AL documents. **The `%` half is closed** (21.09) | noise in the queue for every Economy call; extraction reads garbled Albanian. Options in D9: measure confidence over the Macedonian text only, or OCR with `mkd+sqi` — which must first be tested for the Cyrillic corruption `mkd+eng` caused. The `%` fix shows a second pass can be added safely if its output is confined to one character |
+| D7 | Named Albanian reviewer — **now bites earlier than `sq` shipping** | since 21.09 a model can quote real Albanian into a criterion, and a reviewer who does not read Albanian cannot check it (`sources.md` §6.11) |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
 | — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
 
@@ -110,15 +111,22 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **After a Codespace restart the containers cannot reach each other** (Caddy 503 "no upstreams",
   worker restarting on a Redis timeout) unless the stack was started by `./run.py`. Add the three
   `iptables-legacy` rules in README troubleshooting (18.09.2026), or restart with `./run.py`.
-- **A first IPARD run takes ~20 minutes** (OCR of a 26-page long version, then embeddings); run it
-  with `run_in_background`. Later runs skip unchanged PDFs by content hash. It doubled on 21.09: an
-  OCR'd page whose text contains a digit is now read twice, for the `%` (`sources.md` §6.10).
-  `TesseractOcr(percent_pass=None)` is the old single-pass behaviour if a probe needs to be quick.
+- **OCR now costs ~1.7× what it did before 21.09** (measured: 155 s → 263 s on a 12-page bilingual
+  call). A page is read again for the `%` if it contains a digit, and again with `sqi` if it has a
+  block below confidence 60 — so a clean Macedonian page still pays once and a bilingual one pays
+  three times. `TesseractOcr(percent_pass=None, foreign_pass=None)` is the old behaviour when a probe
+  needs to be quick. A first IPARD run is ~15-20 minutes; run it with `run_in_background`.
+- **`tesseract-ocr-sqi` and `tesseract-ocr-eng` are in the image but may not be on a dev host.**
+  Install with `sudo apt-get install -y tesseract-ocr-sqi tesseract-ocr-eng` before any live OCR
+  probe, or the foreign pass is silently skipped (`TesseractOcr.installed()` guards it) and a
+  bilingual page reads as it did before the fix.
 - **Tests that quote OCR text use `RecordedOcr`** (`tests/test_extract_schema.py`), replaying a
   recorded Tesseract output (`tests/fixtures/skopje/call-12149.ocr.json`); OCR differs between
   Tesseract versions. Tesseract 5.3.4 with `mkd` is installed on the host and in the image.
-  The `%` tests replay two recorded **word tables** (`ipardpa/call-32.words.json`, made by
-  `ops/dev/record_ocr_words.py`) because `restore_percents` matches boxes, not text.
+  The `%` and bilingual tests replay recorded **word tables** (`ipardpa/call-32.words.json` and
+  `economy/call-1.words.json`, made by `ops/dev/record_ocr_words.py`) because both repairs match
+  boxes, not text. The Economy PDFs are too large to commit; both re-fetched on 21.09 and still hash
+  as `tests/fixtures/README.md` records, and their real URLs are inside the committed `call-N.html`.
 - Hand-written extraction cassettes live in `tests/cassettes/extract_call/`; adding one to `CASES`
   in `test_extract_schema.py` also runs it through the scrubbing gateway and the retrieval tests.
 - Pillow is in the venv (`uv run python`), useful for cropping tall screenshots before reading them.
@@ -194,16 +202,16 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   banded profile is compared to them is s24's to get right.
 - **Removing an approved criterion** is refused once match outcomes reference it (the FK cascades into
   delivered reports). A proper "retire" needs a column; decide when P2 writes outcomes.
-- **D9 rule 2 flags every bilingual MK/AL page** (`sources.md` §6.7). Fix in the normaliser (bump
-  `NORMALISER_VERSION`), with a small test set of bilingual pages; not in a fetcher.
-- **Snapshots normalised before 21.09.2026 still hold the wrong rates.** The `%` fix is live
+- **Snapshots normalised before 21.09.2026 hold the wrong rates and the garbled Albanian.** The `%` fix is live
   (`sources.md` §6.10) but normalised text is written once and never recomputed, and an unchanged
   document is never re-fetched (content hash), so a document ingested under `2026-09-13.1` keeps
   "755" forever. **There is no re-normalisation path and nothing warns a reviewer** that an old
   snapshot predates the fix — `raw_snapshot.normaliser_version` is the only way to tell. In the dev DB
   that is the s20 IPARD run. Nothing has reached a customer, so the cheap answer is to delete those
   snapshots before launch rather than build a migration; decide it before P2 s29 writes verdicts from
-  them.
+  them. The two 21.09 fixes are separate bumps -- `2026-09-21.1` restored `%` only, `2026-09-21.2`
+  added the Albanian blocks -- so `normaliser_version == 2026-09-21.2` is the test for "read by the
+  current normaliser". Nothing was ingested under `.1`.
 - **IPARD 02/2024** was never given a ranking on the site, so it stays in scope; the pipeline closes
   it from its extracted deadline, a reviewer rejects it. Notice-only calls stay ANNOUNCED until rejected.
 - **D9 rule 1 is only half built**: the admin marks OCR quotes and links the document, but does not

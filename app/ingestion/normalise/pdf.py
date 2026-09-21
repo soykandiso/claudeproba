@@ -60,6 +60,28 @@ MAX_MANGLED_CONFIDENCE = 80.0
 # 1 ("755", "60\u201c") and 2 ("7556."). More than that is not a misread `%`.
 MAX_PERCENT_WIDTH = 2
 
+# D9, reopened 16.09.2026: every Economy call is a bilingual Macedonian-Albanian
+# PDF. `mkd` reads the Macedonian cleanly and turns the Albanian into Cyrillic
+# nonsense at confidence 0 ("ЕКопотте" for "Ekonomisë"), so every page's mean landed
+# at 67-75 and rule 2 flagged all of them -- while the Macedonian was never in doubt.
+#
+# The answer is to read the page properly rather than to move the yardstick, and
+# Tesseract makes that easy: it already segments the two languages into *separate
+# blocks*. Measured over all 20 pages of both calls, the block sets of the `mkd` and
+# `sqi` passes were identical on every page, and the two languages never disagreed
+# by less than the margin below -- an Albanian block gained 30-90 points under `sqi`,
+# a Macedonian block lost 20-60. So a whole block is swapped to the second pass,
+# never a word, and only where the gap is unambiguous. Page means went 67-75 -> 83-95.
+#
+# Unlike the `%` pass, this one contributes *text*, so it is confined to blocks the
+# primary pass demonstrably failed on. A Latin-script model cannot corrupt Cyrillic
+# it is never applied to.
+MIN_FOREIGN_CONFIDENCE = 80.0
+MIN_FOREIGN_GAIN = 25.0
+# Blocks are whole regions of a page, so they must land on each other squarely; a
+# word only has to be covered (MIN_PERCENT_OVERLAP).
+MIN_FOREIGN_OVERLAP = 0.7
+
 
 class OcrUnavailable(NormaliseError):
     pass
@@ -72,6 +94,7 @@ class OcrPage:
     low_confidence_share: float = 0.0
     percents_restored: int = 0
     percents_unresolved: int = 0  # seen by the second pass, not placeable: review
+    foreign_blocks: int = 0  # blocks another language's model read instead
 
 
 @dataclass(frozen=True)
@@ -107,11 +130,20 @@ class TesseractOcr:
     that looks identical to a Cyrillic one silently breaks quote matching and
     search; a mangled Latin URL in a letterhead is visible and harmless.
 
-    `mkd` cannot read `%` at all, though, so a page whose text contains a digit is
-    read a second time with `percent_pass` and the two word tables are matched by
-    box (`restore_percents`). That second read is the reason an OCR'd page now
-    costs roughly twice the time; only pages with digits pay it. Pass
-    `percent_pass=None` for the single-pass behaviour of P1 s9.
+    Two narrow second passes fix what one Macedonian model cannot do alone, each
+    confined to where the primary pass demonstrably failed:
+
+    - `foreign_pass` re-reads *whole blocks* `mkd` could not read at all, which on
+      a bilingual Macedonian-Albanian call is the Albanian half
+      (`restore_foreign_blocks`);
+    - `percent_pass` puts back the `%` that `mkd` has no character for, one
+      character at a time (`restore_percents`).
+
+    A page pays for a pass only when it shows the symptom -- a block below
+    LOW_WORD_CONFIDENCE, or a digit in the text -- so a clean Macedonian page is
+    still read once. Either can be switched off with `None`; both off is the
+    single-pass behaviour of P1 s9. A language whose model is not installed is
+    skipped, so a thin image degrades instead of failing (`installed`).
     """
 
     def __init__(
@@ -120,11 +152,13 @@ class TesseractOcr:
         dpi: int = 300,
         timeout_s: int = 300,
         percent_pass: str | None = "mkd+eng",
+        foreign_pass: str | None = "sqi",
     ):
         self.languages = languages
         self.dpi = dpi
         self.timeout_s = timeout_s
         self.percent_pass = percent_pass
+        self.foreign_pass = foreign_pass
 
     @property
     def engine(self) -> str:
@@ -140,7 +174,23 @@ class TesseractOcr:
             self._engine = first.strip().replace(" ", "-") + f"-{self.languages}-{self.dpi}dpi"
             if self.percent_pass:
                 self._engine += f"-pct-{self.percent_pass}"
+            if self._foreign:
+                self._engine += f"-fgn-{self._foreign}"
         return self._engine
+
+    @property
+    def _foreign(self) -> str | None:
+        """`foreign_pass`, unless its model is not installed in this image."""
+        if not self.foreign_pass:
+            return None
+        return self.foreign_pass if self.foreign_pass in self.installed() else None
+
+    @staticmethod
+    def installed() -> frozenset[str]:
+        """The language models this Tesseract has, so a missing one is skipped."""
+        out = subprocess.run(["tesseract", "--list-langs"], capture_output=True, timeout=30)
+        lines = (out.stdout or out.stderr).decode(errors="replace").splitlines()
+        return frozenset(line.strip() for line in lines[1:] if line.strip())
 
     @staticmethod
     def available() -> bool:
@@ -172,12 +222,17 @@ class TesseractOcr:
                     ]
                 )
                 words = _words_from_tsv(self._read(image, self.languages))
+                foreign = 0
+                if self._foreign and _has_unreadable_block(words):
+                    words, foreign = restore_foreign_blocks(
+                        words, _words_from_tsv(self._read(image, self._foreign))
+                    )
                 restored = unresolved = 0
                 if self.percent_pass and any(_DIGIT.search(w.text) for w in words):
                     words, restored, unresolved = restore_percents(
                         words, _words_from_tsv(self._read(image, self.percent_pass))
                     )
-                results[number] = _page_from_words(words, restored, unresolved)
+                results[number] = _page_from_words(words, restored, unresolved, foreign)
         return results
 
     def _read(self, image: Path, languages: str) -> str:
@@ -287,7 +342,9 @@ def _words_from_tsv(tsv: str) -> list[_Word]:
     return words
 
 
-def _page_from_words(words: list[_Word], restored: int = 0, unresolved: int = 0) -> OcrPage:
+def _page_from_words(
+    words: list[_Word], restored: int = 0, unresolved: int = 0, foreign: int = 0
+) -> OcrPage:
     """Rebuild lines and paragraphs from the word table, and average its confidence."""
     lines: dict[tuple[int, int, int], list[str]] = {}
     for word in words:
@@ -302,20 +359,88 @@ def _page_from_words(words: list[_Word], restored: int = 0, unresolved: int = 0)
         previous = (block, paragraph)
 
     text = "\n".join(out)
+    counts = {
+        "percents_restored": restored,
+        "percents_unresolved": unresolved,
+        "foreign_blocks": foreign,
+    }
     if not words:
-        return OcrPage(text, None, percents_restored=restored, percents_unresolved=unresolved)
+        return OcrPage(text, None, **counts)
     confidences = [w.confidence for w in words]
     low = sum(1 for c in confidences if c < LOW_WORD_CONFIDENCE) / len(confidences)
-    return OcrPage(
-        text,
-        sum(confidences) / len(confidences),
-        low,
-        percents_restored=restored,
-        percents_unresolved=unresolved,
-    )
+    return OcrPage(text, sum(confidences) / len(confidences), low, **counts)
 
 
 _DIGIT = re.compile(r"\d")
+
+
+def _blocks(words: list[_Word]) -> dict[int, list[_Word]]:
+    blocks: dict[int, list[_Word]] = {}
+    for word in words:
+        blocks.setdefault(word.block, []).append(word)
+    return blocks
+
+
+def _mean(words: list[_Word]) -> float:
+    return sum(w.confidence for w in words) / len(words)
+
+
+def _bounds(words: list[_Word]) -> _Word:
+    """The block's bounding box, as a _Word, so blocks match the way words do."""
+    left, top = min(w.left for w in words), min(w.top for w in words)
+    right = max(w.left + w.width for w in words)
+    bottom = max(w.top + w.height for w in words)
+    return replace(words[0], text="", left=left, top=top, width=right - left, height=bottom - top)
+
+
+def _has_unreadable_block(words: list[_Word]) -> bool:
+    """Is any block bad enough to be worth a second pass in another language?
+
+    The trigger, not the test: a page with nothing under LOW_WORD_CONFIDENCE has
+    no region another model could rescue, and is read once.
+    """
+    return any(_mean(block) < LOW_WORD_CONFIDENCE for block in _blocks(words).values())
+
+
+def restore_foreign_blocks(base: list[_Word], second: list[_Word]) -> tuple[list[_Word], int]:
+    """Re-read the blocks the Macedonian model could not read, in another language.
+
+    A bilingual call is not a degraded scan: `mkd` reads the Macedonian half at 90+
+    and the Albanian half at nearly 0, and Tesseract has already put the two in
+    separate blocks. So this swaps a **whole block** to `second` -- never a word,
+    never part of a line -- and only where the second pass is unambiguously better:
+    its block mean is at least MIN_FOREIGN_CONFIDENCE, and at least
+    MIN_FOREIGN_GAIN above what `mkd` scored on the block it covers.
+
+    Blocks are matched by bounding box, like words, rather than by Tesseract's block
+    numbering. The numbering agreed on all 20 pages measured, but it is an internal
+    counter of a separate run and nothing guarantees it.
+
+    A swapped block keeps the *base* block's number, so the page still reads in the
+    order `mkd` laid out. Returns the merged words and how many blocks were swapped.
+    """
+    blocks = _blocks(base)
+    numbers = list(blocks)
+    boxes = [_bounds(blocks[n]) for n in numbers]
+    taken: set[int] = set()
+    replacements: dict[int, list[_Word]] = {}
+
+    for words in _blocks(second).values():
+        if _mean(words) < MIN_FOREIGN_CONFIDENCE:
+            continue
+        match = _aligned(_bounds(words), boxes, taken, MIN_FOREIGN_OVERLAP)
+        if match is None:
+            continue
+        target = numbers[match]
+        if _mean(words) - _mean(blocks[target]) < MIN_FOREIGN_GAIN:
+            continue
+        taken.add(match)
+        replacements[target] = [replace(w, block=target) for w in words]
+
+    merged: list[_Word] = []
+    for number in numbers:
+        merged += replacements.get(number, blocks[number])
+    return merged, len(replacements)
 
 
 def restore_percents(base: list[_Word], second: list[_Word]) -> tuple[list[_Word], int, int]:
@@ -336,6 +461,10 @@ def restore_percents(base: list[_Word], second: list[_Word]) -> tuple[list[_Word
       MAX_PERCENT_WIDTH characters, none of them letters -- i.e. the two passes
       agree on everything except the glyph one of them cannot write.
 
+    A word that already contains a `%` needs no repair and is skipped -- the
+    Albanian blocks `restore_foreign_blocks` supplies come from a Latin-script
+    model, which writes `%` itself.
+
     Anything a `%` was seen in and none of this held for is counted as unresolved
     and becomes a review reason: an unreadable rate is a human's, never a guess
     (invariant 3). Returns the rewritten words, how many were restored, and how
@@ -348,6 +477,8 @@ def restore_percents(base: list[_Word], second: list[_Word]) -> tuple[list[_Word
         if "%" not in candidate.text:
             continue
         index = _aligned(candidate, words, claimed)
+        if index is not None and "%" in words[index].text:
+            continue  # already reads `%`: a block a Latin-script pass supplied
         if index is None or not _is_percent_repair(candidate, words[index]):
             unresolved += 1
             continue
@@ -357,9 +488,11 @@ def restore_percents(base: list[_Word], second: list[_Word]) -> tuple[list[_Word
     return words, restored, unresolved
 
 
-def _aligned(candidate: _Word, words: list[_Word], claimed: set[int]) -> int | None:
+def _aligned(
+    candidate: _Word, words: list[_Word], claimed: set[int], minimum: float = MIN_PERCENT_OVERLAP
+) -> int | None:
     """The unclaimed word whose box the candidate covers most, if it covers enough."""
-    best, score = None, MIN_PERCENT_OVERLAP
+    best, score = None, minimum
     for index, word in enumerate(words):
         if index in claimed:
             continue

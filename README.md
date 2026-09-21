@@ -15,8 +15,9 @@ citations located in code, the AV, EU Funding & Tenders, Economy ministry, City 
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
 queue where a human approves, edits or rejects every extracted call before it is published, with
 manual entry of a call by URL (`/admin`, development only until operator sign-in is decided). OCR
-restores the `%` the Macedonian Tesseract model cannot write, from a second pass matched by bounding
-box (`docs/sources.md` §6.10). See [`docs/roadmap.md`](docs/roadmap.md).
+reads a page with the Macedonian model and repairs it from two narrow second passes matched by
+bounding box: the `%` that model cannot write, and the Albanian half of a bilingual call it cannot
+read at all (`docs/sources.md` §6.10–6.11). See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
 database: profile, cited shortlist, report, order and proforma invoice, human review in an admin

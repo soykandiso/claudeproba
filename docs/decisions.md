@@ -208,6 +208,46 @@ setting where both failures are cheap.
 > confidence 0, while the Macedonian half reads well (median 92). Rule 2 as written flags every such
 > page. Options: measure confidence over the Macedonian text only; or OCR with `mkd+sqi`, which must
 > first be tested against the Cyrillic corruption that `mkd+eng` caused. `sources.md` §6.7.
+>
+> **Closed 21.09.2026 — read the Albanian, do not move the yardstick**
+> (`normalise/pdf.py:restore_foreign_blocks`). Neither option above was taken. Measuring confidence
+> over the Macedonian only would have *hidden* the unread half rather than read it, and leaves
+> extraction looking at Cyrillic nonsense; `mkd+sqi` as one pass risks exactly the corruption
+> `mkd+eng` caused. The third way is that **Tesseract already segments the two languages into
+> separate blocks**, so the page can be read twice and merged by region:
+>
+> - a page with a block below `LOW_WORD_CONFIDENCE` is read again with `sqi`;
+> - a **whole block** — never a word, never part of a line — is swapped to the second pass where its
+>   mean is at least 80 **and** at least 25 points above what `mkd` scored on the block it covers;
+> - blocks are matched by bounding box, not by Tesseract's block numbering, which is an internal
+>   counter of a separate run;
+> - a swapped block keeps the base block's number, so the page still reads in `mkd`'s order.
+>
+> Because a Latin-script model is only ever applied to blocks the Macedonian model demonstrably
+> failed on, it cannot corrupt Cyrillic it never touches — which is what ruled `mkd+sqi` out as a
+> single pass.
+>
+> **Measured over all 20 pages of both bilingual Economy calls:** the two passes produced *identical
+> block sets on every page*, and the languages never disagreed by less than the 25-point margin — an
+> Albanian block gained 30–90 points under `sqi`, a Macedonian block lost 20–60. Page means went
+> 67–75 → 83–95. End to end on the 12-page call 1: document mean **90.31**, and **review reasons fell
+> from every page to two** (pages 11 and 12, which are genuinely poor — page 12 has no Albanian on it
+> at all and reads at 73). The degraded 75 dpi Skopje scan is *not* rescued: a bad scan is bad in
+> every language, so no block is swapped and its review reason stands.
+>
+> **The Albanian is now correct Albanian**, with diacritics — "Republika e Maqedonisë së Veriut",
+> "THIRRJE PUBLIKE" — where `mkd` gave "ЌКеририка е Мадедопј56" and "ТИКВЕЈЕ РОВЦКЕ". Two
+> consequences worth stating: extraction and retrieval stop indexing nonsense, and **a model can now
+> quote Albanian into a criterion**, which a reviewer who does not read Albanian cannot check. That is
+> a second, independent reason for D7's named Albanian reviewer, and it applies before `sq` ships.
+>
+> **Cost and dependency:** `tesseract-ocr-sqi` and `tesseract-ocr-eng` join the image (D9's "two apt
+> packages" becomes four). A page pays for a second pass only when it shows the symptom, and a model
+> that is not installed is skipped rather than fatal, so an older image degrades to the Macedonian
+> pass instead of failing. Measured on the same host over the 12-page call, both passes on:
+> **155 s → 263 s, 1.7×.** Of that, the `%` pass cost 61 s and changed nothing on this document —
+> it has no rates. That is the premium for catching one, and it is deliberately not tuned away: a
+> tighter gate would also suppress the review reason a `%` nobody can place is supposed to raise.
 
 > **And a second gap (18.09.2026, P1 s20):** the `mkd` model's character set has no `%`. "60%"
 > is read as "609", "75%" as "755" or "7595", at confidences that raise no flag. The verbatim check
@@ -356,7 +396,7 @@ there is an account to point at.
 | D6 | Free tier depth | P2 s28 | Full top 10 with reasons and citations |
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
-| D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026**; `%` gap closed 21.09.2026; **bilingual MK/AL confidence still open** | Tesseract `mkd` locally; OCR citations always reviewed; `%` restored from a box-matched second pass |
+| D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026**; both reopened gaps closed 21.09.2026 | Tesseract `mkd` locally; OCR citations always reviewed; two narrow second passes, matched by box, supply the `%` and the Albanian blocks |
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
 

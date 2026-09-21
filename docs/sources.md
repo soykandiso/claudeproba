@@ -260,15 +260,13 @@ existed for.
 - **Livewire regenerates a CSRF token and component snapshots on every request.** Two fetches five
   seconds apart differed only there; `significant` strips them.
 - **Link labels split digits across spans** ("202<span>6</span>"), as on AV (§6.3).
-- **The call PDFs are bilingual, Macedonian and Albanian, with no text layer.** A live 12-page call
-  took 99 s to OCR in the worker. Tesseract's `mkd` model reads the Macedonian cleanly (median word
-  confidence 92) and turns the Albanian into Cyrillic nonsense at confidence 0 ("ЕКопотте" for
-  Ekonomisë), so every page's mean lands at 67–75, under the D9 threshold of 85. The pipeline still
-  extracts (text read with doubt is kept), but **every Economy call also raises an OCR-doubt review
-  item**, and extraction sees the garbled Albanian too. The admin labels those items "read with
-  doubt" and marks each OCR quote. The fix belongs to the normaliser, not this fetcher: judge
-  confidence over the Macedonian part only, or evaluate `mkd+sqi` against the D9 finding that adding
-  a Latin-script model corrupted Cyrillic. Needs a decision and a test set (`decisions.md` D9).
+- **The call PDFs are bilingual, Macedonian and Albanian, with no text layer** — **fixed 21.09.2026,
+  §6.11.** A live 12-page call took 99 s to OCR in the worker. Tesseract's `mkd` model read the
+  Macedonian cleanly (median word confidence 92) and turned the Albanian into Cyrillic nonsense at
+  confidence 0 ("ЕКопотте" for Ekonomisë), so every page's mean landed at 67–75, under the D9
+  threshold of 85, and **every Economy call raised an OCR-doubt review item** while extraction saw
+  the garbled Albanian too. The normaliser now reads those blocks with `sqi`; the same call raises
+  two page-level reasons instead of twelve, and the Albanian is real Albanian.
 
 ### 6.8 Skopje and municipal listings, as built — 16.09.2026 (P1 s19)
 
@@ -349,9 +347,44 @@ each clause is there, is in `decisions.md` D9.
   diffed against the single pass, those six tokens were the *only* changes in the document.
 - **A `%` that cannot be placed is a review reason**, not a repair. The text keeps what `mkd` wrote,
   because a snapshot is faithful to what the engine read, and an unreadable rate is a human's.
-- **Cost:** roughly double the OCR time on pages with digits. A 26-page IPARD long version goes from
-  ~10 to ~20 minutes on a first run; unchanged documents are still never re-read (content hash).
+- **Cost:** the OCR time on pages with digits, again. Measured at §6.11: 155 s → 216 s on a 12-page
+  call, so ~1.4× for this pass alone. Unchanged documents are still never re-read (content hash).
 - **Only new snapshots get this.** Normalised text is written once and never recomputed (property 3
   in `normalise/__init__.py`), so anything ingested before the bump still holds the wrong numbers.
   There is no re-normalisation path; the affected documents are IPARD's, and they are re-fetched when
   their content hash changes.
+
+### 6.11 The Albanian half, read — 21.09.2026 (out of roadmap order, D9)
+
+`app/ingestion/normalise/pdf.py`; `NORMALISER_VERSION` `2026-09-21.1` → `2026-09-21.2`, plus two apt
+packages in the `Dockerfile`. Again nothing outside the normaliser; no fetcher changed. The two
+21.09 fixes are separate versions on purpose: `.1` restored `%` only, and one version must never
+mean two behaviours (property 2 in `normalise/__init__.py`). Nothing was ingested under `.1`.
+
+Every Economy call is a bilingual Macedonian–Albanian PDF, and `mkd` cannot read the Albanian at all.
+The fix is **not** to stop counting the Albanian against the page — that hides the unread half and
+leaves extraction indexing nonsense — but to read it. Tesseract already puts the two languages in
+**separate blocks**, so a page with a block below `LOW_WORD_CONFIDENCE` is read again with `sqi`, and
+a whole block is swapped where the second pass is unambiguously better. The full rule is in
+`decisions.md` D9; the safety argument is the same one as §6.10's: a Latin-script model is only ever
+applied where the Macedonian one demonstrably failed, so it cannot corrupt Cyrillic it never touches.
+
+- **Measured over all 20 pages of both bilingual calls**: identical block sets in both passes on
+  every page, and no block where the two languages were within the 25-point margin. Page means
+  67–75 → 83–95.
+- **End to end on call 1 (12 pages)**: document mean 67–75 per page → **90.31**, review reasons
+  **12 → 2**. The two that remain are genuinely poor pages, and page 12 has no Albanian on it at all.
+- **The Albanian reads correctly**, with diacritics: "Republika e Maqedonisë së Veriut", "Ministria e
+  Ekonomisë dhe Punës", "THIRRJE PUBLIKE". Under `mkd` those were "ЌКеририка е Мадедопј56",
+  "Миц5Ена е ЕКопотј!56 аПе Рипе5", "ТИКВЕЈЕ РОВЦКЕ".
+- **A degraded scan is not rescued.** The 75 dpi Skopje calibration page reads no better in Albanian
+  than in Macedonian, so nothing is swapped and its review reason stands. Only a page unreadable
+  because of its *language* comes back.
+- **New:** a model can now quote Albanian into a criterion, which a reviewer who does not read
+  Albanian cannot check. This is a second reason for D7's named Albanian reviewer, and it bites
+  before `sq` ships.
+- **Cost:** on the same host and document, 155 s single-pass → 263 s with both passes, **1.7×**
+  (§6.10 guessed "roughly double" from a cold run; this is the controlled number). 61 s of that is
+  the `%` pass, which found nothing here — this call has no rates.
+- The source PDFs are too large to commit, so the test set is the recorded **word tables**
+  (`tests/fixtures/economy/call-1.words.json`, pages 1 and 12).

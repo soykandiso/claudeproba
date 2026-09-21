@@ -14,6 +14,7 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 | `av/measure-820-business-mk.json` | POST …/GetActiveEmploymentMeasureDescriptionForBusinessMk {detailId:820} |  | `e260b5604c09ec4d…` |
 | `av/measures-list.json` | POST https://av.gov.mk/services/ServiceJobAnnouncements.asmx/GetActiveEmploymentMeasures | full archive, 328 items | `e8f9c2537ac47f65…` |
 | `economy/call-1.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-nadomesti-standardi-od-oblasta-na-dokumenti-… (open, deadline 15.09.2026) |  | `fa1e22c1291c471a…` |
+| `economy/call-1.words.json` | Tesseract 5.3.4 word tables (`mkd`, `mkd+eng`, `sqi`), 300 dpi, over pages 1 and 12 of the **uncommitted** Economy call 1 PDF (below) | **recorded 21.09.2026, not a source response**: the bilingual test set for `restore_foreign_blocks`. Page 1 is bilingual, page 12 has no Albanian on it. Re-fetch the PDF from the URL below, then `ops/dev/record_ocr_words.py` | `98c02cbb1429b0aa…` |
 | `economy/call-2.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-zajaknuvanje-na-sorbotkata-… (open, deadline 15.09.2026) |  | `d0419993e1d2f3f2…` |
 | `economy/call-3-javen-povik.docx` | https://portal.mdt.gov.mk/post-body-files/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii-file-tw5n.docx | main call document is DOCX | `85f0155d8d4cab25…` |
 | `economy/call-3.html` | https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii (closed 30.06.2026) |  | `fd9b9232ffaf0f00…` |
@@ -45,6 +46,11 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 |---|---|---|---|
 | Economy call 1, main PDF (no text layer) | https://portal.mdt.gov.mk/post-body-files/javen-povik-za-nadomesti-standardi-…-file-cnm3.pdf | 2,5 MB | `8f3b5e21135a085584f1afe1e5673154f3a8c22a86e870d8191cb27c4ab2c0e8` |
 | Economy call 2, main PDF (no text layer) | https://portal.mdt.gov.mk/post-body-files/javen-povik-za-zajaknuvanje-na-sorbotkata-…-file-yqir.pdf | 2,0 MB | `386d51806d730946c714c210ef8aa16691bedcdc16f96e92f45af1c6098aa942` |
+
+Both were re-fetched on 21.09.2026 to build the bilingual test set and **still hash exactly as above**,
+so the elided URLs are recoverable: they are the `.pdf` links inside `economy/call-1.html` and
+`economy/call-2.html`, which are committed. The word tables recorded from call 1 are in the manifest
+above; the PDFs themselves stay out of the repo.
 | IPARD call 01/2025, long version (no text layer) | https://www.ipardpa.gov.mk/Upload/Documents/Јавен Повик 01_2025 Долга верзија.pdf | 5,2 MB | `461051a3c096ec2d20a94a8e63428c46d629fd870eb25eb08312bc1de05c3b2f` |
 
 No FITR fixtures: the host did not respond (`docs/sources.md` §6.1).

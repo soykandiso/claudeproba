@@ -21,7 +21,8 @@ from app.models.enums import TextSource
 
 # Bump when a change would alter the output for bytes already normalised. Only
 # snapshots normalised after the bump use the new version; see property 3.
-NORMALISER_VERSION = "2026-09-21.1"  # OCR restores "%" (pdf.restore_percents)
+NORMALISER_VERSION = "2026-09-21.2"  # OCR restores "%" and reads non-Macedonian blocks
+# 2026-09-21.1 restored "%" only (pdf.restore_percents); .2 added pdf.restore_foreign_blocks.
 
 PAGE_BREAK = "\f"
 

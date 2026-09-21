@@ -24,7 +24,15 @@ from app.ingestion.normalise import (
     page_of,
 )
 from app.ingestion.normalise.html import normalise_html
-from app.ingestion.normalise.pdf import OcrPage, TesseractOcr, _Word, restore_percents
+from app.ingestion.normalise.pdf import (
+    MIN_OCR_CONFIDENCE,
+    OcrPage,
+    TesseractOcr,
+    _page_from_words,
+    _Word,
+    restore_foreign_blocks,
+    restore_percents,
+)
 from app.models.enums import TextSource
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -64,6 +72,11 @@ class FakeOcr:
             )
             for n in page_numbers
         }
+
+
+def block_word(text: str, confidence: float, *, block: int, left: int = 100) -> _Word:
+    """One word that is also a whole block, for the block-swapping rules."""
+    return replace(word(text, confidence, left=left), block=block)
 
 
 def word(text: str, confidence: float, *, left: int = 100) -> _Word:
@@ -219,10 +232,16 @@ def test_low_ocr_confidence_is_flagged_but_the_text_is_kept():
 
 @needs_tesseract
 def test_a_degraded_scan_is_sent_to_review():
-    """The calibration case in pdf.py: the same Skopje scan rendered at 75 dpi."""
+    """The calibration case in pdf.py: the same Skopje scan rendered at 75 dpi.
+
+    It is also the case the second passes must *not* rescue. A bad scan is bad in
+    every language, so `sqi` reads it no better than `mkd` and no block is swapped;
+    only a page that is unreadable because of the *language* comes back.
+    """
     result = normalise(fixture("skopje/call-12094.pdf"), ocr=TesseractOcr(dpi=75))
 
     assert result.review_reasons, "a visibly misread page must not pass silently"
+    assert any("below 85" in reason for reason in result.review_reasons)
 
 
 def test_without_tesseract_an_image_pdf_fails_loudly(monkeypatch):
@@ -237,7 +256,9 @@ def test_an_ocr_read_records_the_engine_that_did_it():
     result = normalise(fixture("skopje/call-12094.pdf"), ocr=TesseractOcr(dpi=75))
 
     assert result.ocr_engine.startswith("tesseract-5")
-    assert result.ocr_engine.endswith("mkd-75dpi-pct-mkd+eng"), "the second pass changes the text"
+    assert "mkd-75dpi" in result.ocr_engine
+    for pass_ in ("-pct-mkd+eng", "-fgn-sqi"):
+        assert pass_ in result.ocr_engine, "a pass that changes the text belongs in the engine"
     assert normalise(fixture("ipardpa/call-34-najava-03-2025.pdf")).ocr_engine is None
 
 
@@ -258,10 +279,15 @@ RATES = {  # what `mkd` wrote -> what the page says, read off the PDF by a perso
 }
 
 
+def recorded(recording: str, page: int, *passes: str) -> tuple[list[_Word], ...]:
+    """Word tables recorded from a real document (tests/fixtures/README.md)."""
+    data = json.loads(fixture(recording))["pages"][str(page)]
+    return tuple([_Word(*row) for row in data[languages]] for languages in passes)
+
+
 def recorded_words(page: int) -> tuple[list[_Word], list[_Word]]:
     """The `mkd` and `mkd+eng` word tables recorded for one page of IPARD 01/2025."""
-    data = json.loads(fixture("ipardpa/call-32.words.json"))["pages"][str(page)]
-    return tuple([_Word(*row) for row in data[languages]] for languages in ("mkd", "mkd+eng"))
+    return recorded("ipardpa/call-32.words.json", page, "mkd", "mkd+eng")
 
 
 @pytest.mark.parametrize("page", [1, 2])
@@ -334,7 +360,126 @@ def test_a_percent_is_not_restored_on_a_doubtful_match(candidate, confidence, cu
 
 
 def test_the_second_pass_is_skipped_when_asked_for_the_single_pass_behaviour():
-    ocr = TesseractOcr(percent_pass=None)
+    ocr = TesseractOcr(percent_pass=None, foreign_pass=None)
 
-    assert ocr.percent_pass is None
+    assert (ocr.percent_pass, ocr.foreign_pass) == (None, None)
     assert "pct" not in f"-{ocr.languages}-{ocr.dpi}dpi"
+
+
+# --- the half of the page the Macedonian model cannot read at all (D9, reopened) -------
+#
+# Every Economy call is a bilingual Macedonian-Albanian PDF. `mkd` reads the
+# Macedonian at 90+ and turns the Albanian into Cyrillic nonsense at nearly 0, which
+# dragged every page mean to 67-75 and flagged all of them. Page 1 below is a
+# representative bilingual page; page 12 of the same call has no Albanian on it at
+# all, and is here so the rule has to *not* fire somewhere.
+
+
+def economy(page: int) -> tuple[list[_Word], list[_Word]]:
+    return recorded("economy/call-1.words.json", page, "mkd", "sqi")
+
+
+def test_the_albanian_half_is_read_by_the_albanian_model():
+    base, second = economy(1)
+    merged, swapped = restore_foreign_blocks(base, second)
+
+    assert swapped == 8
+    text = " ".join(w.text for w in merged)
+    for albanian in [
+        "Republika e Maqedonisë së Veriut",
+        "Ministria e Ekonomisë dhe Punës",
+        "THIRRJE PUBLIKE",
+    ]:
+        assert albanian in text, "the Albanian must read as Albanian"
+    assert "ЌКеририка е Мадедопј56" not in text, "and its `mkd` nonsense must be gone"
+
+
+def test_the_macedonian_half_is_left_exactly_as_the_macedonian_model_read_it():
+    """A Latin-script model must never touch Cyrillic: the D9 finding that rules out
+    `mkd+sqi` as one pass is the same one that ruled out `mkd+eng`."""
+    base, second = economy(1)
+    merged, _ = restore_foreign_blocks(base, second)
+
+    kept = {w.block: w for w in merged} | {}
+    macedonian = [w for w in base if w.block in {1, 3, 4, 5, 6, 7, 8, 9, 10}]
+    assert macedonian, "the fixture must still have Macedonian blocks"
+    for word in macedonian:
+        assert word in merged, f"{word.text!r} was rewritten by the Albanian pass"
+    assert kept  # every block still present
+
+
+def test_reading_the_albanian_lifts_the_page_out_of_review():
+    """The page was never doubtful; only the yardstick was. D9 rule 2, honestly applied."""
+    base, second = economy(1)
+    merged, _ = restore_foreign_blocks(base, second)
+
+    before = _page_from_words(base)
+    after = _page_from_words(merged)
+
+    assert before.mean_confidence < MIN_OCR_CONFIDENCE, "this is the bug being fixed"
+    assert after.mean_confidence > MIN_OCR_CONFIDENCE
+    assert after.low_confidence_share < before.low_confidence_share
+
+
+def test_a_page_records_what_each_repair_did_to_it():
+    """The counts are what a later session can audit a snapshot by; keep them honest."""
+    base, second = economy(1)
+    merged, swapped = restore_foreign_blocks(base, second)
+    page = _page_from_words(merged, restored=2, unresolved=1, foreign=swapped)
+
+    assert (page.foreign_blocks, page.percents_restored, page.percents_unresolved) == (8, 2, 1)
+    assert _page_from_words(base).foreign_blocks == 0
+
+
+def test_a_page_with_nothing_to_rescue_is_left_alone():
+    """Page 12 has no Albanian on it; the second pass must change nothing."""
+    base, second = economy(12)
+    merged, swapped = restore_foreign_blocks(base, second)
+
+    assert swapped == 0
+    assert merged == base
+
+
+def test_a_block_is_only_swapped_when_the_other_model_is_clearly_better():
+    """The whole safety of this is the size of the gap, so test the edges of it."""
+    poor = [block_word("нечитливо", 40.0, block=1)]
+
+    marginal = [block_word("something", 60.0, block=1)]  # good gain, but not good enough
+    assert restore_foreign_blocks(poor, marginal) == (poor, 0)
+
+    slight = [block_word("something", 82.0, block=1)]  # good enough, but too small a gain
+    assert restore_foreign_blocks([block_word("нечитливо", 75.0, block=1)], slight)[1] == 0
+
+    clear = [block_word("something", 95.0, block=1)]
+    merged, swapped = restore_foreign_blocks(poor, clear)
+    assert (swapped, merged[0].text) == (1, "something")
+
+
+def test_a_block_is_matched_by_where_it_is_on_the_page_not_by_its_number():
+    """Block numbers are an internal counter of a separate Tesseract run."""
+    base = [block_word("нечитливо", 30.0, block=4, left=100)]
+    elsewhere = [block_word("something", 95.0, block=4, left=2000)]
+
+    assert restore_foreign_blocks(base, elsewhere) == (base, 0)
+
+    renumbered = [block_word("something", 95.0, block=99, left=100)]
+    merged, swapped = restore_foreign_blocks(base, renumbered)
+    assert swapped == 1
+    assert merged[0].block == 4, "a swapped block keeps the reading order mkd laid out"
+
+
+def test_a_percent_already_read_correctly_is_not_counted_as_unresolved():
+    """An Albanian block comes from a Latin-script model, which writes `%` itself."""
+    base = [word("75%", 95.0)]
+
+    merged, restored, unresolved = restore_percents(base, [word("75%", 95.0)])
+
+    assert (restored, unresolved) == (0, 0), "nothing to fix, and nothing to report"
+    assert merged == base
+
+
+def test_a_language_model_that_is_not_installed_is_skipped(monkeypatch):
+    monkeypatch.setattr(TesseractOcr, "installed", staticmethod(lambda: frozenset({"mkd", "eng"})))
+
+    assert TesseractOcr(foreign_pass="sqi")._foreign is None
+    assert TesseractOcr(foreign_pass="eng")._foreign == "eng"
