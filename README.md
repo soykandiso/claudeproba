@@ -14,7 +14,9 @@ snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call 
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
 queue where a human approves, edits or rejects every extracted call before it is published, with
-manual entry of a call by URL (`/admin`, development only until operator sign-in is decided). See [`docs/roadmap.md`](docs/roadmap.md).
+manual entry of a call by URL (`/admin`, development only until operator sign-in is decided). OCR
+restores the `%` the Macedonian Tesseract model cannot write, from a second pass matched by bounding
+box (`docs/sources.md` §6.10). See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
 database: profile, cited shortlist, report, order and proforma invoice, human review in an admin

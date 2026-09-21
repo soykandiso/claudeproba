@@ -45,8 +45,13 @@ Two sources first, then four repetitions (architecture §9.1, `sources.md` §1).
 | 17 | Агенција за вработување fetcher — *built in s11; this slot goes to FITR once it is reachable. 16.09.2026: FITR still times out (`sources.md` §6.1); slot deferred, P1 continues with s18* | Calls in registry with citations |
 | 18 | Министерство за економија fetcher — *built 16.09.2026: call text only (forms listed for the reviewer); bilingual MK/AL PDFs OCR at mean confidence ~70, so each call also raises an OCR-doubt item (`sources.md` §6.7)* | Calls in registry; news items correctly *not* ingested |
 | 19 | Град Скопје fetcher — *built 16.09.2026 as `sources/municipal.py`: a municipality with the same page shape is an `options` block in `sources.yaml` (tested with a second, invented one)* | Calls in registry; the fetcher is configurable enough that a second municipality is config, not code |
-| 20 | АФПЗРР / IPARD fetcher (hardest parse, PDF tables) — *built 18.09.2026: the call page is the call, so an advance notice and the published call are one call; decided calls (ranking listed) out of scope; tables routed to the reviewer by a note on every item. Found: OCR cannot read `%` (`sources.md` §6.9, D9)* | Calls in registry; tabular eligibility extracted or explicitly routed to manual review |
+| 20 | АФПЗРР / IPARD fetcher (hardest parse, PDF tables) — *built 18.09.2026: the call page is the call, so an advance notice and the published call are one call; decided calls (ranking listed) out of scope; tables routed to the reviewer by a note on every item. Found: OCR cannot read `%` (`sources.md` §6.9, D9) — **fixed 21.09.2026 out of order, `sources.md` §6.10*** | Calls in registry; tabular eligibility extracted or explicitly routed to manual review |
 | 21 | **Demand test** — landing page, email capture, a deep report offered at a real price and fulfilled *by hand* | Page live; ≥20 emails captured **or** a clear negative signal; ≥5 prospects have given you a yes or a no at the real price |
+
+> **Out of order, 21.09.2026 — the OCR `%` fix.** s21 is blocked on `decisions.md` D1 and D2, so the
+> session went to the accuracy bug s20 found instead: the `mkd` model has no `%`, so every OCR'd rate
+> was a wrong number that passed the verbatim check. Fixed in the normaliser with a version bump and
+> a recorded test set of real rates (`sources.md` §6.10, D9). No roadmap row moved; s21 is still next.
 
 > Session 21 is the cheapest possible test of the biggest commercial risk, and it runs **30 sessions
 > before** the brief would have tested it (architecture §9.9). If nobody buys a hand-written report,

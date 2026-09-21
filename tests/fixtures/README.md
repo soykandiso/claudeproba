@@ -27,6 +27,7 @@ Retrieved 13.09.2026 unless marked otherwise. Hashes are SHA-256 of the file as 
 | `eu_portal/topic-smp-cosme-2024-cluster-01.json` | https://ec.europa.eu/info/funding-tenders/opportunities/data/topicDetails/smp-cosme-2024-cluster-01.json |  | `0d970537e3439558…` |
 | `ipardpa/call-32-javen-povik-01-2025-kratka.pdf` | https://www.ipardpa.gov.mk/Upload/Documents/Јавен Повик 01_2025 Кратка верзија.pdf | Word export, no text layer | `6832f8f36eac8ab4…` |
 | `ipardpa/call-32.html` | https://www.ipardpa.gov.mk/mk/Home/IpardPovici/32 |  | `d8312e5458f4a1f4…` |
+| `ipardpa/call-32.words.json` | Tesseract 5.3.4 word tables (`mkd` and `mkd+eng`), 300 dpi, over pages 1-2 of `call-32-javen-povik-01-2025-kratka.pdf` | **recorded 21.09.2026, not a source response**: replayed by the `%` restoration tests, because both tables differ between Tesseract versions. Re-record with `ops/dev/record_ocr_words.py` | `0e53af70679bbf1f…` |
 | `ipardpa/call-33.html` | https://www.ipardpa.gov.mk/mk/Home/IpardPovici/33 |  | `3a07ee14721f14d3…` |
 | `ipardpa/call-34-najava-03-2025.pdf` | https://www.ipardpa.gov.mk/Upload/Documents/ПРЕТХОДНА НАЈАВА 03-2025.pdf | has text layer | `c950d07d3c19076d…` |
 | `ipardpa/call-34.html` | https://www.ipardpa.gov.mk/mk/Home/IpardPovici/34 |  | `d068569051912a22…` |

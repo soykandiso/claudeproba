@@ -60,8 +60,7 @@ CALL_TEXTS = ("кратка верзија", "долга верзија")
 TABLES_NOTE = (
     "IPARD eligibility, eligible costs and scoring are set out in tables in the long "
     "version. OCR reads a table row by row: check every criterion against the table in "
-    "the PDF before approving. OCR also cannot read '%' (the mkd model has no such "
-    "character): '75%' arrives as '755' or '7595', so check every rate against the PDF."
+    "the PDF before approving."
 )
 
 _SPACE = re.compile(r"\s+")

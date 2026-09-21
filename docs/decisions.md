@@ -212,10 +212,36 @@ setting where both failures are cheap.
 > **And a second gap (18.09.2026, P1 s20):** the `mkd` model's character set has no `%`. "60%"
 > is read as "609", "75%" as "755" or "7595", at confidences that raise no flag. The verbatim check
 > passes, because the quote matches the OCR text; the number in it is wrong. `mkd+eng` reads `%`
-> but turned "ЕУ" into Latin "EY" in the same test. Options: a second, `eng`-only pass over number
-> tokens followed by a `%` substitution when the second pass is confident; or a fine-tuned `mkd`
-> model with `%` added. Either is a normaliser version bump with a test set of real rates. Until then,
-> every OCR-derived number next to a rate is a reviewer's check. `sources.md` §6.9.
+> but turned "ЕУ" into Latin "EY" in the same test. `sources.md` §6.9.
+>
+> **Closed 21.09.2026 — the two-pass `%` restoration** (`normalise/pdf.py:restore_percents`,
+> `NORMALISER_VERSION` `2026-09-21.1`). A page whose `mkd` text contains a digit is read a second
+> time with `mkd+eng`, and the two word tables are matched **by bounding box**, not by text. Only the
+> `%` character crosses over, and only into a token where all of the following hold:
+>
+> - the second-pass token holds exactly one `%` and **no letter at all**, so the Latin look-alikes
+>   that disqualified `mkd+eng` as the primary model cannot enter the Cyrillic text;
+> - the second pass was confident (≥80) and **`mkd` was not** (<80), so a number `mkd` read well is
+>   never overruled — "6%" over a confident "60" is as likely to be the second pass misreading a zero;
+> - the boxes overlap (≥0.5 of the second-pass box);
+> - and the `mkd` token is that token with the `%` replaced by at most two non-letter characters,
+>   i.e. the two passes agree on everything except the glyph one of them cannot write.
+>
+> A `%` seen by the second pass that fails any of this is **counted and becomes a review reason** —
+> the text keeps what `mkd` wrote, wrong number and all, because a snapshot is faithful to what the
+> engine read, and an unreadable rate is a human's (invariant 3).
+>
+> Measured on the IPARD 01/2025 short version, the only fixture with rates: **6 of 6 restored**, every
+> box overlapping 1.00, second pass 92–97 where `mkd` scored 45–75 on the same six tokens. Diffed
+> against the single pass over the whole three-page document, the *only* changes were those six
+> tokens — the second pass contributed nothing else. Both word tables are recorded
+> (`tests/fixtures/ipardpa/call-32.words.json`) because both differ between Tesseract versions.
+>
+> **Cost:** an OCR'd page with a digit is read twice, so roughly double the OCR time (a 26-page IPARD
+> long version goes from ~10 to ~20 minutes on a first run; unchanged documents are still never
+> re-read). `percent_pass=None` restores the single-pass behaviour.
+>
+> **Still open under D9:** bilingual MK/AL confidence (the paragraph above). Untouched by this.
 
 Reconnaissance (`sources.md` §6.2) found that the call documents of **Economy, Skopje and IPARD**
 mostly have no extractable text: scanned paper (Skopje) or Word exports with every glyph as an image
@@ -330,7 +356,7 @@ there is an account to point at.
 | D6 | Free tier depth | P2 s28 | Full top 10 with reasons and citations |
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
 | D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
-| D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026** | Tesseract `mkd` locally; OCR citations always reviewed |
+| D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026**; `%` gap closed 21.09.2026; **bilingual MK/AL confidence still open** | Tesseract `mkd` locally; OCR citations always reviewed; `%` restored from a box-matched second pass |
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
 

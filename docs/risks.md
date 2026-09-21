@@ -30,6 +30,15 @@ inconvenience.
 | **Mitigation** | Structural, not procedural. (a) Only `hard_structured` rules can produce `not_eligible`, and the model's output vocabulary cannot express a user-facing verdict at all — it returns `satisfied`/`not_satisfied`/`unclear` and code does the mapping. (b) Every quote must be found **verbatim** in the chunk it cites, checked in code. (c) Missing data downgrades to `needs_verification`, never upgrades. (d) Human review gate on every paid report. (e) Evaluation harness treats a false `eligible` as a **zero-tolerance, deploy-blocking** failure. (f) Banned-phrase lint on all customer-facing prose |
 | **Earliest cheap test** | **P2 session 26**, your verdict-marking session. Take one call you know intimately, run 10 engineered boundary profiles through it, and count false `eligible` results. If it is not zero, stage 2 does not ship |
 
+**Demonstrated 18.09.2026, and it is the sharp edge of mitigation (b): a verbatim quote is not a true
+quote.** Tesseract's `mkd` model has no `%` character, so it read "75%" as "755". The citation checked
+out perfectly — the quote *was* in the snapshot, at the offsets claimed — and the number in it was
+wrong. Fixed in the normaliser 21.09.2026 (`sources.md` §6.10), but the lesson generalises past `%`:
+**the verbatim check proves the text matches the snapshot, never that the snapshot matches the paper.**
+Whatever the OCR misreads is invisible to every later guard, including P2 s29's. The only defences are
+D9 rule 1 (a human sees the page image beside every OCR'd citation — `handoff.md` §8 notes this is
+still only half built) and looking for classes of misreading deliberately, as s20 did.
+
 ---
 
 ## R3 — Willingness to pay is lower than assumed in the Macedonian SME market

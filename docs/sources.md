@@ -317,12 +317,41 @@ one more token name (below); no interface change.
   carries a note (`listing.note`) to check each criterion against the table in the PDF. The long
   version of 02/2024 (26 pages) took most of a 10.5-minute first run to OCR; unchanged, it is never
   read again (content hash). One page raised an OCR-doubt item.
-- **OCR cannot read `%`.** The `mkd` model's character set (86 characters) has no percent sign:
-  "75% ЕУ учество" arrives as "755 ЕУ учество", "до 60%" as "до 60“", "10%" as "105". Confidence
-  stays high, so no flag is raised, and a quote containing the wrong number still matches verbatim.
-  Reproduced on a rendered line: `mkd` gives "609 (7595, ЕУ …", `mkd+eng` gives "60% (75% EY …".
-  This affects every OCR-derived document from every source; IPARD is where rates decide
-  eligibility. The IPARD reviewer note says so. The fix is the normaliser's (`decisions.md` D9).
+- **OCR could not read `%`** — **fixed 21.09.2026, §6.10.** The `mkd` model's character set (86
+  characters) has no percent sign: "75% ЕУ учество" arrived as "755 ЕУ учество", "до 60%" as
+  "до 60“", "10%" as "105". Confidence stayed high, so no flag was raised, and a quote containing the
+  wrong number still matched verbatim. This affected every OCR-derived document from every source;
+  IPARD is where rates decide eligibility. The IPARD reviewer note no longer mentions it and still
+  routes the tables themselves to a human.
 - **ASP.NET MVC adds a fresh `__RequestVerificationToken`** to every page; it joins `__VIEWSTATE`
   in `without_aspnet_state`.
 - Forms, guides and annexes are listed for the reviewer (`listing.other_files`), not extracted.
+
+### 6.10 The `%` restored — 21.09.2026 (out of roadmap order, D9)
+
+`app/ingestion/normalise/pdf.py`; `NORMALISER_VERSION` `2026-09-13.1` → `2026-09-21.1`. Nothing
+outside the normaliser changed, and no fetcher was touched except to drop the now-stale half of the
+IPARD reviewer note.
+
+Not a fetcher problem and not fixable in one: **an OCR'd page with a digit is now read twice.** The
+`mkd` pass is still the text — it is the only pass that reads Macedonian without substituting Latin
+look-alikes — and a second `mkd+eng` pass over the *same rendered image* supplies nothing but the
+`%` character. The two word tables are matched **by bounding box**, so no text alignment heuristic is
+involved: on the IPARD 01/2025 rates every box overlapped 1.00.
+
+A `%` is carried across only where the second-pass token has exactly one `%` and **no letter at all**,
+the second pass was confident and `mkd` was not, the boxes overlap, and the `mkd` token is that token
+with the `%` replaced by at most two non-letter characters. The full rule, with its numbers and why
+each clause is there, is in `decisions.md` D9.
+
+- **Result on the only fixture with rates** (IPARD 01/2025 short version, 3 pages): 6 of 6 rates
+  restored — `755`→`75%`, `254`→`25%`, `605`→`60%`, `655`→`65%`, `704`→`70%`, `7556.`→`75%.` — and
+  diffed against the single pass, those six tokens were the *only* changes in the document.
+- **A `%` that cannot be placed is a review reason**, not a repair. The text keeps what `mkd` wrote,
+  because a snapshot is faithful to what the engine read, and an unreadable rate is a human's.
+- **Cost:** roughly double the OCR time on pages with digits. A 26-page IPARD long version goes from
+  ~10 to ~20 minutes on a first run; unchanged documents are still never re-read (content hash).
+- **Only new snapshots get this.** Normalised text is written once and never recomputed (property 3
+  in `normalise/__init__.py`), so anything ingested before the bump still holds the wrong numbers.
+  There is no re-normalisation path; the affected documents are IPARD's, and they are re-fetched when
+  their content hash changes.

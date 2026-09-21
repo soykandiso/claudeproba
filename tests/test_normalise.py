@@ -9,6 +9,7 @@ import io
 import json
 import shutil
 import unicodedata
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,7 @@ from app.ingestion.normalise import (
     page_of,
 )
 from app.ingestion.normalise.html import normalise_html
-from app.ingestion.normalise.pdf import OcrPage, TesseractOcr
+from app.ingestion.normalise.pdf import OcrPage, TesseractOcr, _Word, restore_percents
 from app.models.enums import TextSource
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -50,13 +51,26 @@ def assert_round_trip(text: str, quote: str) -> None:
 class FakeOcr:
     """Stands in for Tesseract where the test is about structure, not reading."""
 
-    def __init__(self, confidence: float = 95.0):
+    def __init__(self, confidence: float = 95.0, unresolved: int = 0):
         self.confidence = confidence
+        self.unresolved = unresolved
         self.asked: list[int] = []
 
     def read_pages(self, pdf: bytes, page_numbers: list[int]) -> dict[int, OcrPage]:
         self.asked += page_numbers
-        return {n: OcrPage(f"OCR текст страница {n}", self.confidence) for n in page_numbers}
+        return {
+            n: OcrPage(
+                f"OCR текст страница {n}", self.confidence, percents_unresolved=self.unresolved
+            )
+            for n in page_numbers
+        }
+
+
+def word(text: str, confidence: float, *, left: int = 100) -> _Word:
+    """One word table row, at a box no other test word overlaps unless it is given one."""
+    return _Word(
+        text, confidence, left=left, top=50, width=60, height=30, block=1, paragraph=1, line=1
+    )
 
 
 # --- acceptance: known quotes round-trip, one per format ------------------------------
@@ -222,5 +236,105 @@ def test_without_tesseract_an_image_pdf_fails_loudly(monkeypatch):
 def test_an_ocr_read_records_the_engine_that_did_it():
     result = normalise(fixture("skopje/call-12094.pdf"), ocr=TesseractOcr(dpi=75))
 
-    assert result.ocr_engine.startswith("tesseract-5") and result.ocr_engine.endswith("mkd-75dpi")
+    assert result.ocr_engine.startswith("tesseract-5")
+    assert result.ocr_engine.endswith("mkd-75dpi-pct-mkd+eng"), "the second pass changes the text"
     assert normalise(fixture("ipardpa/call-34-najava-03-2025.pdf")).ocr_engine is None
+
+
+# --- the percent sign the Macedonian model cannot write (D9, reopened) -----------------
+#
+# Every rate on these two pages is a number a criterion turns on, and `mkd` alone
+# reads all six of them wrong at a confidence that raises no flag. The word tables
+# are a recording (tests/fixtures/README.md): both of them differ between Tesseract
+# versions, and restore_percents matches them by box.
+
+RATES = {  # what `mkd` wrote -> what the page says, read off the PDF by a person
+    "755": "75%",
+    "254": "25%",
+    "605": "60%",
+    "655": "65%",
+    "704": "70%",
+    "7556.": "75%.",
+}
+
+
+def recorded_words(page: int) -> tuple[list[_Word], list[_Word]]:
+    """The `mkd` and `mkd+eng` word tables recorded for one page of IPARD 01/2025."""
+    data = json.loads(fixture("ipardpa/call-32.words.json"))["pages"][str(page)]
+    return tuple([_Word(*row) for row in data[languages]] for languages in ("mkd", "mkd+eng"))
+
+
+@pytest.mark.parametrize("page", [1, 2])
+def test_every_rate_on_the_page_gets_its_percent_sign_back(page):
+    base, second = recorded_words(page)
+    restored, count, unresolved = restore_percents(base, second)
+
+    assert unresolved == 0
+    assert count == sum(1 for w in second if "%" in w.text)
+    before = [w.text for w in base]
+    after = [w.text for w in restored]
+    changed = {b: a for b, a in zip(before, after, strict=True) if b != a}
+    assert changed, "the page has rates; something must have changed"
+    assert changed == {b: a for b, a in RATES.items() if b in changed}
+
+
+@pytest.mark.parametrize("page", [1, 2])
+def test_the_second_pass_contributes_nothing_but_the_percent_sign(page):
+    """The reason `mkd` reads the page: `mkd+eng` puts Latin look-alikes in Cyrillic.
+
+    So every word the second pass does not repair must come through untouched, and
+    a repaired word must differ from what `mkd` wrote only where the `%` went.
+    """
+    base, second = recorded_words(page)
+    restored, _, _ = restore_percents(base, second)
+
+    for was, now in zip(base, restored, strict=True):
+        if was.text == now.text:
+            continue
+        head, tail = now.text.split("%")
+        assert was.text.startswith(head) and was.text.endswith(tail), "only the `%` may differ"
+        assert was == replace(now, text=was.text), "a repair must not move the box"
+
+
+def test_a_percent_the_macedonian_pass_cannot_be_reconciled_with_goes_to_review():
+    """Invariant 3: an unreadable rate is a reviewer's, never a guess."""
+    base = [word("нема", 95.0, left=0)]
+    second = [word("40%", 95.0, left=900)]  # nowhere near any `mkd` word
+
+    restored, count, unresolved = restore_percents(base, second)
+
+    assert (count, unresolved) == (0, 1)
+    assert [w.text for w in restored] == ["нема"]
+
+
+def test_an_unresolved_percent_reaches_the_review_reasons():
+    result = normalise(fixture("skopje/call-12094.pdf"), ocr=FakeOcr(confidence=95.0, unresolved=2))
+
+    assert any("2 percent sign(s)" in reason for reason in result.review_reasons)
+    assert "check every rate against the PDF" in result.review_reasons[0]
+
+
+@pytest.mark.parametrize(
+    ("candidate", "confidence", "current", "why"),
+    [
+        ("65%", 95.0, "755", "the two passes read different digits"),
+        ("60%", 40.0, "605", "the second pass was not confident"),
+        ("60%", 95.0, "605", "`mkd` was confident in the number it read"),
+        ("6O%", 95.0, "605", "a Latin look-alike letter must never cross over"),
+        ("50%-60%", 95.0, "505-605", "two `%` in one token is ambiguous"),
+        ("60%", 95.0, "60ста", "`mkd` read letters there, so it is not the same token"),
+    ],
+)
+def test_a_percent_is_not_restored_on_a_doubtful_match(candidate, confidence, current, why):
+    base = [word(current, 95.0 if "`mkd` was confident" in why else 50.0)]
+    restored, count, unresolved = restore_percents(base, [word(candidate, confidence)])
+
+    assert (count, unresolved) == (0, 1), why
+    assert restored[0].text == current, "the text stays what the engine read"
+
+
+def test_the_second_pass_is_skipped_when_asked_for_the_single_pass_behaviour():
+    ocr = TesseractOcr(percent_pass=None)
+
+    assert ocr.percent_pass is None
+    assert "pct" not in f"-{ocr.languages}-{ocr.dpi}dpi"
