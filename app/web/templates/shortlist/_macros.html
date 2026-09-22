@@ -1,0 +1,79 @@
+{# Pieces of the shortlist. Import with: {% import "shortlist/_macros.html" as ui with context %}
+   The treatments are the demo's, which the user approved (16.09.2026); the data is real. #}
+
+{% macro verdict(v) %}<span class="verdict verdict--{{ v }}">{{ verdict_labels[v] }}</span>{% endmacro %}
+
+{% macro deadline(d) -%}
+{%- if d -%}
+<span class="deadline">{{ d|mkdate }}{% set left = days_left(d) %}{% if left %}, {{ left }}{% endif %}</span>
+{%- else -%}
+<span>Нема краен рок</span>
+{%- endif -%}
+{%- endmacro %}
+
+{# Invariant 2 on the page: the words, the source, the date we read it, and where
+   exactly in the stored text they are. #}
+{% macro excerpt(c) %}
+<figure class="excerpt excerpt--compact">
+  <blockquote>{{ c.quote }}</blockquote>
+  <figcaption>
+    <span><span class="cite-mark">Извор:</span> {{ c.source_url.split('/')[2] }}</span>
+    <span>Преземено {{ c.retrieved_at|mkdate }}</span>
+    <a href="{{ url_for('shortlist.passage', criterion_id=c.criterion_id) }}">Види го во текстот на повикот</a>
+    <span class="id" title="Снимка и позиција на цитатот во зачуваниот текст">{{ c.snapshot_id }} {{ c.char_start }}–{{ c.char_end }}</span>
+  </figcaption>
+</figure>
+{% endmacro %}
+
+{% macro call_item(e) %}
+{% set call = e.call %}
+{% set outcome = e.outcome %}
+<li class="call call--{{ outcome.verdict }} stack">
+  {{ verdict(outcome.verdict) }}
+  <div class="stack" style="--gap: 4px">
+    <h3>{{ call.title_mk }}</h3>
+    {% if e.institution %}<p class="soft small">{{ e.institution }}</p>{% endif %}
+  </div>
+  {# Said whenever it is true, not only when it lowered a verdict: the customer is
+     reading conditions, and should know some are still in a document nobody has read. #}
+  {% if call.eligibility_gap %}<p class="small">{{ call.eligibility_gap }}</p>{% endif %}
+  <dl class="facts">
+    <div><dt>Рок за пријава</dt><dd>{{ deadline(call.deadline_at) }}</dd></div>
+    {% if call.grant_max_mkd %}<div><dt>Најмногу по барател</dt><dd>{{ call.grant_max_mkd|thousands }} МКД</dd></div>{% endif %}
+    <div><dt>Последна проверка</dt><dd>{{ call.last_verified_at|mkdate }}</dd></div>
+  </dl>
+  {% if outcome.outcomes %}
+  <ul class="reasons" aria-label="Услови од повикот">
+    {% for item in outcome.outcomes %}
+    {% set c = e.citation(item) %}
+    <li>
+      <span class="outcome">{{ criterion_labels[item.verdict] }}</span>
+      <p>{{ item.criterion.label_mk }}</p>
+      <p class="small soft">{{ item.reason_mk }}</p>
+      {% if c %}
+      <details class="cite">
+        <summary>Цитат од повикот</summary>
+        {{ excerpt(c) }}
+      </details>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="small soft">Условите на овој повик сè уште не се одобрени од уредник, па ниеден не е проверен.</p>
+  {% endif %}
+  {% if not e.scored.excluded %}
+  <details class="why">
+    <summary>Зошто е на ова место во листата</summary>
+    <dl class="breakdown">
+      {% for part in e.scored.parts if part.weight %}
+      <div><dt>{{ score_labels[part.name] }}</dt><dd>{{ part.reason_mk }}</dd></div>
+      {% endfor %}
+    </dl>
+  </details>
+  {% endif %}
+  <div class="actions">
+    <a class="btn btn--quiet" href="{{ call.canonical_url }}" rel="noopener">Повикот на страницата на институцијата</a>
+  </div>
+</li>
+{% endmacro %}

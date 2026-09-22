@@ -4,8 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s27 — stage 2 scoring, scoped with the user. Before it: the
-craftsman entity form (out of order, found by s26), P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
+**Last updated:** 22.09.2026, after P2 s28 — the shortlist page at `/povici`. Before it: P2 s27
+(stage 2 scoring, scoped with the user), the craftsman entity form (out of order, found by s26), P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
 s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
@@ -27,7 +27,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **The next P2 row is s28, the shortlist page** — the first screen that shows a customer stage 1 and 2 together; it is UI, and it is where rank-before-judging (§8) lands |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **The next P2 row is s29, the verification prompt** — tier B against cassettes, so it needs no API key; it is what turns the `narrative_verify` rows the harness reports as under-decided into decisions |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -41,6 +41,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | P2 s28 | `git log --grep 'session 28'` | **The shortlist page.** `app/matching/shortlist.build` runs stages 1–2, then **finds every quote again** in one SQL query (substr of the stored text at the offsets = the quote); a criterion whose quote is gone is undecided and the call is settled again through the new `stage1.settle`, so a broken citation can only reach `needs_verification` — an exclusion included. Top ten (D6) with the total said, excluded calls apart. `/povici/izvor/<criterion>` shows the quote marked inside 600 characters of stored text either side, with the institution's link; 404 when the quote is not where it says. **Rank-before-judging not built** — 274 ms at 2.000 calls, a registry fifty times the real one (`decisions.md`). Dates, amounts and verdict words moved from the demo to `app/web/format.py` (the demo is not registered in production, so its filters were not either); deadlines are said in Skopje time. The eligibility-gap sentence is shown whenever it is true, not only when it lowered a verdict. Review page: a "see the open calls" button, and the note no longer touches the buttons. `ops/dev/seed_shortlist.py` publishes the frozen calls in dev. Checked at 375/768/1440 over the live server with the session cookie (§7 script plus `Network.setCookie`); 14 ms median locally |
 | 22.09 | P2 s27 | `git log --grep 'session 27'` | **Stage 2, scoped with the user** after I showed that the row's acceptance could not be met: most inputs are empty and four open calls make "top five" true of any order. `stage2.rank` scores stage 1's outcomes with six components, each a value and a Macedonian reason; missing data is neutral 0.5 and says what is missing; `not_eligible` ranks last; nothing touches a verdict. `v1.yaml` is the design's weights with `semantic_fit` at 0, **marked untuned**. **Measured and changed: `size_fit`** — the design's investment-vs-grant-band put the Economy call last for the bakery that can use it, and ranked every call that states a cap below the silent ones; a cap is now partial help (neutral), not a misfit (`matching.md` §4). **Also fixed**: `stage1.judge` interpreted `soft_scored` preferences as unclear, which would pull a settled call down to needs_verification — now `CallOutcome.preferences`. The pipeline now stores `call.cofinancing_pct` (the applicant's share, 100 − the extracted `grant_share_pct`); fixtures re-frozen with the grant columns. The harness runs stages 1–2, checks a fifth property (a reason for every component, excluded last) and prints rank quality as not measurable. `match_run` not written — no `applicant_profile` row exists (§8) |
 | 22.09 | Craftsman form | `git log --grep 'craftsman'` | Out of order, the first §8 item s26 found. `EntityType.CRAFTSMAN` (hand-written migration `1b093080ae25` — autogenerate cannot see a new enum value), «Занаетчија» on `/profil`, sized like a sole trader under the EU SME definition. **The extraction prompt was deliberately not changed** (`decisions.md`): Skopje's call is also for permit holders, so `entity_type in [craftsman]` would be a false exclusion by rule. New boundary profile **p11**, p07 with only the form changed; the user accepted its four verdicts. `run.py --worksheet` now appends rows for a new profile to a marked file instead of skipping the file. Gate green at 45 cases; p11's Economy and Skopje rows are under-decided, which is the measurement of what a prompt version would buy. Checked at 375/768/1440 |
 | 22.09 | P2 s26 | `git log --grep 'session 26'` | **The expected verdicts**, marked by the user: I read the five calls in full, drafted a verdict and a Macedonian reason for each of the 41 rows, and the user accepted every one and two conventions, now written in `evals/README.md` — the truth is what an expert would say from the answers and the call's text (not what the system can do), and `not_shown` is for location only. 9 likely_eligible, 18 needs_verification, 7 not_eligible, 7 not_shown; no `eligible`, because every call but the notice has an attestation outstanding. **The gate is green**: 22 exact, 0 false eligible, 0 false exclusion. **What it found**: 3 over-claims, all on AV — `likely_eligible` for p03 (≤ 5 months old) and p07/p08 (0–1 employees), whose own answers put the six-month employee attestation in doubt (§8); 7 Skopje rows where geography would say `not_shown` and the rules can only say `needs_verification` — the measurement the geography decision was waiting for (§8). The report now names over-claimed cases instead of counting them. Also found reading the calls, all in §8: the intake has no *занаетчија* form, the frozen Economy criteria miss four conditions, and the suite's clock predates the AV call |
@@ -99,6 +100,9 @@ about real calls, which is worth having whatever the demand test says.
   `/profil/pregled` (what the answers were read as). Templates in `templates/intake/`;
   `_form.html` is the shared partial `/demo/profil` includes. Registered **everywhere**, including
   production — it is the first real customer screen. `templates/base.html` is the site shell.
+- `app/web/shortlist/` — `/povici` (the top ten) and `/povici/izvor/<criterion>` (the passage).
+  Registered everywhere. `app/matching/shortlist.py` is the service; `app/web/format.py` the dates,
+  amounts and verdict words every screen shares (the demo imports them too).
 - `app/web/csrf.py` — one CSRF check; `csrf.protect(bp)` is called by `/admin` and `/profil`.
 - `app/web/demo/` — simulated; **replace, do not extend**. Intake and stage 0 are no longer
   simulated: `/demo/profil` renders the real form and `engine.py` runs the real `normalise`.
@@ -274,6 +278,15 @@ ws.close(); proc.kill();
 (a refused form) can be captured by saving the response HTML with `curl` (cookie jar + CSRF token
 from the page), inserting `<base href="http://localhost:8080/">`, and screenshotting the file.
 
+**A page that needs the session** (`/povici`, `/profil/pregled`) is better checked live than from a
+saved file: from `file://` the vendored fonts are refused (the check reports failed requests that
+the real page does not have) and a 1440×5000 capture hung for 15 minutes on 22.09. Post the form
+with `curl` into a cookie jar, then add one line after the `enable` loop of the script above —
+`await send("Network.setCookie", { name: "session", value: process.env.COOKIE, domain: "localhost", path: "/" })`
+— and run it with `COOKIE=$(awk '$6=="session"{print $7}' jar.txt)`. For full-page captures use
+`Page.captureScreenshot` after resizing the viewport to `document.documentElement.scrollHeight`;
+open every `<details>` first so citations are in the picture.
+
 ## 8. Carried forward — do not lose these
 
 - **EU call documents are still not extracted** (`sources.md` §6.6), so an EU call's criteria remain
@@ -335,6 +348,13 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   their own answers make unlikely as a formality. The fix belongs to s27/s29 (an attestation whose
   subject the profile answers, and answers doubtfully, caps at `needs_verification`), not to the
   extraction: making it `hard_structured` would let a rule *exclude* on a headcount band.
+- **The shortlist's p50 < 3 s is not proven on the VPS**, which does not exist. Locally it is 14 ms
+  over five calls; `ops/dev/bench_stage1.py` covers stage 1 at 2.000 and 20.000. Measure on the VPS
+  after s4, and re-run the bench when the open registry passes 2.000 (the trigger for
+  rank-before-judging, `decisions.md`).
+- **`/povici` has nothing to show in production until calls are approved there** (D11). In dev,
+  `PYTHONPATH=. uv run python ops/dev/seed_shortlist.py` publishes the five frozen calls — and
+  deletes every other published call first, like the harness.
 - **Stage 2's weights are untuned and nothing can tune them yet.** `config/weights/v1.yaml` says
   so in its header. Rank quality needs two things the suite lacks: more open calls than a
   shortlist shows, and a case saying which call should come first per profile. Until then a weight

@@ -13,40 +13,10 @@ from datetime import date
 
 from flask import Blueprint
 
-from app.models.enums import Verdict
+from app.web.format import CRITERION_LABELS, VERDICT_LABELS
+from app.web.format import days_left as _days_left
 
 bp = Blueprint("demo", __name__, url_prefix="/demo")
-
-_DAYS_IN_WORDS = {
-    1: "еден ден",
-    2: "два дена",
-    3: "три дена",
-    4: "четири дена",
-    5: "пет дена",
-    6: "шест дена",
-    7: "седум дена",
-    8: "осум дена",
-    9: "девет дена",
-    10: "десет дена",
-    11: "единаесет дена",
-    12: "дванаесет дена",
-    13: "тринаесет дена",
-}
-
-VERDICT_LABELS = {
-    Verdict.ELIGIBLE: "Можете да аплицирате",
-    Verdict.LIKELY_ELIGIBLE: "Веројатно можете да аплицирате",
-    Verdict.NEEDS_VERIFICATION: "Потребна е проверка",
-    Verdict.NOT_ELIGIBLE: "Не можете да аплицирате",
-}
-
-# Per criterion, after taxonomy: a model's not_satisfied already reads as "check".
-CRITERION_LABELS = {
-    Verdict.ELIGIBLE: "Исполнето",
-    Verdict.LIKELY_ELIGIBLE: "Го потврдувате вие",
-    Verdict.NEEDS_VERIFICATION: "Треба да се провери",
-    Verdict.NOT_ELIGIBLE: "Не е исполнето",
-}
 
 DECIDED_BY_LABELS = {
     "rule": "проверено според податоците од профилот",
@@ -69,34 +39,12 @@ SCORE_LABELS = {
 }
 
 
-def _as_date(value) -> date:
-    return date.fromisoformat(value) if isinstance(value, str) else value
-
-
-@bp.app_template_filter("mkdate")
-def mkdate(value) -> str:
-    return _as_date(value).strftime("%d.%m.%Y")
-
-
-@bp.app_template_filter("thousands")
-def thousands(value) -> str:
-    return f"{int(value):,}".replace(",", ".")
-
-
 @bp.app_context_processor
 def demo_helpers():
     today = date.today()
 
     def days_left(deadline) -> str | None:
-        """Words for deadlines under 14 days (design-system: 'says how many days remain')."""
-        days = (_as_date(deadline) - today).days
-        if days < 0:
-            return "рокот помина"
-        if days == 0:
-            return "рокот истекува денес"
-        if days in _DAYS_IN_WORDS:
-            return f"уште {_DAYS_IN_WORDS[days]}"
-        return None
+        return _days_left(deadline, today)
 
     from app.matching import intake
     from app.web.demo import store

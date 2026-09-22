@@ -25,6 +25,7 @@
       <a class="wordmark" href="{{ url_for('intake.form') }}">Грантови и субвенции</a>
       <nav class="site-nav" aria-label="Главна навигација">
         <a href="{{ url_for('intake.form') }}" {% if request.endpoint in ('intake.form', 'intake.save') %}aria-current="page"{% endif %}>Профил</a>
+        <a href="{{ url_for('shortlist.index') }}" {% if request.endpoint == 'shortlist.index' %}aria-current="page"{% endif %}>Повици</a>
       </nav>
     </div>
   </header>

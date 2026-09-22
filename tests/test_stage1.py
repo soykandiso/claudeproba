@@ -535,13 +535,16 @@ def test_an_approved_call_from_the_pipeline_is_matchable(sessions, written):  # 
     with sessions() as s:
         item = s.get(ReviewQueueItem, written.review_item_id)
         call = s.get(Call, written.call_id)
-        assert stage1.candidates(s, profile(), NOW) == []  # not published yet
+        # Only this call is looked at: the development database may hold other
+        # published calls (ops/dev/seed_shortlist.py), and they are not the subject.
+        ours = written.call_id
+        assert ours not in [c.id for c in stage1.candidates(s, profile(), NOW)]  # unpublished
 
         review.approve_call(s, item, note="прочитано", now=NOW)
         s.commit()
 
         assert call.allowed_entity_types == []
-        [outcome] = stage1.run(s, profile(), AV_NOW)
+        [outcome] = [o for o in stage1.run(s, profile(), AV_NOW) if o.call.id == ours]
 
     assert outcome.call.id == written.call_id
     structured = [o for o in outcome.outcomes if o.criterion.kind == CriterionKind.HARD_STRUCTURED]

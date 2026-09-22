@@ -213,6 +213,15 @@ def judge(call: Call, criteria: Iterable[EligibilityCriterion], profile: Profile
         decision, reason = _decide(criterion, profile)
         outcomes.append(CriterionOutcome(criterion, decision, criterion_verdict(decision), reason))
 
+    return settle(call, outcomes, preferences)
+
+
+def settle(call: Call, outcomes: list[CriterionOutcome], preferences: Iterable = ()) -> CallOutcome:
+    """The call's verdict from its criteria's, with the eligibility gap applied.
+
+    Separate from `judge` so a later step that downgrades one criterion — the
+    shortlist's citation check — reaches the verdict by the same road.
+    """
     verdict = call_verdict(o.decision for o in outcomes)
     capped = None
     if call.eligibility_gap and verdict in (Verdict.ELIGIBLE, Verdict.LIKELY_ELIGIBLE):

@@ -30,14 +30,21 @@ def create_app(settings: Settings | None = None) -> Flask:
     # page shows up on refresh without restarting anything.
     app.config["TEMPLATES_AUTO_RELOAD"] = not settings.is_production
 
+    from app.web import format
+
+    # Dates, amounts and verdict words, the same on every screen (app/web/format.py).
+    format.register(app)
+
     from app.web.health import bp as health_bp
     from app.web.intake import bp as intake_bp
     from app.web.public import bp as public_bp
+    from app.web.shortlist import bp as shortlist_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(public_bp)
-    # The intake form is a real customer screen and is registered everywhere.
+    # The intake form and the shortlist are real customer screens, registered everywhere.
     app.register_blueprint(intake_bp)
+    app.register_blueprint(shortlist_bp)
 
     # Invented calls and citations; must never be reachable in production.
     if not settings.is_production:

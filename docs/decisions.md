@@ -456,6 +456,24 @@ again, which is a deliberate job with its own session.
 is three snapshots — the s20 IPARD run and one Skopje document — with nothing published on them.
 **P2 s29 must not write verdicts from a snapshot this command still lists.**
 
+### The shortlist judges every candidate, and shows a window of the source, not the source (22.09.2026, P2 s28)
+
+**Rank-before-judging is not built**, although the roadmap row names it. Stage 1 over 2.000 open
+calls takes 274 ms (`matching.md` §3); North Macedonia publishes a few dozen open calls at a time,
+the EU portal adds 39 topics in scope (D10). Judging only the best-ranked calls would need batching
+to keep ten open calls on the page, and would hide excluded calls further down the order — a moving
+part for a registry fifty times the real one. `ops/dev/bench_stage1.py` is the trigger: re-run it
+when the open registry passes 2.000.
+
+**Every quote is found again when the page is built**, in one query, not trusted from approval.
+A criterion whose quote is not at its offsets any more is undecided, and the call is settled again
+from that — so a broken citation can turn `eligible` or `not_eligible` into `needs_verification`
+and nothing else. Its passage page answers 404.
+
+**The passage page shows 600 characters either side of the quote**, with the institution's own
+link beside it, not the whole stored document. Whether a whole official publication may be
+reproduced is P3 s43's question; a short excerpt with a link is the conservative answer until then.
+
 ### A registered craftsman is an entity type, and extraction does not know it yet (22.09.2026)
 
 s26 found two of the five evaluation calls turning on a legal form the intake could not express: a
