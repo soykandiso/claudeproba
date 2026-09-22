@@ -430,12 +430,15 @@ class Report:
             wrong = {
                 "false eligible": [r for r in self.results if r.false_eligible],
                 "false exclusion": [r for r in self.results if r.false_exclusion],
+                "over-claimed": [r for r in self.results if r.over_claimed],
                 "under-decided": [r for r in self.results if r.under_decided],
             }
             for name, rows in wrong.items():
                 lines.append(f"  {name:.<46} {len(rows):>4}")
-                # The two that block are named case by case; under-decided will be
-                # most of the suite until s27 and s29, and listing it would bury them.
+                # The two that block are named case by case, and so is over-claimed: it
+                # does not block, but it is the nearest thing to a false eligible and a
+                # count alone sends you looking for it. Under-decided will be most of the
+                # suite until s27 and s29, and listing it would bury the rest.
                 if name == "under-decided":
                     continue
                 for row in rows[:10]:

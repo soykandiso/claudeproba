@@ -4,9 +4,9 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after measuring stage 1 at scale (out of roadmap order, while s26
-waits for the user). Before it: the OCR page image, the stale-text warning and P2 s25 (the
-evaluation harness). s22–s25 were all taken out of
+**Last updated:** 22.09.2026, after P2 s26 — the 41 expected verdicts, marked with the user in
+one walk-through. Before it: stage 1 at scale, the OCR page image, the stale-text warning and P2
+s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
 
@@ -27,7 +27,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and 41 blank case rows. **The next P2 row is s26 — the user's own evening, and nobody else can do it.** Open `evals/cases/*.yaml`, write a verdict and one sentence per row; each file carries the call's conditions in its own quoted words and each applicant's answers, so nothing has to be opened to decide. s27's scoring must not be built before it |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 41 marked cases: the gate is green** (0 false eligible, 0 false exclusion, 3 over-claimed, 14 under-decided). **The next P2 row is s27, scoring** — technically unblocked, but it is the row the roadmap names as the point where building before the demand test (s21) stops costing nothing. Ask the user before starting it; the over-claim in §8 is a candidate that does not depend on s21 |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -41,6 +41,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | P2 s26 | `git log --grep 'session 26'` | **The expected verdicts**, marked by the user: I read the five calls in full, drafted a verdict and a Macedonian reason for each of the 41 rows, and the user accepted every one and two conventions, now written in `evals/README.md` — the truth is what an expert would say from the answers and the call's text (not what the system can do), and `not_shown` is for location only. 9 likely_eligible, 18 needs_verification, 7 not_eligible, 7 not_shown; no `eligible`, because every call but the notice has an attestation outstanding. **The gate is green**: 22 exact, 0 false eligible, 0 false exclusion. **What it found**: 3 over-claims, all on AV — `likely_eligible` for p03 (≤ 5 months old) and p07/p08 (0–1 employees), whose own answers put the six-month employee attestation in doubt (§8); 7 Skopje rows where geography would say `not_shown` and the rules can only say `needs_verification` — the measurement the geography decision was waiting for (§8). The report now names over-claimed cases instead of counting them. Also found reading the calls, all in §8: the intake has no *занаетчија* form, the frozen Economy criteria miss four conditions, and the suite's clock predates the AV call |
 | 22.09 | Stage 1 at scale | `git log --grep 'bench'` | Out of roadmap order, closing a §8 unknown rather than guessing at s28. `ops/dev/bench_stage1.py` writes a synthetic registry in a rolled-back transaction (two thirds national, every call with criteria), times each step and prints the planner's own account. **The array clauses are not the bottleneck** — 66 ms of SQL over 20.000 open calls, and a seq scan is correct because while most calls are national every profile matches most rows. **The cost is per candidate**: 2 s of it is loading their criteria. `stage1.run` is 26 ms at 200 open calls, 274 ms at 2.000 and 3,3 s at 20.000, so the three-second budget breaks somewhere above 2.000 and the fix is to rank before judging (s28), not an index. Noted for later: the planner estimates 9 rows where 13.311 match |
 | 22.09 | OCR page image | `git log --grep 'page image'` | Out of roadmap order, the other half of **D9 rule 1**: an OCR'd quote is now shown with the scanned page underneath it on the review item. `render_page` in `normalise/pdf.py` (pdftoppm, 110 dpi, colour — a stamp and a date are what the reviewer is looking for) and `/admin/dokument/<snapshot>/strana/<page>`, rendered on demand from the content-addressed bytes and never stored, with an ETag so a page is fetched once. **Only OCR and mixed text gets an image**: a photograph of a document that already gave us its characters proves nothing and would make the mark meaningless. The page number comes from `page_of` over the form feeds, so the reviewer gets the page the quote is actually on. ~200 KB and ~0.4 s per page, lazy-loaded; PNG not JPEG, because artefacts on small Cyrillic are the one thing this image must not add. Checked at 375/768/1440 over the real Skopje scan |
 | 22.09 | Stale text | `git log --grep 'stale text'` | Out of roadmap order: s26 is the user's own evening and nothing else in P2 may go first. Closed the §8 hole "nothing warns a reviewer": `app/ingestion/normalise` now remembers **which repair each version brought** (`REPAIRS`, `missing_repairs`), `/admin` says on the item which documents were read by an older version and what to distrust in them, and `flask ingest stale-text` lists every such snapshot with the criteria and published calls that cite it. Three decisions. **It warns, it does not block** — most quotes out of an old document are right, there is no re-normalisation path, and a block the reviewer cannot clear teaches them to skim notices. **Nothing is rewritten in place**: re-normalising moves every offset that cites the text, so the remedy is delete-and-re-fetch, its own deliberate job. **Only OCR text is at risk** — both repairs were OCR-only, so a DOCX read in September raises nothing. In the dev database the command finds three snapshots (the s20 IPARD run and one Skopje document) with nothing published on them |
@@ -109,7 +110,7 @@ about real calls, which is worth having whatever the demand test says.
 | D10 | EU portal scope — default in code, user to confirm or widen | first EU approvals |
 | D11 | Operator sign-in — recommended SSH tunnel, then magic link at s44 | production admin |
 | D7 | Named Albanian reviewer — **now bites earlier than `sq` shipping** | since 21.09 a model can quote real Albanian into a criterion, and a reviewer who does not read Albanian cannot check it (`sources.md` §6.11) |
-| — | **P2 s26: mark the 41 expected verdicts** in `evals/cases/*.yaml` | the whole evaluation gate, and s27 after it |
+| — | **Whether to build s27 before s21** — the roadmap's own line; s26 is done and s27 is technically free | P2 s27 onwards |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
 | — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
 
@@ -193,7 +194,7 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **The evaluation gate needs the stack up and takes seconds**:
   `PYTHONPATH=. uv run python evals/run.py`. It deletes every published call — inside a transaction
   it rolls back — so the frozen fixtures are the whole registry, and it refuses to run against a
-  production database. Exit 1 today is correct (no cases yet).
+  production database. It exits 0 since s26; exit 1 means something blocks.
 - **After a Codespace restart docker can refuse to start a container** with "RWLayer of container …
   is unexpectedly nil" (seen 22.09.2026). `docker rm -f` the five containers and run `./run.py
   --detach` again; the data is in named volumes (`grants_postgres-data` and friends), so nothing is
@@ -214,8 +215,8 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 3. `uv run ruff check . && uv run ruff format --check .` and the full suite green (the strict
    `xfail`s listed in `KNOWN_MISSES` in `test_retrieval_paraphrase.py` are expected).
    **Matching touched → also run the gate**, `PYTHONPATH=. uv run python evals/run.py`, and read the
-   properties: they fail before any case does. It exits 1 until s26, so read the report, not the
-   exit code, while that is still true.
+   properties: they fail before any case does. Read the **over-claimed** lines too — they do not
+   block, but they are the nearest thing to a false eligible.
 4. UI touched → load the design-system skill first; afterwards the §7 check at 375/768/1440, fix,
    re-check. Keep `/demo/vodic` rows true.
 5. Docs in the same commit: roadmap row marker (*built dd.mm.yyyy: …*), README status line, and
@@ -321,10 +322,34 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   reports how many seconds the completion took (the clock starts when the form is first rendered in
   a session), but only the user can run it as a real person would. Do that once before s28 uses the
   profile for anything, and if it is over three minutes the thing to cut is questions, not hints.
-- **The evaluation suite has no expected verdicts** (P2 s26). `evals/cases/` holds 41 blank rows,
-  the gate is red for that one reason, and nothing else in the harness is waiting on anything. Until
-  they are filled in, the accuracy thresholds in `matching.md` §8 measure zero cases — only the
-  three properties are actually being checked. **s27 must not tune a weight before this.**
+- **An attestation the profile already contradicts still reads `likely_eligible`** (found by s26:
+  the only 3 over-claims). AV's "a permanent employee for six months" is `applicant_attest`, so a
+  company founded ≤ 5 months ago or with 0–1 employees is told it only has to confirm it. Not a
+  false eligible — the attestation is genuinely outstanding — but the customer is shown a condition
+  their own answers make unlikely as a formality. The fix belongs to s27/s29 (an attestation whose
+  subject the profile answers, and answers doubtfully, caps at `needs_verification`), not to the
+  extraction: making it `hard_structured` would let a rule *exclude* on a headcount band.
+- **Geography now has a number**: 7 of the 19 mismatches are Skopje-only rows where the expected
+  verdict is `not_shown` and stage 1 says `needs_verification`. This is the evaluation run the
+  geography decision (below) was waiting for; filling `allowed_regions` should turn exactly those
+  seven, and the gate will say if it turns anything else.
+- **The intake has no *занаетчија* (registered craftsman) form.** Two of five frozen calls turn on
+  it: Skopje's is for craftsmen and craft-permit holders only, and Economy exempts them from its
+  manufacturing and two-employee conditions. p07/p08 had to be a *трговец поединец*, and their
+  verdicts say "the profile does not say whether they hold a craft permit". One entity form, one
+  question, and a boundary profile — worth doing before s28 shows these calls to anyone.
+- **The frozen Economy criteria are incomplete**: the call text also excludes anyone subsidised by
+  the ministry in 2024 or 2025, exempts craftsmen and craft-permit holders from the sector and
+  headcount conditions (§2.2 of the call), lowers the headcount to one for a woman-owned company,
+  and excludes craftsmen taxed at a flat rate. None of the four is a criterion. The cases were
+  written against the call's text, so they stay right; the fixture is what is short, and it is
+  rebuilt from the cassette, not edited.
+- **The suite's clock predates one of its calls**: `as_of` is 01.06.2026 and the AV call was
+  published 05.08.2026. Nothing uses `published_at` yet so no verdict moves, but the day something
+  does, move the clock or the call, not the verdict.
+- **The IPARD notice row disagrees with the design, harmlessly**: the user's truth is
+  `needs_verification`, stage 1 never shortlists an advance notice (`not_shown`, tested). Neither
+  counts in the gate. Whether an announcement appears in the shortlist at all is s28's to decide.
 - **A frozen eval fixture is a hand-written extraction, not a real approval.** The criteria in
   `evals/fixtures/*/call.yaml` come from `tests/cassettes/extract_call/`, which earlier sessions
   wrote by hand. They are read and plausible, but no reviewer has ever approved them in `/admin`.

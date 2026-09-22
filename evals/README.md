@@ -8,10 +8,11 @@ PYTHONPATH=. uv run python evals/run.py              # the gate: exit 0 passed, 
 PYTHONPATH=. uv run python evals/run.py --worksheet  # write the blank case files
 ```
 
-**It exits 1 today and that is the intended state.** There are no expected verdicts yet, and an
-empty suite proves nothing. Roadmap P2 s26 — one evening with `evals/cases/` open — is what turns
-it green, and P2 s27 must not tune a single scoring weight before then: weights tuned without a
-measurement are tuned by vibes, and the third adjustment cannot be told from the first.
+**It passes since P2 s26 (22.09.2026)**, when the 41 expected verdicts were marked: 0 false
+eligible, 0 false exclusion, 3 over-claimed (named in the report), 14 under-decided. Before that it
+exited 1 on purpose — an empty suite proves nothing — and P2 s27 still must not tune a weight
+without reading this report first: weights tuned without a measurement are tuned by vibes, and the
+third adjustment cannot be told from the first.
 
 ## What is in here
 
@@ -63,6 +64,18 @@ of why:
 
 `not_shown` means the call should not be in the shortlist at all. Half a file is fine: a blank
 `expect` is counted, not an error, and the gate reports how many are still open.
+
+Two conventions the first 41 rows were written under (s26), so the next row means the same thing:
+
+1. **The truth is what a careful expert would say from the applicant's answers and the call's
+   text** — not what the system can produce today. An IT company is `not_eligible` for a
+   manufacturing-only call even though only a model can read that condition; the harness reports
+   the gap as under-decided and it blocks nothing.
+2. **`not_shown` is for location only.** Every other exclusion is `not_eligible`, a call listed
+   with its reason. For the gate the two are the same exclusion.
+
+No row is `eligible`: every frozen call but the IPARD notice has an `applicant_attest` condition,
+and an unconfirmed attestation caps a verdict at `likely_eligible`.
 
 The suite grows from real review corrections after that (P2 s34). Synthetic cases are the seed,
 not the crop.

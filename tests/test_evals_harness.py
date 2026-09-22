@@ -209,6 +209,13 @@ def test_claiming_more_than_the_expected_verdict_warns():
     assert "claimed more" in " ".join(report(results).warnings())
 
 
+def test_a_case_that_claimed_more_is_named_not_just_counted():
+    """The warning alone does not say where to look; the report has to."""
+    results = [result("needs_verification", "likely_eligible")]
+
+    assert "p01_skopje_it_micro × av-measure-819: затоа" in report(results).text()
+
+
 def test_a_failed_property_blocks_on_its_own():
     check = harness.Check("quotes verbatim", checked=3, failures=["av: not at 10–20"])
 
@@ -248,12 +255,13 @@ def session():
 
 @pytestmark_db
 def test_tier_a_runs_over_the_frozen_registry_and_every_property_holds(session):
-    """The acceptance for the row: the harness runs, and today it is red for one reason."""
+    """The harness runs over the real case files, and since s26 marked them it is green."""
     report = harness.run(session)
 
     assert [c.name for c in report.checks if not c.ok] == []
     assert all(check.checked for check in report.checks)
-    assert report.blocking() == ["no expected verdicts yet: an empty suite proves nothing (P2 s26)"]
+    assert report.results and report.unanswered == 0
+    assert report.blocking() == []
 
 
 @pytestmark_db
