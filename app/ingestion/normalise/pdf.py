@@ -516,3 +516,53 @@ def _is_percent_repair(candidate: _Word, current: _Word) -> bool:
         return False
     middle = current.text[len(head) : len(current.text) - len(tail)]
     return len(middle) <= MAX_PERCENT_WIDTH and not any(ch.isalpha() for ch in middle)
+
+
+# ---------------------------------------------------------- the page, for a human
+
+# A citation into OCR text is verbatim against what the engine read, not against the
+# paper (decisions.md D9 rule 1). The reviewer therefore has to see the page itself
+# before the quote can reach a customer, which is what this renders.
+PAGE_IMAGE_DPI = 110  # legible on screen at full width; a tenth of the OCR bytes
+PAGE_IMAGE_TYPE = "image/png"
+
+
+def can_render_pages() -> bool:
+    return shutil.which("pdftoppm") is not None
+
+
+def render_page(
+    pdf: bytes, number: int, *, dpi: int = PAGE_IMAGE_DPI, timeout_s: int = 60
+) -> bytes:
+    """One page of a PDF as a PNG, for a person to compare a quote against.
+
+    Rendered on demand and never stored: the bytes it comes from are already in the
+    snapshot store, content-addressed, and a derived image is cheap to make again.
+    In colour, unlike the OCR pass — a stamp, a signature or a red deadline is
+    exactly what a reviewer is looking at the page for.
+    """
+    if not can_render_pages():
+        raise OcrUnavailable("pdftoppm must be installed to show a page image")
+    if number < 1:
+        raise ValueError(f"page {number} does not exist")
+    with tempfile.TemporaryDirectory() as tmp:
+        source = Path(tmp) / "document.pdf"
+        source.write_bytes(pdf)
+        out = Path(tmp) / "page"
+        command = [
+            "pdftoppm", "-r", str(dpi), "-f", str(number), "-l", str(number),
+            "-singlefile", "-png", str(source), str(out),
+        ]  # fmt: skip
+        try:
+            subprocess.run(command, capture_output=True, timeout=timeout_s, check=True)
+        except subprocess.CalledProcessError as exc:
+            raise NormaliseError(
+                f"pdftoppm failed: {exc.stderr.decode(errors='replace')[:300]}"
+            ) from exc
+        except subprocess.TimeoutExpired as exc:
+            raise NormaliseError(f"pdftoppm timed out after {timeout_s}s") from exc
+        image = out.with_suffix(".png")
+        if not image.exists():
+            # pdftoppm is silent about a page past the end of the document.
+            raise NormaliseError(f"the document has no page {number}")
+        return image.read_bytes()

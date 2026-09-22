@@ -6,8 +6,10 @@ is_published = true. Calls come from the real pipeline over the AV fixtures
 """
 
 import datetime as dt
+import hashlib
 import re
 import uuid
+from pathlib import Path
 
 import pytest
 from sqlalchemy import select
@@ -16,6 +18,7 @@ from app import create_app
 from app.config import load_settings
 from app.ingestion import pipeline
 from app.ingestion.normalise import NORMALISER_VERSION
+from app.ingestion.normalise.pdf import can_render_pages
 from app.matching.hard_filter import Stored, prefilter_columns
 from app.matching.operators import Operator, ProfileField
 from app.models import Call, EligibilityCriterion, RawSnapshot, ReviewQueueItem
@@ -351,9 +354,10 @@ def test_items_without_a_call_can_only_be_closed(sessions, store, site):  # noqa
 
 
 @pytest.fixture
-def admin(sessions, monkeypatch):  # noqa: F811
+def admin(sessions, store, monkeypatch):  # noqa: F811
     app = create_app(load_settings(env="testing", secret_key="test"))
     monkeypatch.setattr("app.web.admin._sessions", lambda: sessions)
+    monkeypatch.setattr("app.web.admin._store", lambda: store)
     return app.test_client()
 
 
@@ -555,3 +559,116 @@ def test_the_reviewer_sees_the_warning_on_the_item(admin, sessions, written):  #
 
     assert "Текстот е прочитан со постара верзија." in html
     assert "Прифати и објави</button>" in html  # still approvable
+
+
+# -- the page a quote was read off (decisions.md D9 rule 1) -------------------------------
+
+SCAN = Path(__file__).parent / "fixtures" / "skopje" / "call-12149.pdf"
+
+
+def scanned_document(sessions, store, written, *, text="прва страница\fвтора страница"):  # noqa: F811
+    """A real scanned PDF in the store, cited by this call's criterion as OCR text."""
+    from app.models.enums import TextSource
+
+    content = SCAN.read_bytes()
+    digest = hashlib.sha256(content).hexdigest()
+    key = store.key_for("skopje", digest)
+    store.put(key, content)
+    with sessions() as s:
+        call = s.get(Call, written.call_id)
+        snapshot = RawSnapshot(
+            source_feed_id=call.source_feed_id,
+            url="https://skopje.gov.mk/media/12149/povik.pdf",
+            content_sha256=digest,
+            http_status=200,
+            content_type="application/pdf",
+            storage_key=key,
+            normalised_text=text,
+            normaliser_version=NORMALISER_VERSION,
+            text_source=TextSource.OCR,
+            ocr_mean_confidence=92.75,
+        )
+        s.add(snapshot)
+        s.flush()
+        criterion = review.criteria_of(s, call)[0]
+        quote = text.split("\f")[-1]
+        criterion.snapshot_id = snapshot.id
+        criterion.source_quote = quote
+        criterion.quote_start = text.index(quote)
+        criterion.quote_end = text.index(quote) + len(quote)
+        s.commit()
+        return snapshot.id
+
+
+@pytest.mark.usefixtures("store")
+@pytest.mark.skipif(not can_render_pages(), reason="pdftoppm is not installed")
+def test_the_page_a_quote_was_read_off_is_shown_beside_it(admin, sessions, store, written):  # noqa: F811
+    """The quote is on page 2 of the document, so page 2 is what the reviewer is shown."""
+    snapshot_id = scanned_document(sessions, store, written)
+
+    html = admin.get(f"/admin/stavka/{written.review_item_id}").get_data(as_text=True)
+
+    assert f"/admin/dokument/{snapshot_id}/strana/2" in html
+    assert 'Страница <span class="id">2</span> од оригиналот' in html
+
+
+@pytest.mark.usefixtures("store")
+@pytest.mark.skipif(not can_render_pages(), reason="pdftoppm is not installed")
+def test_the_cited_page_is_served_once_and_then_answered_from_the_cache(
+    admin,
+    sessions,  # noqa: F811
+    store,  # noqa: F811
+    written,
+):
+    snapshot_id = scanned_document(sessions, store, written)
+
+    page = admin.get(f"/admin/dokument/{snapshot_id}/strana/1")
+
+    assert page.status_code == 200 and page.mimetype == "image/png"
+    assert page.get_data().startswith(b"\x89PNG")
+    assert "private" in page.headers["Cache-Control"]
+    again = admin.get(
+        f"/admin/dokument/{snapshot_id}/strana/1", headers={"If-None-Match": page.headers["ETag"]}
+    )
+    assert again.status_code == 304
+
+
+@pytest.mark.usefixtures("store")
+def test_text_with_a_layer_gets_no_page_image(admin, sessions, written):  # noqa: F811
+    """A photograph of a document that already gave us its own characters proves nothing."""
+    html = admin.get(f"/admin/stavka/{written.review_item_id}").get_data(as_text=True)
+
+    assert "/admin/dokument/" not in html
+
+
+@pytest.mark.usefixtures("store")
+def test_a_document_that_is_not_there_is_a_404_not_a_broken_image(admin, sessions, written):  # noqa: F811
+    assert admin.get("/admin/dokument/99999999/strana/1").status_code == 404
+
+
+@pytest.mark.usefixtures("store")
+def test_a_stored_document_that_cannot_be_rendered_is_a_404(admin, sessions, store, written):  # noqa: F811
+    """Everything that can go wrong with bytes on disk answers the same way: no image."""
+    from app.models.enums import TextSource
+
+    content = b"not a pdf at all"
+    digest = hashlib.sha256(content).hexdigest()
+    key = store.key_for("skopje", digest)
+    store.put(key, content)
+    with sessions() as s:
+        call = s.get(Call, written.call_id)
+        snapshot = RawSnapshot(
+            source_feed_id=call.source_feed_id,
+            url="https://skopje.gov.mk/media/0/broken.pdf",
+            content_sha256=digest,
+            http_status=200,
+            content_type="application/pdf",
+            storage_key=key,
+            normalised_text="текст",
+            text_source=TextSource.OCR,
+        )
+        s.add(snapshot)
+        s.commit()
+        snapshot_id = snapshot.id
+
+    assert admin.get(f"/admin/dokument/{snapshot_id}/strana/1").status_code == 404

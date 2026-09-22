@@ -17,7 +17,9 @@ queue where a human approves, edits or rejects every extracted call before it is
 manual entry of a call by URL (`/admin`, development only until operator sign-in is decided). OCR
 reads a page with the Macedonian model and repairs it from two narrow second passes matched by
 bounding box: the `%` that model cannot write, and the Albanian half of a bilingual call it cannot
-read at all (`docs/sources.md` §6.10–6.11). Matching now begins: the activity classification, the
+read at all (`docs/sources.md` §6.10–6.11). Every quote read by OCR is shown in review beside the
+scanned page it came from, because a citation into OCR text is verbatim against what the engine read,
+not against the paper. Matching now begins: the activity classification, the
 eighty municipalities and the eight planning regions are versioned files in [`data/`](data/README.md),
 imported from the statistical office, and stage 0 turns an intake into the profile the rules read
 (`app/matching/normalise.py`). The first customer screen is live: the intake form at `/profil`, in

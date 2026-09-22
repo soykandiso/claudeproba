@@ -207,7 +207,9 @@ customer until it is approved here. Not available in production until operator s
 **A call to publish** ("Повик за објава"):
 
 1. Read each condition's quote in its context. The highlighted words are exactly what the stored
-   snapshot says at the recorded offsets.
+   snapshot says at the recorded offsets. **If the document was scanned**, the page it was read off
+   is rendered underneath the quote — that is the only thing that proves the paper says what the
+   text says (`decisions.md` D9 rule 1). "Отвори ја сликата" opens it full size.
 2. Wrong kind, wrong rule, weak label: "Измени го условот". The edit is checked by the same schema
    extraction uses, and the quote must be found verbatim in the call's documents again, or nothing is
    saved. Copy quotes from one line.

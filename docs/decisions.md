@@ -306,6 +306,12 @@ A test on 13.09.2026 with Tesseract 5.3.4 and its `mkd` model, first page at 300
 1. **An OCR-derived snapshot is marked as such** (proposed: a `text_source` column on `raw_snapshot`), and every citation into it
    is shown to you with the page image beside the quote before it can reach a customer. The
    verbatim check still runs — against the OCR text — but it no longer proves the paper says it.
+   **Built in full on 22.09.2026**: the mark and the document link came with P1 s15, and the page
+   itself is now rendered beside each OCR'd quote on the review item — `pdftoppm` at 110 dpi, in
+   colour, from the content-addressed bytes in the snapshot store, on demand and never stored
+   (`app/ingestion/normalise/pdf.py render_page`, `/admin/dokument/<snapshot>/strana/<page>`).
+   Text that came with its own character layer gets no image: a photograph of a document that
+   already told us its characters proves nothing, and showing one would make the mark meaningless.
 2. **OCR never runs silently.** Low Tesseract confidence on a page routes the document to review,
    in line with invariant 3.
 

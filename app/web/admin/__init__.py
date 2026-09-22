@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 
 from flask import (
     Blueprint,
+    Response,
     abort,
     current_app,
     flash,
@@ -29,10 +30,13 @@ from flask import (
 from markupsafe import Markup
 
 from app.db import session_factory
+from app.ingestion.normalise import NormaliseError, page_of
+from app.ingestion.normalise.pdf import PAGE_IMAGE_TYPE, can_render_pages, render_page
+from app.ingestion.snapshots import CorruptSnapshot, SnapshotStore
 from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
-from app.models.enums import CriterionKind, ReviewState
+from app.models.enums import CriterionKind, ReviewState, TextSource
 from app.review import extraction as review
 from app.web import csrf
 
@@ -115,6 +119,11 @@ def _tz() -> ZoneInfo:
 
 def _now() -> dt.datetime:
     return dt.datetime.now(dt.UTC)
+
+
+def _store() -> SnapshotStore:
+    """The raw bytes. Only the page image reads them; everything else reads text."""
+    return SnapshotStore(_settings().snapshot_dir)
 
 
 def _sessions():
@@ -230,6 +239,59 @@ def _stage_label(db, item) -> str:
     return STAGE_LABELS.get(stage, stage)
 
 
+def _page_image_url(snapshot: RawSnapshot | None, offset: int | None) -> dict | None:
+    """Where to see the page a quote was read from, when that is a real question.
+
+    Only OCR'd text raises it: `decisions.md` D9 rule 1 says a citation into OCR is
+    verbatim against what the engine read, not against the paper, so the reviewer
+    has to see the page before the quote can reach a customer. Text with a layer is
+    the document's own characters and needs no photograph of itself.
+
+    OCR runs on PDFs and nothing else (app/ingestion/normalise/pdf.py), so a page
+    number is always meaningful here.
+    """
+    if snapshot is None or offset is None or not snapshot.normalised_text:
+        return None
+    if snapshot.text_source not in (TextSource.OCR, TextSource.MIXED):
+        return None
+    if not can_render_pages():  # a dev host without poppler: say nothing, show nothing
+        return None
+    page = page_of(snapshot.normalised_text, offset)
+    return {
+        "page": page,
+        "url": url_for("admin.page_image", snapshot_id=snapshot.id, page=page),
+    }
+
+
+@bp.get("/dokument/<int:snapshot_id>/strana/<int:page>")
+def page_image(snapshot_id: int, page: int):
+    """The cited page of a stored document, rendered for a person to compare against.
+
+    Rendered on demand from the bytes in the snapshot store and never written back:
+    the source is content-addressed, so the image is reproducible and the store
+    stays what was fetched, not what was derived from it.
+    """
+    with _sessions()() as db:
+        snapshot = db.get(RawSnapshot, snapshot_id)
+        if snapshot is None:
+            abort(404)
+        storage_key, sha = snapshot.storage_key, snapshot.content_sha256
+    # The page comes from immutable bytes, so the reviewer pays for it once.
+    etag = f'"{sha}-{page}"'
+    if request.if_none_match.contains_raw(etag):
+        return Response(status=304, headers={"ETag": etag})
+    try:
+        content = _store().get(storage_key)
+        image = render_page(content, page)
+    except (OSError, CorruptSnapshot, NormaliseError, ValueError):
+        abort(404)
+    return Response(
+        image,
+        mimetype=PAGE_IMAGE_TYPE,
+        headers={"ETag": etag, "Cache-Control": "private, max-age=86400"},
+    )
+
+
 @bp.get("/stavka/<int:item_id>")
 def item(item_id: int):
     with _sessions()() as db:
@@ -270,6 +332,7 @@ def _render_item(db, item, *, error: str | None = None, open_form: str | None = 
                 {
                     "c": criterion,
                     "holds": review.citation_holds(criterion, snapshot),
+                    "page_image": _page_image_url(snapshot, criterion.quote_start),
                     "context": _in_context(
                         snapshot.normalised_text if snapshot else None,
                         criterion.quote_start,

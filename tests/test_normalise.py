@@ -33,6 +33,8 @@ from app.ingestion.normalise.pdf import (
     TesseractOcr,
     _page_from_words,
     _Word,
+    can_render_pages,
+    render_page,
     restore_foreign_blocks,
     restore_percents,
 )
@@ -522,3 +524,32 @@ def test_which_repairs_a_stored_text_predates(version, source, missing):
 def test_a_two_digit_revision_is_newer_than_a_one_digit_one():
     """String order would put `.10` before `.2` and silently stop warning."""
     assert missing_repairs("2026-09-21.10", TextSource.OCR) == []
+
+
+# -- the page, rendered for a person -----------------------------------------------------
+
+
+@pytest.mark.skipif(not can_render_pages(), reason="pdftoppm is not installed")
+def test_a_cited_page_renders_as_an_image():
+    """D9 rule 1: the reviewer compares an OCR quote against the page, not the text."""
+    pdf = (FIXTURES / "skopje/call-12149.pdf").read_bytes()
+
+    image = render_page(pdf, 1)
+
+    assert image.startswith(b"\x89PNG\r\n")
+    assert 10_000 < len(image) < 2_000_000  # a legible scan, not a blank or a poster
+
+
+@pytest.mark.skipif(not can_render_pages(), reason="pdftoppm is not installed")
+@pytest.mark.parametrize("page", [0, 99])
+def test_a_page_the_document_does_not_have_is_an_error_not_an_empty_image(page):
+    pdf = (FIXTURES / "skopje/call-12149.pdf").read_bytes()
+
+    with pytest.raises((NormaliseError, ValueError)):
+        render_page(pdf, page)
+
+
+@pytest.mark.skipif(not can_render_pages(), reason="pdftoppm is not installed")
+def test_bytes_that_are_not_a_pdf_do_not_reach_the_reviewer_as_an_image():
+    with pytest.raises(NormaliseError):
+        render_page(b"<html>not a document</html>", 1)

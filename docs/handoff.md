@@ -4,8 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after the stale-text warning (out of roadmap order, while s26
-waits for the user). Before it, P2 s25 (the evaluation harness). s22–s25 were all taken out of
+**Last updated:** 22.09.2026, after the OCR page image (out of roadmap order, while s26 waits for
+the user). Before it, the stale-text warning and P2 s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
 
@@ -40,6 +40,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | OCR page image | `git log --grep 'page image'` | Out of roadmap order, the other half of **D9 rule 1**: an OCR'd quote is now shown with the scanned page underneath it on the review item. `render_page` in `normalise/pdf.py` (pdftoppm, 110 dpi, colour — a stamp and a date are what the reviewer is looking for) and `/admin/dokument/<snapshot>/strana/<page>`, rendered on demand from the content-addressed bytes and never stored, with an ETag so a page is fetched once. **Only OCR and mixed text gets an image**: a photograph of a document that already gave us its characters proves nothing and would make the mark meaningless. The page number comes from `page_of` over the form feeds, so the reviewer gets the page the quote is actually on. ~200 KB and ~0.4 s per page, lazy-loaded; PNG not JPEG, because artefacts on small Cyrillic are the one thing this image must not add. Checked at 375/768/1440 over the real Skopje scan |
 | 22.09 | Stale text | `git log --grep 'stale text'` | Out of roadmap order: s26 is the user's own evening and nothing else in P2 may go first. Closed the §8 hole "nothing warns a reviewer": `app/ingestion/normalise` now remembers **which repair each version brought** (`REPAIRS`, `missing_repairs`), `/admin` says on the item which documents were read by an older version and what to distrust in them, and `flask ingest stale-text` lists every such snapshot with the criteria and published calls that cite it. Three decisions. **It warns, it does not block** — most quotes out of an old document are right, there is no re-normalisation path, and a block the reviewer cannot clear teaches them to skim notices. **Nothing is rewritten in place**: re-normalising moves every offset that cites the text, so the remedy is delete-and-re-fetch, its own deliberate job. **Only OCR text is at risk** — both repairs were OCR-only, so a DOCX read in September raises nothing. In the dev database the command finds three snapshots (the s20 IPARD run and one Skopje document) with nothing published on them |
 | 22.09 | P2 s25 | `git log --grep 'session 25'` | The evaluation harness, tier A. `evals/` holds five real calls frozen with their document and their approved criteria (`ops/dev/freeze_eval_fixtures.py`, from the captured documents and the extraction cassettes), ten boundary profiles as intake answers, `suite.yaml` (one clock — 01.06.2026 — and the gate's thresholds), `harness.py` and `run.py`. **Tier A loads the frozen calls into PostgreSQL in a rolled-back transaction**: stage 1a is SQL, and a harness that simulated the registry would measure a different program. Three things it settled. **The harness is worth running before anyone marks a case**: four properties hold over every profile × call with no expected verdicts at all — quotes verbatim at their offsets, stage 1a discarding only what the rules would exclude anyway, nothing but a rule excluding anyone, and no call with an unread document ever rising above `needs_verification`. **An expected verdict may be `not_shown`**, and for the gate that counts as an exclusion: a call silently missing from the shortlist is worse for the customer than one listed with a reason. **Being less certain than the truth is not a failure** — expected `eligible`, produced `needs_verification` is reported as under-decided and gated by nothing, because it is the distance s27 and s29 have to close. CI stays a command, not a hosted service (`decisions.md`, "Decided in code"). Acceptance: the gate runs and is red for exactly one reason — no cases yet — and 24 tests prove each property can fail. Also fixed, found by the worksheet: `intake.entity_label` no longer says "Земјоделско стопанство, земјоделско стопанство" |
 | 22.09 | P2 s24 | `git log --grep 'session 24'` | Stage 1 over the registry. `app/matching/stage1.py`: `candidates()` is the SQL on the denormalised columns, `judge()` the interpreter over **approved** criteria only, `run()` both. Three things it settled. **A predicate the profile cannot answer is not applied at all** — no activity means no NACE clause, not an overlap against an empty array; filtering on a blank is the easiest way to break invariant 3 where no test would look. **An age band is filtered permissively and judged conservatively**: 1a keeps a call if any month in the range could pass, 1b answers unclear where it straddles — 1a may only throw away what 1b would certainly exclude. **`narrative_verify` and `documentary` are not decided at all** until s29, so most calls are `needs_verification` today; that is honest, not a placeholder. New column **`call.eligibility_gap`** (migration `3adfce186d77`) closes the EU hole in `sources.md` §6.6: the fetcher sets it on every topic, the reviewer sees it on `/admin`, and such a call can never be `eligible` or `likely_eligible` — but `not_eligible` still stands, because an unread document adds conditions, never removes one. **Geography stays out of the rule vocabulary** (the decision s24 owed, `matching.md` §3); 1a's region clause is written and tested so filling the column is the only work left. Acceptance: 42 tests, including the whole path fetch → extract → human approval → stage 1 with nothing hand-built |
@@ -195,6 +196,9 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   is unexpectedly nil" (seen 22.09.2026). `docker rm -f` the five containers and run `./run.py
   --detach` again; the data is in named volumes (`grants_postgres-data` and friends), so nothing is
   lost. This is a different failure from the iptables one below it and the cure is not the same.
+- **The admin renders scanned pages with `pdftoppm`** (poppler), which is in the image and on this
+  host. Without it the review item simply shows no image — `can_render_pages()` guards it, so a dev
+  host missing poppler is not a broken page. A page costs ~0.4 s and ~200 KB at 110 dpi.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
 
 ## 6. How a session is finished
@@ -285,8 +289,10 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   nothing was ingested under `.1`.
 - **IPARD 02/2024** was never given a ranking on the site, so it stays in scope; the pipeline closes
   it from its extracted deadline, a reviewer rejects it. Notice-only calls stay ANNOUNCED until rejected.
-- **D9 rule 1 is only half built**: the admin marks OCR quotes and links the document, but does not
-  show the page image beside the quote.
+- **D9 rule 1 is complete since 22.09**: the admin marks OCR quotes, links the document *and*
+  renders the cited page beside the quote. What is still missing is narrower — the quote is not
+  highlighted *on the image* (the OCR word boxes are not stored with the text), so on a dense page
+  the reviewer still has to find the passage by eye.
 - **A closed review item is never re-asked** for the same snapshots. A retry path (e.g. after a prompt
   change) does not exist yet; the natural place is P2 s34 or a prompt-version bump.
 - **Geography stays out of the rule vocabulary — decided at s24** (`matching.md` §3). Adding

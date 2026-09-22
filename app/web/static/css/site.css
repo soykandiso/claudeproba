@@ -328,6 +328,17 @@ details.why > summary:hover { color: var(--ink); text-decoration: underline; tex
 .breakdown dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 480px) { .breakdown > div { grid-template-columns: 1fr; gap: 0; } }
 
+/* The scanned page, beside a quote that was read off it (decisions.md D9 rule 1) */
+
+/* Wider than the text measure on purpose: this is a facsimile to read small print
+   in, not prose. It never exceeds the column on a phone. */
+.page { margin: 0; display: grid; gap: var(--s-8); max-width: min(100%, 52rem); }
+.page__image {
+  display: block; width: 100%; height: auto; border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+.page figcaption { color: var(--ink-soft); }
+
 /* Stored snapshot text */
 
 .document {
