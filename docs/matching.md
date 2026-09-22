@@ -104,6 +104,30 @@ WHERE c.is_published
 An empty array means "no restriction" — national calls open to everyone. That convention keeps the
 filter a single `&&` test instead of a nullable special case.
 
+**Measured, 22.09.2026** (`ops/dev/bench_stage1.py`, a synthetic registry in a rolled-back
+transaction; two thirds of the calls national, so nearly every one is a candidate for everybody):
+
+| open calls | candidates | ids only | 1a into objects | their criteria | 1b | `stage1.run` |
+|---|---|---|---|---|---|---|
+| 200 | 133 | 4 ms | 7 ms | 9 ms | 4 ms | **26 ms** |
+| 2.000 | 1.350 | 8 ms | 35 ms | 114 ms | 49 ms | **274 ms** |
+| 20.000 | 13.311 | 66 ms | 358 ms | 2.032 ms | 882 ms | **3.275 ms** |
+
+Three things that decides:
+
+- **The array clauses are not the cost.** The query itself is 66 ms over 20.000 calls. That it cannot
+  use the GIN indexes — `cardinality = 0 OR &&` is opaque to the planner, which estimated 9 rows and
+  got 13.311 — buys a sequential scan that is the right plan anyway: while most calls are national,
+  *every* profile matches most rows, so no index on those columns could be selective. The estimate
+  would matter the day this query is joined or wrapped in a subquery; the runtime does not.
+- **The cost is everything after the SQL**, and all of it scales with *candidates*: turning rows into
+  objects, loading their criteria, and the interpreter. Loading criteria alone is 2 seconds at
+  13.311 candidates.
+- **So the three-second budget breaks between 2.000 and 20.000 open calls**, and the fix is not an
+  index. It is to narrow before loading criteria: stage 2 ranks, and only the calls a person will be
+  shown need their criteria read and judged. `stage1.run` judges every candidate today, which is
+  honest while the registry is small and is what P2 s28 has to change.
+
 **1b. A rule interpreter in Python over the survivors.** Every remaining `hard_structured` criterion
 is evaluated in application code, not in generated SQL.
 

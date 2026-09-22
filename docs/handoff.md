@@ -4,8 +4,9 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after the OCR page image (out of roadmap order, while s26 waits for
-the user). Before it, the stale-text warning and P2 s25 (the evaluation harness). s22–s25 were all taken out of
+**Last updated:** 22.09.2026, after measuring stage 1 at scale (out of roadmap order, while s26
+waits for the user). Before it: the OCR page image, the stale-text warning and P2 s25 (the
+evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
 
@@ -40,6 +41,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | Stage 1 at scale | `git log --grep 'bench'` | Out of roadmap order, closing a §8 unknown rather than guessing at s28. `ops/dev/bench_stage1.py` writes a synthetic registry in a rolled-back transaction (two thirds national, every call with criteria), times each step and prints the planner's own account. **The array clauses are not the bottleneck** — 66 ms of SQL over 20.000 open calls, and a seq scan is correct because while most calls are national every profile matches most rows. **The cost is per candidate**: 2 s of it is loading their criteria. `stage1.run` is 26 ms at 200 open calls, 274 ms at 2.000 and 3,3 s at 20.000, so the three-second budget breaks somewhere above 2.000 and the fix is to rank before judging (s28), not an index. Noted for later: the planner estimates 9 rows where 13.311 match |
 | 22.09 | OCR page image | `git log --grep 'page image'` | Out of roadmap order, the other half of **D9 rule 1**: an OCR'd quote is now shown with the scanned page underneath it on the review item. `render_page` in `normalise/pdf.py` (pdftoppm, 110 dpi, colour — a stamp and a date are what the reviewer is looking for) and `/admin/dokument/<snapshot>/strana/<page>`, rendered on demand from the content-addressed bytes and never stored, with an ETag so a page is fetched once. **Only OCR and mixed text gets an image**: a photograph of a document that already gave us its characters proves nothing and would make the mark meaningless. The page number comes from `page_of` over the form feeds, so the reviewer gets the page the quote is actually on. ~200 KB and ~0.4 s per page, lazy-loaded; PNG not JPEG, because artefacts on small Cyrillic are the one thing this image must not add. Checked at 375/768/1440 over the real Skopje scan |
 | 22.09 | Stale text | `git log --grep 'stale text'` | Out of roadmap order: s26 is the user's own evening and nothing else in P2 may go first. Closed the §8 hole "nothing warns a reviewer": `app/ingestion/normalise` now remembers **which repair each version brought** (`REPAIRS`, `missing_repairs`), `/admin` says on the item which documents were read by an older version and what to distrust in them, and `flask ingest stale-text` lists every such snapshot with the criteria and published calls that cite it. Three decisions. **It warns, it does not block** — most quotes out of an old document are right, there is no re-normalisation path, and a block the reviewer cannot clear teaches them to skim notices. **Nothing is rewritten in place**: re-normalising moves every offset that cites the text, so the remedy is delete-and-re-fetch, its own deliberate job. **Only OCR text is at risk** — both repairs were OCR-only, so a DOCX read in September raises nothing. In the dev database the command finds three snapshots (the s20 IPARD run and one Skopje document) with nothing published on them |
 | 22.09 | P2 s25 | `git log --grep 'session 25'` | The evaluation harness, tier A. `evals/` holds five real calls frozen with their document and their approved criteria (`ops/dev/freeze_eval_fixtures.py`, from the captured documents and the extraction cassettes), ten boundary profiles as intake answers, `suite.yaml` (one clock — 01.06.2026 — and the gate's thresholds), `harness.py` and `run.py`. **Tier A loads the frozen calls into PostgreSQL in a rolled-back transaction**: stage 1a is SQL, and a harness that simulated the registry would measure a different program. Three things it settled. **The harness is worth running before anyone marks a case**: four properties hold over every profile × call with no expected verdicts at all — quotes verbatim at their offsets, stage 1a discarding only what the rules would exclude anyway, nothing but a rule excluding anyone, and no call with an unread document ever rising above `needs_verification`. **An expected verdict may be `not_shown`**, and for the gate that counts as an exclusion: a call silently missing from the shortlist is worse for the customer than one listed with a reason. **Being less certain than the truth is not a failure** — expected `eligible`, produced `needs_verification` is reported as under-decided and gated by nothing, because it is the distance s27 and s29 have to close. CI stays a command, not a hosted service (`decisions.md`, "Decided in code"). Acceptance: the gate runs and is red for exactly one reason — no cases yet — and 24 tests prove each property can fail. Also fixed, found by the worksheet: `intake.entity_label` no longer says "Земјоделско стопанство, земјоделско стопанство" |
@@ -199,6 +201,9 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **The admin renders scanned pages with `pdftoppm`** (poppler), which is in the image and on this
   host. Without it the review item simply shows no image — `can_render_pages()` guards it, so a dev
   host missing poppler is not a broken page. A page costs ~0.4 s and ~200 KB at 110 dpi.
+- **`ops/dev/bench_stage1.py` takes about two minutes and leaves nothing behind** (one rolled-back
+  transaction, and it refuses a production database). Re-run it after any change to stage 1's SQL or
+  to how a call's criteria are loaded, and compare with the table in `matching.md` §3.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
 
 ## 6. How a session is finished
@@ -338,11 +343,15 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   Acceptable only because the demo is registered outside production and writes nothing but the
   visitor's own session cookie. `csrf.protect(bp)` plus a hidden field in the eleven demo forms is
   the fix, the day any of them touches the database.
-- **Stage 1a's array clauses do not use the GIN indexes**, and cannot while "empty array means no
-  restriction" is expressed as `cardinality = 0 OR overlap` (`matching.md` §3). The partial index
-  `ix_call_open` does the narrowing and the arrays filter what survives. Fine for hundreds of open
-  calls, **never measured at scale** — check it before blaming anything else if s28 misses its
-  3-second budget.
+- **Stage 1a's array clauses do not use the GIN indexes, and it does not matter** — measured
+  22.09.2026, `ops/dev/bench_stage1.py`, table in `matching.md` §3. The SQL is 66 ms over 20.000 open
+  calls; a sequential scan is the right plan while most calls are national, because then every
+  profile matches most rows and no index on those columns can be selective. **What does cost is
+  everything after the SQL**, all of it per candidate: 358 ms to hydrate 13.311 calls, **2 s to load
+  their criteria**, 882 ms in the interpreter — `stage1.run` is 3,3 s there and 274 ms at 2.000
+  calls. So the budget breaks between 2.000 and 20.000 open calls and the fix is **rank before
+  judging** (P2 s28), not an index. One caveat kept: the planner estimates 9 rows where 13.311 match,
+  so the day this query is joined or wrapped in a subquery, that estimate will pick a bad plan.
 - **`reviewer_id`** stays empty until operator accounts exist (D11).
 - **D11 implementation** (if SSH tunnel): register `/admin` in production only on an internal port,
   and make Caddy refuse `/admin` from outside.
