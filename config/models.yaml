@@ -26,6 +26,15 @@ tasks:
     model: claude-sonnet-5
     prompt_version: "2026-09-13.1"
     max_tokens: 16000
+  # One criterion against up to six passages, once per criterion of the top five
+  # calls of a paid report. Opus rather than Sonnet: its answer is the one a
+  # customer reads beside a quote, and the report volume is small (decisions.md
+  # D8's ceiling is the thing to watch). The answer is short JSON, but Opus 5
+  # thinks by default and thinking counts against max_tokens, so leave room.
+  verify_criterion:
+    model: claude-opus-5
+    prompt_version: "2026-09-22.1"
+    max_tokens: 16000
 
 # Embeddings for retrieval (app/retrieval/embedder.py, P1 s12). Not a task: the
 # model runs locally on CPU, so no text leaves the machine, there is no provider,

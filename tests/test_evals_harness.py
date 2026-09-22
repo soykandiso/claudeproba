@@ -357,3 +357,59 @@ def test_no_criterion_outside_the_rules_ever_reaches_not_eligible(session):
     assert check.checked > 0 and check.ok
     kinds = {c["kind"] for f in FIXTURES.values() for c in f.criteria}
     assert kinds > {str(CriterionKind.HARD_STRUCTURED), str(CriterionKind.APPLICANT_ATTEST)}
+
+
+# ------------------------------------------------------------------ tier B (P2 s29)
+
+
+@pytest.fixture
+def tier_b_world():
+    """A session and the factory the gateway writes through, on one rolled-back connection."""
+    engine = create_engine(settings.sqlalchemy_url)
+    connection = engine.connect()
+    transaction = connection.begin()
+    factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
+    with factory() as s:
+        yield s, factory
+    transaction.rollback()
+    connection.close()
+    engine.dispose()
+
+
+@pytestmark_db
+def test_tier_b_verifies_every_shown_call_and_every_recorded_answer_passes(tier_b_world):
+    """The acceptance of the row: tier B green against the cassettes."""
+    session, factory = tier_b_world
+    report = harness.run(session, tier="b", session_factory=factory)
+
+    names = {c.name: c for c in report.checks}
+    assert names["every recorded answer passed stage 3's gates"].checked > 100
+    assert names["every model quote is verbatim at its offsets"].checked > 20
+    assert [c.name for c in report.checks if not c.ok] == []
+    assert report.blocking() == []
+
+
+@pytestmark_db
+def test_a_paraphrase_in_a_cassette_is_reported_not_believed(tier_b_world, monkeypatch):
+    from evals import tier_b
+
+    real = tier_b.load_cassettes()
+    craft = "Занаетот е меѓу дефицитарните занаети во изумирање наведени во повикот"
+    edited = copy.deepcopy(real)
+    answers = edited["skopje-call-12149"][craft]
+    # A new dict, not an edit: the cassette's YAML anchor shares one answer
+    # between the three filigree makers.
+    answers["p07_craftsman_skopje"] = {
+        **answers["p07_craftsman_skopje"],
+        "quote": "филигранот е меѓу занаетите во изумирање",
+    }
+    monkeypatch.setattr(tier_b, "load_cassettes", lambda: edited)
+    session, factory = tier_b_world
+
+    report = harness.run(session, tier="b", session_factory=factory)
+
+    [failed] = [c for c in report.checks if not c.ok]
+    assert failed.name == "every recorded answer passed stage 3's gates"
+    assert failed.failures == [
+        f"p07_craftsman_skopje × skopje-call-12149: {craft!r} went to review"
+    ]

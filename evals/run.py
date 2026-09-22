@@ -128,7 +128,7 @@ def worksheet() -> int:
     return 0
 
 
-def gate() -> int:
+def gate(tier: str = "a") -> int:
     settings = load_settings()
     if settings.is_production:
         raise SystemExit("refusing to run the harness against a production database")
@@ -138,7 +138,7 @@ def gate() -> int:
     factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
     try:
         with factory() as session:
-            report = harness.run(session)
+            report = harness.run(session, tier=tier, session_factory=factory)
     finally:
         transaction.rollback()
         connection.close()
@@ -154,8 +154,14 @@ def main() -> int:
         action="store_true",
         help="write the blank case files instead of running the gate",
     )
+    parser.add_argument(
+        "--tier",
+        choices=["a", "b"],
+        default="a",
+        help="a: stages 0-2 (default); b: also stage 3 with recorded answers (evals/tier_b.py)",
+    )
     args = parser.parse_args()
-    return worksheet() if args.worksheet else gate()
+    return worksheet() if args.worksheet else gate(args.tier)
 
 
 if __name__ == "__main__":

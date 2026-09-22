@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 28** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 29** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -37,7 +37,10 @@ gate is green. Stage 2 ranks what stage 1 kept (`app/matching/stage2.py`): six c
 a reason in Macedonian, weights in `config/weights/v1.yaml` — untuned, and marked so, because four
 open calls cannot tell one ordering from another. The shortlist at `/povici` shows the top ten with
 every condition's quote found again in the stored text before it is shown, and a page per quote
-with the passage around it and the institution's link.
+with the passage around it and the institution's link. The verification pass for the paid report
+(`app/matching/verify.py`) has a model read the call's own words for the conditions no rule can
+decide — admitted only when its quote is found verbatim in the passage it names, and never able to
+exclude anyone — and is measured by tier B of the evaluation against recorded answers.
 See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no

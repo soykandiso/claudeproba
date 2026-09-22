@@ -4,7 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s28 — the shortlist page at `/povici`. Before it: P2 s27
+**Last updated:** 22.09.2026, after P2 s29 — the verification pass and tier B. Before it: P2 s28
+(the shortlist page at `/povici`), P2 s27
 (stage 2 scoring, scoped with the user), the craftsman entity form (out of order, found by s26), P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
 s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
@@ -27,7 +28,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **The next P2 row is s29, the verification prompt** — tier B against cassettes, so it needs no API key; it is what turns the `narrative_verify` rows the harness reports as under-decided into decisions |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **s29 is built**: `app/matching/verify.py` and tier B (`evals/run.py --tier b`, green: 28 of 45 exact, 0 false eligible). **The next P2 row is s30, retrieval tuning** — the production retriever `verify` will be handed; its known misses are the strict xfails in `test_retrieval_paraphrase.py`. s31 then wires stage 3 into an RQ job with the embedder in the worker |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -41,6 +42,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | P2 s29 | `git log --grep 'session 29'` | **Stage 3's verification pass.** `verify_call` reads a call's undecided `narrative_verify` criteria through the gateway (`VerificationResult`, prompt `verify_criterion/2026-09-22.1`, `claude-opus-5`) and admits an answer only through three gates: valid output (else review, `review_kind = verification`, migration `13672ae6492a`), the quote verbatim in the passage it names by number (else review), confidence ≥ 0.7. `not_satisfied` is clamped to needs_verification by `taxonomy`. **Tier B** (`evals/tier_b.py`): hand-written cassettes per call, a provider that finds the passage holding the recorded quote, a deterministic retriever over the frozen document with the production chunker. **What tier B found**: verifying Skopje's craft list made the Bitola filigree maker `likely_eligible` for a Skopje-only subsidy — a false eligible, because residence is an attestation. Fixed by letting verification read attestations and **only lower them** (clear, cited `not_satisfied` → needs_verification). Also decided: `documentary` is the applicant's to bring, like an attestation (`decisions.md`). Tier A unchanged at 23 exact; tier B 28, over-claims 4 → 3 (p03 on AV closed; the 0–1-employee three straddle and stay). The acceptance "a paraphrased quote is rejected" is proven in `test_verify.py` and again through the harness |
 | 22.09 | P2 s28 | `git log --grep 'session 28'` | **The shortlist page.** `app/matching/shortlist.build` runs stages 1–2, then **finds every quote again** in one SQL query (substr of the stored text at the offsets = the quote); a criterion whose quote is gone is undecided and the call is settled again through the new `stage1.settle`, so a broken citation can only reach `needs_verification` — an exclusion included. Top ten (D6) with the total said, excluded calls apart. `/povici/izvor/<criterion>` shows the quote marked inside 600 characters of stored text either side, with the institution's link; 404 when the quote is not where it says. **Rank-before-judging not built** — 274 ms at 2.000 calls, a registry fifty times the real one (`decisions.md`). Dates, amounts and verdict words moved from the demo to `app/web/format.py` (the demo is not registered in production, so its filters were not either); deadlines are said in Skopje time. The eligibility-gap sentence is shown whenever it is true, not only when it lowered a verdict. Review page: a "see the open calls" button, and the note no longer touches the buttons. `ops/dev/seed_shortlist.py` publishes the frozen calls in dev. Checked at 375/768/1440 over the live server with the session cookie (§7 script plus `Network.setCookie`); 14 ms median locally |
 | 22.09 | P2 s27 | `git log --grep 'session 27'` | **Stage 2, scoped with the user** after I showed that the row's acceptance could not be met: most inputs are empty and four open calls make "top five" true of any order. `stage2.rank` scores stage 1's outcomes with six components, each a value and a Macedonian reason; missing data is neutral 0.5 and says what is missing; `not_eligible` ranks last; nothing touches a verdict. `v1.yaml` is the design's weights with `semantic_fit` at 0, **marked untuned**. **Measured and changed: `size_fit`** — the design's investment-vs-grant-band put the Economy call last for the bakery that can use it, and ranked every call that states a cap below the silent ones; a cap is now partial help (neutral), not a misfit (`matching.md` §4). **Also fixed**: `stage1.judge` interpreted `soft_scored` preferences as unclear, which would pull a settled call down to needs_verification — now `CallOutcome.preferences`. The pipeline now stores `call.cofinancing_pct` (the applicant's share, 100 − the extracted `grant_share_pct`); fixtures re-frozen with the grant columns. The harness runs stages 1–2, checks a fifth property (a reason for every component, excluded last) and prints rank quality as not measurable. `match_run` not written — no `applicant_profile` row exists (§8) |
 | 22.09 | Craftsman form | `git log --grep 'craftsman'` | Out of order, the first §8 item s26 found. `EntityType.CRAFTSMAN` (hand-written migration `1b093080ae25` — autogenerate cannot see a new enum value), «Занаетчија» on `/profil`, sized like a sole trader under the EU SME definition. **The extraction prompt was deliberately not changed** (`decisions.md`): Skopje's call is also for permit holders, so `entity_type in [craftsman]` would be a false exclusion by rule. New boundary profile **p11**, p07 with only the form changed; the user accepted its four verdicts. `run.py --worksheet` now appends rows for a new profile to a marked file instead of skipping the file. Gate green at 45 cases; p11's Economy and Skopje rows are under-decided, which is the measurement of what a prompt version would buy. Checked at 375/768/1440 |
@@ -100,6 +102,9 @@ about real calls, which is worth having whatever the demand test says.
   `/profil/pregled` (what the answers were read as). Templates in `templates/intake/`;
   `_form.html` is the shared partial `/demo/profil` includes. Registered **everywhere**, including
   production — it is the first real customer screen. `templates/base.html` is the site shell.
+- `app/matching/verify.py` — stage 3: one call's narrative criteria and attestations through the
+  `verify_criterion` task, three gates, the clamp. Not run by anything yet (s31). Tier B is
+  `evals/tier_b.py` + `evals/cassettes/verify/`, run with `evals/run.py --tier b`.
 - `app/web/shortlist/` — `/povici` (the top ten) and `/povici/izvor/<criterion>` (the passage).
   Registered everywhere. `app/matching/shortlist.py` is the service; `app/web/format.py` the dates,
   amounts and verdict words every screen shares (the demo imports them too).
@@ -224,7 +229,8 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
    acceptance of the roadmap row proven by a test whenever it can be.
 3. `uv run ruff check . && uv run ruff format --check .` and the full suite green (the strict
    `xfail`s listed in `KNOWN_MISSES` in `test_retrieval_paraphrase.py` are expected).
-   **Matching touched → also run the gate**, `PYTHONPATH=. uv run python evals/run.py`, and read the
+   **Matching touched → also run the gate**, `PYTHONPATH=. uv run python evals/run.py` (and
+   `--tier b` when stage 3, the prompt or a cassette changed), and read the
    properties: they fail before any case does. Read the **over-claimed** lines too — they do not
    block, but they are the nearest thing to a false eligible.
 4. UI touched → load the design-system skill first; afterwards the §7 check at 375/768/1440, fix,
@@ -341,7 +347,11 @@ open every `<details>` first so citations are in the picture.
   reports how many seconds the completion took (the clock starts when the form is first rendered in
   a session), but only the user can run it as a real person would. Do that once before s28 uses the
   profile for anything, and if it is over three minutes the thing to cut is questions, not hints.
-- **An attestation the profile already contradicts still reads `likely_eligible`** (found by s26:
+- **Partly closed in s29: an attestation the profile contradicts** now becomes needs_verification
+  *in stage 3* when the model finds it clearly unmet (`verify.py`). It still reads `likely_eligible`
+  on the free shortlist (stage 1–2 has no model), and the three 0–1-employee AV cases stay over-claimed
+  in tier B too, because the band straddles "at least one". The original note, for the rest:
+  (found by s26:
   the only 3 over-claims). AV's "a permanent employee for six months" is `applicant_attest`, so a
   company founded ≤ 5 months ago or with 0–1 employees is told it only has to confirm it. Not a
   false eligible — the attestation is genuinely outstanding — but the customer is shown a condition
@@ -355,6 +365,13 @@ open every `<details>` first so citations are in the picture.
 - **`/povici` has nothing to show in production until calls are approved there** (D11). In dev,
   `PYTHONPATH=. uv run python ops/dev/seed_shortlist.py` publishes the five frozen calls — and
   deletes every other published call first, like the harness.
+- **Stage 3 is built but not run by anything.** `verify.verify_call` needs a gateway, a retriever
+  and a caller: s31 is the RQ job, and it must construct the `hybrid_retrieve` adapter with the
+  embedder in the worker (the web process cannot hold the model). Verification review items
+  (`review_kind = verification`) are written but `/admin` lists only extraction items — s33.
+- **Tier B's cassettes are hand-written** (`evals/cassettes/verify/`), like the extraction ones: they
+  measure the code and the prompt's contract, not a model. Tier C (s36) runs the real model on the
+  same cases; expect it to disagree with a cassette somewhere, and read those first.
 - **Stage 2's weights are untuned and nothing can tune them yet.** `config/weights/v1.yaml` says
   so in its header. Rank quality needs two things the suite lacks: more open calls than a
   shortlist shows, and a case saying which call should come first per profile. Until then a weight

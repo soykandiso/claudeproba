@@ -17,11 +17,12 @@ call `not_eligible` anyway. Two consequences run through the whole module:
 
 **1b is the interpreter in Python** — `judge()`. It reads every approved criterion
 of a surviving call: `hard_structured` goes to `app/matching/hard_filter.py`, the
-only code permitted to exclude anyone; `applicant_attest` is outstanding until the
-company confirms it; `narrative_verify` and `documentary` are simply not decided
-yet — the verification pass is P2 s29 — and an undecided criterion is *unclear*,
-which is why most calls come out `needs_verification` today. That is the honest
-state of the system, not a placeholder to be optimised away.
+only code permitted to exclude anyone; `applicant_attest` and `documentary` are
+outstanding until the company confirms or brings them; `narrative_verify` is not
+decided here at all — `app/matching/verify.py` reads it against the call's text
+(stage 3, paid) — and an undecided criterion is *unclear*, which is why the free
+shortlist says `needs_verification` for most calls. That is the honest state of
+what a rule can know, not a placeholder to be optimised away.
 
 **The eligibility gap.** A call whose own documents are known not to hold all of
 its conditions (`call.eligibility_gap`, set for EU topics whose conditions point at
@@ -165,6 +166,7 @@ MISSING = "Профилот не го содржи податокот што г�
 STRADDLES = "Одговорот во профилот е опсег што не е доволен за да се одлучи."
 PENDING = "Ќе се провери според текстот на повикот."
 ATTEST = "Го потврдувате вие при пријавата."
+DOCUMENT = "Документот го доставувате вие со пријавата."
 
 
 def _rule_reason(profile: Profile, field: ProfileField, result: RuleResult) -> str:
@@ -191,6 +193,12 @@ def _decide(criterion: EligibilityCriterion, profile: Profile) -> tuple[Decision
         )
     if criterion.kind == CriterionKind.APPLICANT_ATTEST:
         return Decision(Outcome.ATTEST, DecidedBy.APPLICANT), ATTEST
+    if criterion.kind == CriterionKind.DOCUMENTARY:
+        # A document the application must include is the applicant's to bring,
+        # like a declaration: outstanding, never settled by us, so the call can
+        # reach likely_eligible and never eligible. Decided in P2 s29, when the
+        # verification pass arrived and this was the kind it could not read.
+        return Decision(Outcome.ATTEST, DecidedBy.APPLICANT), DOCUMENT
     return Decision(Outcome.UNCLEAR, DecidedBy.MODEL), PENDING
 
 

@@ -171,9 +171,11 @@ vocabulary settled at **seven** when `app/matching/operators.py` was built — `
   point in opposite directions on purpose: 1a may only throw away what 1b would certainly exclude.
 - **Only approved criteria are read.** An unapproved criterion is a model's unreviewed opinion, and
   letting one decide anything would put the model back in the eligibility path (invariant 1).
-- **`narrative_verify` and `documentary` are not decided yet.** The verification pass is s29; until
-  it runs, they are `unclear`, which is why most calls come out `needs_verification` today. That is
-  the honest state of the system, not a placeholder.
+- **`narrative_verify` is not decided by stage 1.** It is `unclear` until the verification pass
+  (§5, `app/matching/verify.py`) reads it, which is why the free shortlist says
+  `needs_verification` for most calls. **`documentary` is outstanding, like an attestation**
+  (decided in s29): a document is the applicant's to bring, so it caps a call at
+  `likely_eligible` and never makes it `unclear`.
 
 **Which index actually does the work.** The `empty OR overlap` shape is what makes "empty array means
 no restriction" a single predicate, and it is also what stops PostgreSQL using the GIN indexes on
@@ -351,6 +353,35 @@ Three defences worth naming explicitly:
 3. **The applicant is pseudonymised at the gateway boundary**, enforced by a unit test that asserts
    no PII pattern appears in an outgoing payload (`risks.md` R5).
 
+### Built 22.09.2026 — `app/matching/verify.py`
+
+`verify_call(gateway, session_factory, retrieve, profile, outcome)` reads one call's undecided
+`narrative_verify` criteria **and its attestations**, then settles the call again through
+`stage1.settle`. The prompt is `prompts/verify_criterion/2026-09-22.1.md`, routed to `claude-opus-5`
+(`config/models.yaml`). Where it departs from the sketch above, and why:
+
+- **The passage is named by its number in the prompt, not a chunk id.** An id the model copies is a
+  claim like any offset; the number maps to the passage in code, the quote is searched for in it,
+  and the evidence offsets are computed from the passage's own position in the stored text.
+- **Attestations are verified too, and can only go down.** An attestation the applicant's own shape
+  contradicts — a Bitola seat against "resident in Град Скопје", 0–5 months of age against "an
+  employee on a permanent contract for six months" — used to read `likely_eligible` as a formality.
+  Tier B showed it becomes a **false eligible** the moment the craft itself is verified (the Bitola
+  filigree maker, expected `not_shown`). So a clear, cited `not_satisfied` on an attestation makes it
+  `needs_verification`; `satisfied`, low confidence or any failure leaves it outstanding. A model can
+  find an attestation contradicted, never confirm one, never exclude on one.
+- **A failure keeps what was there.** Invalid output (after the gateway's retry) and a quote not in
+  its passage both go to the review queue as `review_kind = verification`; the narrative criterion
+  stays `unclear`, the attestation stays outstanding. `/admin` does not list these yet (it shows
+  extraction items); the report review UI of s33 is where they surface.
+- **The shape the model sees** is form and size band, activity code and name, region, whether the
+  seat is in Град Скопје, age in months, headcount, turnover and investment bands. Not the
+  municipality, not the founding year, not the project description.
+- **Retrieval is passed in.** Production will pass `hybrid_retrieve` over the call's chunks (s31
+  wires it, with the embedder in the worker); tier B passes a deterministic retriever over the frozen
+  document. An incomplete retrieval is a failed one and costs no tokens.
+- **Not on the free shortlist.** Stage 3 is the paid report's (§1); `/povici` still shows stage 1–2.
+
 ---
 
 ## 6. Stage 4 — the review gate, and the flywheel
@@ -474,8 +505,8 @@ are changed together. Two additions the implementation needed:
   customer than one listed with a reason, never better.
 - **being less certain than the truth is not a failure.** Expected `eligible`, produced
   `needs_verification` is reported as *under-decided* and gated by nothing: it is the distance s27
-  and s29 have to close, and today it will be most of the suite, because `narrative_verify` and
-  `documentary` criteria are not decided at all yet.
+  and s29 have to close. Tier A cannot decide `narrative_verify`; tier B (`--tier b`) can, and closes
+  part of the distance.
 
 ### Seeding the suite, given no past cases
 

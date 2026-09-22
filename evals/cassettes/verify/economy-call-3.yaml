@@ -1,0 +1,52 @@
+call: economy-call-3
+criteria:
+  "За претпријатија: претежна дејност во Преработувачка индустрија (10-33.20)":
+    default:
+      verdict: unclear
+      confidence: 0.3
+      reasoning_mk: Дејноста не е внесена во профилот, па не може да се каже дали спаѓа во Преработувачката индустрија.
+    p01_skopje_it_micro: &not_manufacturing
+      verdict: not_satisfied
+      confidence: 0.9
+      quote: "која спаѓа во секторот C/B - Преработувачка индустрија (10-33.20)"
+      reasoning_mk: Повикот бара претежна дејност во Преработувачката индустрија (10–33), а дејноста во профилот е надвор од неа.
+    p06_ngo_skopje: *not_manufacturing
+    p09_strumica_farm: *not_manufacturing
+    p02_bitola_bakery_small: &manufacturing
+      verdict: satisfied
+      confidence: 0.9
+      quote: "која спаѓа во секторот C/B - Преработувачка индустрија (10-33.20)"
+      reasoning_mk: Дејноста во профилот е во одделите 10–33, што е Преработувачката индустрија што ја бара повикот.
+    p04_borderline_age: *manufacturing
+    p07_craftsman_skopje: *manufacturing
+    p08_craftsman_bitola: *manufacturing
+    p11_registered_craftsman_skopje: &craftsman_exempt
+      verdict: satisfied
+      confidence: 0.8
+      quote: "(кое не е занаетчија или вршител на занаетчиска дејност)"
+      reasoning_mk: Условот важи само за трговски друштва што не се занаетчии; апликантот е занаетчија, па не се однесува на него.
+  "За претпријатија: најмалку 2 вработени на неопределено време":
+    default:
+      verdict: unclear
+      confidence: 0.5
+      reasoning_mk: Профилот наведува опсег на вработени, но не и колку се на неопределено време.
+    p02_bitola_bakery_small:
+      verdict: satisfied
+      confidence: 0.8
+      quote: "Имаат минимум 2 (двајца) вработени на неопределено работно време"
+      reasoning_mk: Со 10–49 вработени, условот за најмалку двајца на неопределено време е речиси сигурно исполнет.
+    p07_craftsman_skopje: &too_few
+      verdict: not_satisfied
+      confidence: 0.8
+      quote: "Имаат минимум 2 (двајца) вработени на неопределено работно време"
+      reasoning_mk: Повикот бара најмалку двајца вработени на неопределено време, а профилот наведува 0–1.
+    p08_craftsman_bitola: *too_few
+    p11_registered_craftsman_skopje: *craftsman_exempt
+  "Мнозински домашен капитал (над 50%)": &cannot_tell
+    default:
+      verdict: unclear
+      confidence: 0.3
+      reasoning_mk: Ова го потврдува само апликантот; профилот не кажува ништо за тоа.
+  "Активен субјект без стечајна постапка или ликвидација": *cannot_tell
+  "Позитивен финансиски резултат во 2025 година": *cannot_tell
+  "Помош од мало значење под 300.000 евра во последните три фискални години": *cannot_tell

@@ -152,6 +152,7 @@ CREATE TYPE public.order_state AS ENUM (
 
 CREATE TYPE public.review_kind AS ENUM (
     'extraction',
+    'verification',
     'report',
     'document_package',
     'source_health'

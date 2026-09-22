@@ -174,3 +174,42 @@ class CallExtraction(_Strict):
                 yield name, value
         for index, criterion in enumerate(self.criteria):
             yield f"criteria.{index}", criterion
+
+
+# ------------------------------------------------------------------ verification (P2 s29)
+
+
+class VerificationResult(_Strict):
+    """One criterion checked against the passages retrieved for it (docs/matching.md §5).
+
+    The model's vocabulary, not the customer's: `satisfied`, `not_satisfied` or
+    `unclear`. `app/matching/verify.py` clamps it, and nothing the model says here
+    can make a call `not_eligible` (CLAUDE.md invariant 1).
+
+    **The passage is named by its number in the prompt, not by a database id.** An
+    id the model copies is a claim like any offset (see `Quoted`); the number maps
+    to the passage in code, and the quote is then searched for in that passage.
+    """
+
+    verdict: Literal["satisfied", "not_satisfied", "unclear"]
+    confidence: float = Field(ge=0, le=1)
+    passage: int | None = Field(
+        default=None, ge=1, description="Number of the <passage> the quote is copied from."
+    )
+    quote: str | None = Field(
+        default=None,
+        min_length=8,
+        max_length=1000,
+        description="Copied character for character from that passage.",
+    )
+    reasoning_mk: str = Field(min_length=10, max_length=1500)
+
+    @model_validator(mode="after")
+    def _decided_means_quoted(self) -> "VerificationResult":
+        # A decision without the words it rests on is the claim invariant 2
+        # forbids; only "unclear" may come back without a quote.
+        if self.verdict != "unclear" and (self.passage is None or self.quote is None):
+            raise ValueError(f"a {self.verdict} verdict needs a passage and a quote")
+        if (self.passage is None) != (self.quote is None):
+            raise ValueError("passage and quote come together or not at all")
+        return self

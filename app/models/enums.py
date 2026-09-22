@@ -63,6 +63,9 @@ class Verdict(enum.StrEnum):
 
 class ReviewKind(enum.StrEnum):
     EXTRACTION = "extraction"
+    # A verification whose output was invalid or whose quote was not in the
+    # passage it named (app/matching/verify.py, P2 s29).
+    VERIFICATION = "verification"
     REPORT = "report"
     DOCUMENT_PACKAGE = "document_package"
     SOURCE_HEALTH = "source_health"

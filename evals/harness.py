@@ -367,6 +367,7 @@ class Report:
     gate: dict
     weights_version: str = stage2.WEIGHTS_VERSION
     open_calls: int = 0
+    tier: str = "A"
 
     @property
     def median_latency_ms(self) -> float:
@@ -408,7 +409,7 @@ class Report:
 
     def text(self) -> str:
         lines = [
-            f"tier A — {self.profiles} profiles × {self.fixtures} frozen calls, "
+            f"tier {self.tier} — {self.profiles} profiles × {self.fixtures} frozen calls, "
             f"as of {self.as_of:%d.%m.%Y}, weights {self.weights_version}",
             "",
             "properties",
@@ -505,8 +506,62 @@ def _ranking_check(check: Check, key: str, by_id: dict, ranked: list[stage2.Scor
         seen_excluded = seen_excluded or scored.excluded
 
 
-def run(session: Session, suite: dict | None = None) -> Report:
-    """Load the frozen registry, run every profile through stages 1 and 2, and score it."""
+def _tier_b(session: Session, session_factory, calls: dict[str, Call], fixtures: dict):
+    """Stage 3 over each profile's shown calls, answered from the cassettes."""
+    from app.ai.gateway import Gateway
+    from app.matching import verify
+    from app.models import ModelCall, ModelCallPayload, ReviewQueueItem
+    from evals import tier_b
+
+    if session_factory is None:
+        raise ValueError("tier B needs the session factory the gateway writes through")
+    # The gateway answers a repeated request from its cache; an answer stored by an
+    # earlier real run must not stand in for a cassette. Rolled back with the rest.
+    session.execute(delete(ModelCallPayload))
+    session.execute(delete(ModelCall))
+    session.execute(delete(ReviewQueueItem).where(ReviewQueueItem.kind == "verification"))
+    session.flush()
+
+    provider = tier_b.CassetteProvider(tier_b.load_cassettes())
+    gateway = Gateway(session_factory, provider)
+    retrieve = tier_b.FixtureRetriever(
+        {call.id: (call.primary_snapshot_id, fixtures[slug].text) for slug, call in calls.items()}
+    )
+
+    def verified(key, profile, outcomes, by_id, answered: Check, located: Check):
+        settled = []
+        for outcome in outcomes:
+            slug = by_id[outcome.call.id]
+            provider.call, provider.profile = slug, key
+            outcome, results = verify.verify_call(
+                gateway, session_factory, retrieve, profile, outcome
+            )
+            for v in results:
+                answered.checked += 1
+                label = v.outcome.criterion.label_mk
+                if v.review_item_id is not None:
+                    answered.failures.append(f"{key} × {slug}: {label!r} went to review")
+                if v.evidence is not None:
+                    located.checked += 1
+                    text = fixtures[slug].text
+                    found = text[v.evidence.char_start : v.evidence.char_end]
+                    if found != v.evidence.quote:
+                        located.failures.append(f"{key} × {slug}: {label!r} reads {found[:40]!r}")
+            settled.append(outcome)
+        return settled
+
+    return verified
+
+
+def run(
+    session: Session, suite: dict | None = None, *, tier: str = "a", session_factory=None
+) -> Report:
+    """Load the frozen registry, run every profile through stages 1 and 2, and score it.
+
+    Tier B (`evals/tier_b.py`) also runs stage 3's verification over every shown
+    call, with recorded answers; it needs `session_factory` for the gateway, bound
+    to the same rolled-back transaction as `session`.
+    """
     suite = suite or load_suite()
     as_of = suite["as_of"]
     now = dt.datetime.combine(as_of, dt.time(12, 0), tzinfo=dt.UTC)
@@ -527,6 +582,9 @@ def run(session: Session, suite: dict | None = None) -> Report:
     }
 
     checks = [_citation_check(session, calls)]
+    verifier = _tier_b(session, session_factory, calls, fixtures) if tier == "b" else None
+    answered = Check("every recorded answer passed stage 3's gates")
+    located = Check("every model quote is verbatim at its offsets")
     superset = Check("stage 1a filters only what the rules exclude")
     excluded_by = Check("only a rule may exclude an applicant")
     capped = Check("an unread document never allows eligible")
@@ -541,6 +599,8 @@ def run(session: Session, suite: dict | None = None) -> Report:
         ranked = stage2.rank(outcomes, profile, now)
         latency.append((time.perf_counter() - started) * 1000)
         _ranking_check(ranked_check, key, by_id, ranked)
+        if verifier is not None:
+            outcomes = verifier(key, profile, outcomes, by_id, answered, located)
 
         shown = {by_id[o.call.id]: o for o in outcomes}
         for slug in fixtures:
@@ -578,6 +638,8 @@ def run(session: Session, suite: dict | None = None) -> Report:
                 )
 
     checks += [superset, excluded_by, capped, ranked_check]
+    if verifier is not None:
+        checks += [answered, located]
     results = [Result(case, observed[(case.profile, case.call)]) for case in cases]
     return Report(
         as_of=as_of,
@@ -591,4 +653,5 @@ def run(session: Session, suite: dict | None = None) -> Report:
         gate=suite["gate"],
         weights_version=stage2.WEIGHTS_VERSION,
         open_calls=sum(1 for f in fixtures.values() if f.shortlistable),
+        tier=tier.upper(),
     )

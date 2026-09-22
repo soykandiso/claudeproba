@@ -32,7 +32,7 @@ third adjustment cannot be told from the first.
 | Tier | Covers | State |
 |---|---|---|
 | **A — deterministic** | stages 0–2 over the frozen calls. No network, no model, no tokens | built (P2 s25) |
-| **B — recorded** | stage 3 against cassettes: prompt, schema, citation check, clamping | P2 s29 |
+| **B — recorded** | stage 3 against cassettes: prompt, schema, citation check, clamping. `run.py --tier b` | built (P2 s29) |
 | **C — live** | the same cases against the real model, weekly and before any prompt change | P2 s36 |
 
 ## What tier A checks without a single expected verdict
@@ -48,6 +48,11 @@ Five properties hold for every profile and every call, and they run on every com
    however well its extracted criteria went.
 5. **Stage 2 gave every ranked call a score in [0, 1] and a reason for every component**, and
    no call the rules exclude ranks above one the company may apply for (P2 s27).
+
+**Tier B adds two**: every recorded answer passed stage 3's gates (a cassette whose quote is not
+in the passage it was shown is reported, not believed), and every model quote is verbatim at its
+offsets in the stored text. The cassettes are `cassettes/verify/`, hand-written, one per call; their
+README says how.
 
 Rank quality — "is the right call in the top five" — is printed as **not measurable**: with four
 open calls every ordering passes it, and the cases record verdicts, not an expected order.

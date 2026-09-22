@@ -395,15 +395,35 @@ def test_a_preference_ranks_and_never_decides(registry):
     assert [c.kind for c in outcome.preferences] == [CriterionKind.SOFT_SCORED]
 
 
-@pytest.mark.parametrize("kind", [CriterionKind.NARRATIVE_VERIFY, CriterionKind.DOCUMENTARY])
-def test_a_criterion_awaiting_the_verification_pass_is_not_decided(registry, kind):
+def test_a_criterion_awaiting_the_verification_pass_is_not_decided(registry):
     factory, source, snapshot = registry
     with factory() as s:
-        make_call(s, source, snapshot, criteria=[(kind, None, None, None)])
+        make_call(
+            s, source, snapshot, criteria=[(CriterionKind.NARRATIVE_VERIFY, None, None, None)]
+        )
         [outcome] = stage1.run(s, profile(), NOW)
 
     assert outcome.verdict == Verdict.NEEDS_VERIFICATION
     assert outcome.outcomes[0].reason_mk == stage1.PENDING
+
+
+def test_a_required_document_is_the_applicants_to_bring_like_a_declaration(registry):
+    """Decided in s29: outstanding, so likely_eligible at most — never eligible, never unclear."""
+    factory, source, snapshot = registry
+    with factory() as s:
+        make_call(
+            s,
+            source,
+            snapshot,
+            criteria=[
+                hard(ProfileField.NACE_CODE, Operator.PREFIX_IN, {"values": ["62"]}),
+                (CriterionKind.DOCUMENTARY, None, None, None),
+            ],
+        )
+        [outcome] = stage1.run(s, profile(), NOW)
+
+    assert outcome.verdict == Verdict.LIKELY_ELIGIBLE
+    assert outcome.outcomes[1].reason_mk == stage1.DOCUMENT
 
 
 # ---------------------------------------------------------- the eligibility gap

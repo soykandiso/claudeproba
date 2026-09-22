@@ -456,6 +456,28 @@ again, which is a deliberate job with its own session.
 is three snapshots — the s20 IPARD run and one Skopje document — with nothing published on them.
 **P2 s29 must not write verdicts from a snapshot this command still lists.**
 
+### Stage 3: documents are the applicant's, attestations can only go down, Opus reads (22.09.2026, P2 s29)
+
+**A `documentary` criterion is outstanding, like an attestation.** Stage 1 used to call it
+undecided, which kept every call listing a required document at `needs_verification` forever. A
+document is something the applicant brings; it caps a call at `likely_eligible` and never allows
+`eligible`. The user's own s26 verdicts read the calls this way ("what remains is the craft permit
+and the declaration").
+
+**Verification reads attestations and may only lower them.** Tier B found that verifying a Skopje
+call's craft list made a Bitola craftsman `likely_eligible` for a Skopje-only subsidy — a false
+eligible — because residence is an attestation. Making location `hard_structured` needs a new
+extraction prompt and lets a rule exclude on it; letting the model contradict an attestation (and
+never confirm one) needs neither, and also closes the AV "employee for six months" over-claim for a
+company too young to have one. It costs one more model call per attestation of the top five calls.
+
+**`verify_criterion` runs on `claude-opus-5`**, extraction stays on Sonnet 5. The skill reference
+this was checked against defaults to Opus and says a downgrade for cost is the owner's call; the
+answer is the one a customer reads beside a quote, and report volume is small. Change it in
+`config/models.yaml` with an evaluation run behind it. **Not enabled:** the API's server-side
+refusal fallbacks. A refusal today is an empty reply, fails validation twice and lands in the review
+queue — safe, and no second model to reason about; revisit if tier C shows refusals.
+
 ### The shortlist judges every candidate, and shows a window of the source, not the source (22.09.2026, P2 s28)
 
 **Rank-before-judging is not built**, although the roadmap row names it. Stage 1 over 2.000 open
