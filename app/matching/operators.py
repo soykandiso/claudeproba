@@ -6,10 +6,12 @@ Keeping the list in one place means an extracted criterion can never name a
 field the interpreter does not know (docs/matching.md §3).
 
 The list is deliberately short. A field belongs here only when the normalised
-profile holds exactly the fact a call's condition is about. Geography is absent
-until the region and municipality reference data exists in data/; until then a
-location condition is extracted as applicant_attest, which asks rather than
-excludes.
+profile holds exactly the fact a call's condition is about. Geography is still
+absent, although the municipality and region data it was waiting for now exists
+(data/, P2 s22): putting region_code here lets an extracted criterion exclude an
+applicant on location, which needs a new extraction prompt version and an
+evaluation run behind it (docs/matching.md §2). Until then a location condition
+is extracted as applicant_attest, which asks rather than excludes.
 """
 
 import enum

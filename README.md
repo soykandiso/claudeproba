@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P1 session 20** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 22** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -17,7 +17,10 @@ queue where a human approves, edits or rejects every extracted call before it is
 manual entry of a call by URL (`/admin`, development only until operator sign-in is decided). OCR
 reads a page with the Macedonian model and repairs it from two narrow second passes matched by
 bounding box: the `%` that model cannot write, and the Albanian half of a bilingual call it cannot
-read at all (`docs/sources.md` §6.10–6.11). See [`docs/roadmap.md`](docs/roadmap.md).
+read at all (`docs/sources.md` §6.10–6.11). Matching now begins: the activity classification, the
+eighty municipalities and the eight planning regions are versioned files in [`data/`](data/README.md),
+imported from the statistical office, and stage 0 turns an intake into the profile the rules read
+(`app/matching/normalise.py`). See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
 database: profile, cited shortlist, report, order and proforma invoice, human review in an admin

@@ -24,6 +24,9 @@ services:
       - ./migrations:/srv/app/migrations:ro
       - ./config:/srv/app/config:ro
       - ./prompts:/srv/app/prompts:ro
+      # Reference data, read at runtime by stage 0. Mounted like config so a
+      # re-import is visible without rebuilding the image.
+      - ./data:/srv/app/data:ro
 
   worker:
     # The worker reloads by restarting the container; RQ has no watcher.
@@ -31,3 +34,4 @@ services:
       - ./app:/srv/app/app:ro
       - ./config:/srv/app/config:ro
       - ./prompts:/srv/app/prompts:ro
+      - ./data:/srv/app/data:ro

@@ -31,7 +31,7 @@ normalise(intake) -> profile:
     profile.nace_code        = resolve_nace(intake.sector_text or intake.nace_input)
     profile.nace_prefixes    = ['62.01', '62', 'J']      # hierarchy, for proximity scoring
     profile.municipality     = resolve_municipality(intake.municipality)
-    profile.region_code      = REGION_OF[profile.municipality]
+    profile.region_code      = REGION_OF[profile.municipality]   # and: is it in Град Скопје?
     profile.age_months       = months_between(intake.founded_year, today)
     profile.size_band        = eu_sme_band(intake.headcount, intake.turnover_band)
                                # micro <10, small <50, medium <250, else large
@@ -41,6 +41,27 @@ normalise(intake) -> profile:
 
 Reference tables (NACE, municipalities, regions) are **versioned data files in the repository**, not
 rows someone edits in production. A changed classification must show up in a diff.
+
+**Built 22.09.2026** as `app/matching/normalise.py` over `data/` (`app/matching/reference.py`), with
+the thirty-odd intakes in `tests/fixtures/intake/profiles.yaml` as the acceptance. Four things the
+implementation settled, all of them consequential later:
+
+- **Everything is a `Range`.** Intake asks for a band of employees and a founding year, so a company
+  founded in 2022 is 44–56 months old and a criterion needing 48 gets *unclear*, not a rounded yes.
+  That is the same conservatism §3 already applies, moved one stage earlier.
+- **A Macedonian section letter is not the Latin one** — manufacturing is section `C`, written `В`.
+  `resolve_nace` accepts either alphabet; nothing else may guess (`data/README.md`).
+- **The size band is the EU SME definition**, headcount *and* turnover: turnover can only push a
+  band up, never pull it down. Only one intake answer can do it — over 150 million МКД is past the
+  micro ceiling of €2 million however few people a company employs.
+- **A legal form does not imply a size band.** A company and a trader get one; an association and a
+  farm do not, because a call writing `not_in [micro]` is not talking about them, and reading it as
+  though it were would exclude them silently.
+
+Geography is still **not** in the rule vocabulary (`app/matching/operators.py`). The data it was
+waiting for now exists, but adding `region_code` there lets a criterion exclude on location, which
+needs a new extraction prompt version and an evaluation run — so it belongs to s24, with the harness
+of s25–26 behind it, not to the session that produced the files.
 
 ---
 

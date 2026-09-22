@@ -32,6 +32,9 @@ COPY app ./app
 # Read at runtime by the LLM gateway: task routing and versioned prompts.
 COPY config ./config
 COPY prompts ./prompts
+# Read at runtime by stage 0: the activity classification, municipalities and
+# regions. Versioned files, so the image and the repository cannot disagree.
+COPY data ./data
 # Shipped with the image so a deploy can run `alembic upgrade head`.
 COPY migrations ./migrations
 COPY alembic.ini ./

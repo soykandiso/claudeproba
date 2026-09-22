@@ -1,0 +1,17 @@
+# Provenance of the files in data/. Written by ops/dev/import_reference_data.py;
+# the version is recorded on a match run so a delivered report stays reproducible.
+version: 2026-09-22.1
+retrieved: 22.09.2026
+sources:
+  nace:
+    url: https://www.stat.gov.mk/KlasifikaciiNomenklaturi/NKDRev2.zip
+    member: NKDRev2/NKD REV.2/NKD Rev.2_soMKpodrska_2019-09-05.xls
+    sha256: 65da4248c96ec4aea26027fb8efa8e7b8b4c9af5c12f065137837aa76b6924d2
+  ntes:
+    url: https://www.stat.gov.mk/KlasifikaciiNomenklaturi/NTES_2013corr.zip
+    member: NTES2013corr.xls
+    sha256: b86935d034c8fc895d70b4110fac7f80e0ef1eeef53f2f28f2eab4cf744bab03
+counts:
+  nace: 1000
+  regions: 8
+  municipalities: 80

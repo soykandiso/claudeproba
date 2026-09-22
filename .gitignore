@@ -14,8 +14,9 @@ venv/
 *.pem
 *.key
 
-# Local data
-/data/
+# Local data. `data/` is NOT here: it is versioned reference data — the activity
+# classification, the municipalities, the regions — and a reclassification has to
+# show up in a diff (CLAUDE.md, data/README.md). Nothing writes to it at runtime.
 /snapshots/
 /models/
 *.sqlite3

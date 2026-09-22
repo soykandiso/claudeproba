@@ -75,9 +75,14 @@ each feature to its session. The demo was tried and approved on 16.09.2026; P1 c
 
 ## P2 — Matching · 16 sessions · → ~12 Nov 2026
 
+> **Out of order, 22.09.2026.** s21 is still blocked on `decisions.md` D1 and D2, so the evening
+> went to s22, the one P2 row that needs nothing from anybody: reference data is either correct or
+> it is not. It is also the row s23's intake form cannot start without. s21 remains next as soon as
+> a price and a domain exist.
+
 | # | Task | Acceptance |
 |---|------|-----------|
-| 22 | Reference data (NACE, municipalities, regions) + `normalise()` | 30 fixture intakes normalise correctly; reference data is versioned files, not production rows |
+| 22 | Reference data (NACE, municipalities, regions) + `normalise()` — *built 22.09.2026 out of order (s21 still blocked on D1/D2): imported from the statistical office's own archives into `data/`, with the two systematic defects in the published workbook repaired and recorded (`data/README.md`)* | 30 fixture intakes normalise correctly; reference data is versioned files, not production rows |
 | 23 | Intake form in Macedonian, HTMX, mobile-first | A real person completes it in **under 3 minutes**, timed |
 | 24 | Stage 1: SQL filter + rule interpreter — *also: a call whose eligibility lives in a document not yet extracted (EU call-document PDFs, `sources.md` §6.6) never reaches `eligible`* | Unit tests for all 9 operators; missing profile data yields `needs_verification`, never `not_eligible` |
 | 25 | Evaluation harness tier A skeleton + 10 generated boundary profiles | Harness runs in CI (red, with no cases yet) |

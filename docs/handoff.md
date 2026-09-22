@@ -4,7 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 21.09.2026, after the two out-of-order OCR fixes that closed D9, before P1 s21.
+**Last updated:** 22.09.2026, after P2 s22 (reference data + stage 0), taken out of order because
+P1 s21 is still blocked on D1 and D2.
 
 ---
 
@@ -22,15 +23,19 @@ session is finished**. It is updated at the end of every roadmap session, in the
 | Phase | State |
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
-| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, out of roadmap order, `sources.md` §6.10 and §6.11). **Next: s21, demand test — still blocked** on D1 (price) and on a live page (D2 domain, VPS). Ask the user: decide D1/D2, or take unblocked work meanwhile — P2 s22 (reference data) is the low-regret option, and §8 now lists no known accuracy bug |
+| P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
+| P2 | **s22 done 22.09**, out of order, while s21 is blocked: `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files, and `app/matching/normalise.py` is stage 0. **Next unblocked P2 row: s23, the intake form** — it renders the bands and the lists s22 established. Ask the user first: decide D1/D2 and do s21, or carry on down P2 |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
-Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as specified if s21 is negative.
+s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
+back negative** — s22 is the exception that costs nothing either way, because correct reference data
+is worth having whatever the answer is. Do not spend more P2 sessions before s21 without saying so.
 
 ### Session log
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | P2 s22 | `git log --grep 'session 22'` | Reference data + stage 0. Imported from the statistical office's own archives (`ops/dev/import_reference_data.py`, hash-pinned in `data/reference.yaml`) rather than typed: НКД Рев.2 (1000 rows) and НТЕС 2013 (8 regions, 80 municipalities). **The published workbook has two systematic defects**, both repaired and recorded in `data/README.md`: fourteen division rows carry their first group's code (division 10 typed `10.0`, so `10` did not exist), and Latin `x` stands for Cyrillic `х` in 92 names. **A Macedonian section letter is not the Latin one** (manufacturing is `C`, written `В`) — `resolve_nace` takes either. `normalise()` is total: any dict at all produces a profile, unresolved answers are None, and None is unclear. Acceptance: 36 intakes in `tests/fixtures/intake/profiles.yaml`. Left open: geography is still out of the rule vocabulary (see §8), and the demo still uses its own 13-municipality list |
 | 21.09 | Bilingual OCR | `git log --grep "Albanian"` | The other half of D9. `mkd` cannot read Albanian, so every bilingual Economy call was flagged on every page and extraction indexed nonsense. Tesseract already segments the two languages into **separate blocks**, so a page with an unreadable block is re-read with `sqi` and whole blocks are swapped where the gap is unambiguous. Over all 20 pages of both calls the block sets matched and no block was within the margin; call 1 end to end: mean 71.03 → 90.31, review reasons **12 → 2**. Cost 155 s → 263 s (1.7×). `sqi` and `eng` added to the image. **D9 is now closed.** New: a model can quote Albanian into a criterion — a second reason for D7's named reviewer |
 | 21.09 | OCR `%` fix | `git log --grep "percent"` | Out of roadmap order (s21 blocked on D1/D2). `mkd` has no `%`, so every OCR'd rate was a wrong number that passed the verbatim check. Fixed by a second `mkd+eng` pass over the same image, matched **by box**, carrying across nothing but `%`. 6 of 6 rates on the IPARD fixture; diffed against the single pass, those six tokens were the only changes in three pages. `NORMALISER_VERSION` → `2026-09-21.1`. **Bilingual MK/AL confidence (the other half of D9) untouched** |
 | 13.09 | P1 s6–s10 | `7b86575`…`cf7f80a` | Reconnaissance, gateway + scrubber, snapshots, normaliser + OCR, extraction schema |
@@ -56,7 +61,11 @@ Then s21 demand test. P2 starts at s22; the roadmap says not to build P2 as spec
 - `app/ai/` — `gateway.py` is the only provider path; scrubs; content-hash cache; invalid → review.
 - `app/retrieval/` — chunker, local embedder, hybrid search.
 - `app/matching/` — `operators.py` vocabulary, `hard_filter.py` interpreter + `prefilter_columns`,
-  `taxonomy.py` verdicts. Scoring and verification are P2.
+  `taxonomy.py` verdicts, `reference.py` over `data/` (activities, municipalities, regions),
+  `normalise.py` stage 0 (intake answers → `Profile`, every number a `Range`). Scoring (s27) and
+  verification (s29) are still to come.
+- `data/` — versioned reference data, rebuilt only by `ops/dev/import_reference_data.py`
+  (`uv run --with xlrd …`), provenance and repairs in `data/README.md`.
 - `app/ingestion/sources/economy.py`; `ipard.py` (call page = primary document, stages by file label); `municipal.py` registers one fetcher per `sources.yaml` entry
   with `options.kind: municipal_listing` (Skopje today).
 - `app/ingestion/sources/manual.py` — pasted URLs; `run_entry` (always answers in the queue),
@@ -130,6 +139,17 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - Hand-written extraction cassettes live in `tests/cassettes/extract_call/`; adding one to `CASES`
   in `test_extract_schema.py` also runs it through the scrubbing gateway and the retrieval tests.
 - Pillow is in the venv (`uv run python`), useful for cropping tall screenshots before reading them.
+- **Reference data is rebuilt, never edited**: `uv run --with xlrd python ops/dev/import_reference_data.py`.
+  `xlrd` is deliberately not a project dependency — it reads two 2003-era `.xls` files once a decade.
+  The run refuses to write if either upstream archive's hash has moved (`data/reference.yaml`);
+  `--accept-new-hashes` is how you say you looked. `stat.gov.mk` serves no robots.txt, so the polite
+  client allows it; it is slow but reachable from the host.
+- **`data/` is bind-mounted in dev and `COPY`d into the image** (`docker-compose.dev.yml`,
+  `Dockerfile`). A re-import is visible after `docker compose restart web worker`; production needs a
+  rebuild. `/data/` used to be in `.gitignore` as "local data" — it never was, and s22 removed it.
+- **The demo has its own 13-municipality table** (`app/web/demo/engine.py`) and its own `normalise`.
+  It is still honest — `/demo/vodic` says the lists are a stand-in — but s23 replaces both with the
+  real intake form over `data/`, and the vodic row goes from `partial` to `real` then.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
 
 ## 6. How a session is finished
@@ -218,6 +238,24 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   show the page image beside the quote.
 - **A closed review item is never re-asked** for the same snapshots. A retry path (e.g. after a prompt
   change) does not exist yet; the natural place is P2 s34 or a prompt-version bump.
+- **Geography is still not in the rule vocabulary.** `data/` now has the municipalities and regions
+  `app/matching/operators.py` was waiting for, and `Profile` carries `municipality_code`,
+  `region_code` and `in_city_of_skopje` — but adding `region_code` to `FIELDS` lets an extracted
+  criterion *exclude* on location, so it needs a new extraction prompt version and an evaluation run
+  behind it. **s24 decides it**, with s25–26's harness. Until then a location condition stays
+  `applicant_attest`, and `prefilter_columns` keeps returning an empty `allowed_regions`.
+- **Град Скопје is not the Skopje region** and stage 1a cannot yet say so. The city funds its own ten
+  municipalities; the Скопски planning region holds seventeen. `allowed_regions && ARRAY[region,
+  municipality]` in `docs/matching.md` §3 expresses "this municipality" and "this region" but not
+  "the ten" — a City of Skopje call has to list them, which is s24's to arrange when it fills the
+  column from approved criteria.
+- **The reference-data version is not yet recorded on anything.** `reference.version()` exists and
+  `Profile.reference_version` carries it, but no `match_run` row is written until s27. A report
+  delivered before that is not reproducible against the classification that produced it.
+- **The published classification is maintained by hand and will break again.** Two systematic
+  defects were repaired in the 22.09 import (`data/README.md`); `tests/test_reference_data.py` is
+  what catches the next one, so run it after any re-import and read the failure rather than
+  relaxing it.
 - **`reviewer_id`** stays empty until operator accounts exist (D11).
 - **D11 implementation** (if SSH tunnel): register `/admin` in production only on an internal port,
   and make Caddy refuse `/admin` from outside.
