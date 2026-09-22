@@ -38,6 +38,7 @@ import yaml
 
 from app.ai.schemas import CallExtraction
 from app.ingestion.extract import Document, locate_citations
+from app.ingestion.pipeline import applicant_share
 from app.ingestion.sources.eu_portal import ELIGIBILITY_GAP
 from app.models.enums import CallStatus, TextSource
 from tests.test_extract_schema import cassette, fixture_text
@@ -115,6 +116,11 @@ def deadline_at(out: CallExtraction) -> dt.datetime | None:
     return dt.datetime.combine(out.deadline.value, local, tzinfo=TZ)
 
 
+def _mkd(amount) -> float | None:
+    """The pipeline's rule: an amount in another currency is not converted."""
+    return amount.amount if amount is not None and amount.currency == "MKD" else None
+
+
 def criteria_of(out: CallExtraction, citations: dict) -> list[dict]:
     rows = []
     for index, criterion in enumerate(out.criteria):
@@ -163,6 +169,10 @@ def freeze(slug: str, frozen: Frozen) -> None:
         "published_at": out.published_on.value if out.published_on else None,
         "deadline_at": deadline_at(out),
         "eligibility_gap": frozen.eligibility_gap or None,
+        # What stage 2 ranks on, written the way the pipeline writes it.
+        "grant_min_mkd": _mkd(out.grant_min),
+        "grant_max_mkd": _mkd(out.grant_max),
+        "cofinancing_pct": applicant_share(out.grant_share_pct),
         "document": {
             "path": "document.txt",
             "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),

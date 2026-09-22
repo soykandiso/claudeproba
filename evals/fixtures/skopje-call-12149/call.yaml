@@ -11,6 +11,9 @@ status: open
 published_at: null
 deadline_at: 2026-11-30 23:59:59+01:00
 eligibility_gap: null
+grant_min_mkd: null
+grant_max_mkd: 20000.0
+cofinancing_pct: null
 document:
   path: document.txt
   sha256: 60fbe641259927228cb4b7bf912d8f8b85bd4add19d811377a1964c67e28f35b

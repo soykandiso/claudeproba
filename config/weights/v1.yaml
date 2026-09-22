@@ -1,0 +1,21 @@
+# Stage 2 ranking weights (docs/matching.md §4), read by app/matching/stage2.py.
+# The version is recorded with every score, so a delivered shortlist can be
+# reproduced against the weights that ordered it. Change a weight = a new file.
+#
+# UNTUNED. These are the design's starting values, written 22.09.2026 (P2 s27)
+# before anything could measure them: the evaluation suite has four open calls,
+# and "is the right call in the top five" is true of every ordering of four.
+# Tune them when the registry and the cases can tell two orderings apart, and
+# read `evals/run.py` before and after.
+#
+# One change from the design table: semantic_fit is 0 because it is not computed
+# yet (where the description's embedding is made is still open, §4), and its
+# 0.10 went to timeline_fit — the only component every call has data for.
+version: v1
+weights:
+  sector_fit: 0.30
+  size_fit: 0.20
+  timeline_fit: 0.25
+  cofinancing_fit: 0.15
+  soft_criteria: 0.10
+  semantic_fit: 0.00

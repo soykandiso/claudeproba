@@ -374,6 +374,27 @@ def test_an_attestation_caps_at_likely_eligible(registry):
     assert outcome.verdict == Verdict.LIKELY_ELIGIBLE
 
 
+def test_a_preference_ranks_and_never_decides(registry):
+    """soft_scored is extra points (docs/data-model.md): judged, it would be *unclear*
+    and pull a call the rules settled down to needs_verification."""
+    factory, source, snapshot = registry
+    with factory() as s:
+        make_call(
+            s,
+            source,
+            snapshot,
+            criteria=[
+                hard(ProfileField.NACE_CODE, Operator.PREFIX_IN, {"values": ["62"]}),
+                (CriterionKind.SOFT_SCORED, None, None, None),
+            ],
+        )
+        [outcome] = stage1.run(s, profile(), NOW)
+
+    assert outcome.verdict == Verdict.ELIGIBLE
+    assert len(outcome.outcomes) == 1
+    assert [c.kind for c in outcome.preferences] == [CriterionKind.SOFT_SCORED]
+
+
 @pytest.mark.parametrize("kind", [CriterionKind.NARRATIVE_VERIFY, CriterionKind.DOCUMENTARY])
 def test_a_criterion_awaiting_the_verification_pass_is_not_decided(registry, kind):
     factory, source, snapshot = registry

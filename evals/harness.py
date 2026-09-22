@@ -50,7 +50,7 @@ import yaml
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.matching import stage1
+from app.matching import stage1, stage2
 from app.matching.hard_filter import Stored, prefilter_columns
 from app.matching.normalise import Profile, normalise
 from app.matching.taxonomy import DecidedBy
@@ -269,6 +269,9 @@ def load_registry(session: Session, fixtures: dict[str, Fixture]) -> dict[str, C
             published_at=data["published_at"],
             deadline_at=data["deadline_at"],
             eligibility_gap=data["eligibility_gap"],
+            grant_min_mkd=data.get("grant_min_mkd"),
+            grant_max_mkd=data.get("grant_max_mkd"),
+            cofinancing_pct=data.get("cofinancing_pct"),
             canonical_url=data["canonical_url"],
             primary_snapshot_id=snapshot.id,
             allowed_entity_types=prefilter.allowed_entity_types,
@@ -362,6 +365,8 @@ class Report:
     unanswered: int
     latency_ms: list[float]
     gate: dict
+    weights_version: str = stage2.WEIGHTS_VERSION
+    open_calls: int = 0
 
     @property
     def median_latency_ms(self) -> float:
@@ -387,7 +392,7 @@ class Report:
                     f"(over {self.gate['false_exclusion_rate_max']:.0%})"
                 )
         if self.median_latency_ms > self.gate["median_latency_block_ms"]:
-            blocked.append(f"median stage 1 latency {self.median_latency_ms:.0f} ms")
+            blocked.append(f"median stage 1–2 latency {self.median_latency_ms:.0f} ms")
         return blocked
 
     def warnings(self) -> list[str]:
@@ -398,13 +403,13 @@ class Report:
         if over:
             warned.append(f"{len(over)} case(s) claimed more than the expected verdict")
         if self.gate["median_latency_warn_ms"] < self.median_latency_ms:
-            warned.append(f"median stage 1 latency {self.median_latency_ms:.0f} ms")
+            warned.append(f"median stage 1–2 latency {self.median_latency_ms:.0f} ms")
         return warned
 
     def text(self) -> str:
         lines = [
             f"tier A — {self.profiles} profiles × {self.fixtures} frozen calls, "
-            f"as of {self.as_of:%d.%m.%Y}",
+            f"as of {self.as_of:%d.%m.%Y}, weights {self.weights_version}",
             "",
             "properties",
         ]
@@ -413,7 +418,11 @@ class Report:
             lines.append(f"  {check.name:.<46} {check.checked:>4} checked  {mark}")
             lines += [f"      {failure}" for failure in check.failures]
         lines += [
-            f"  {'median stage 1 latency':.<46} {self.median_latency_ms:>4.0f} ms",
+            f"  {'median stage 1–2 latency':.<46} {self.median_latency_ms:>4.0f} ms",
+            # Said, not scored: with this few open calls every ordering holds every
+            # call in the top five, and a green "100%" would claim a measurement.
+            f"  {'rank quality (top five)':.<46} not measurable: "
+            f"{self.open_calls} open calls, no expected order in the cases",
             "",
             "cases",
         ]
@@ -479,8 +488,25 @@ def _citation_check(session: Session, calls: dict[str, Call]) -> Check:
     return check
 
 
+def _ranking_check(check: Check, key: str, by_id: dict, ranked: list[stage2.Scored]) -> None:
+    """Every shortlisted call scored in [0, 1] with a reason per component, and no
+    call the rules exclude above one the company may apply for."""
+    seen_excluded = False
+    for scored in ranked:
+        check.checked += 1
+        slug = by_id[scored.call.id]
+        if not 0.0 <= scored.score <= 1.0:
+            check.failures.append(f"{key} × {slug}: score {scored.score}")
+        silent = [p.name for p in scored.parts if not p.reason_mk.strip()]
+        if silent:
+            check.failures.append(f"{key} × {slug}: no reason for {', '.join(silent)}")
+        if seen_excluded and not scored.excluded:
+            check.failures.append(f"{key} × {slug}: ranked below a call the rules exclude")
+        seen_excluded = seen_excluded or scored.excluded
+
+
 def run(session: Session, suite: dict | None = None) -> Report:
-    """Load the frozen registry, run every profile through stage 1, and score it."""
+    """Load the frozen registry, run every profile through stages 1 and 2, and score it."""
     suite = suite or load_suite()
     as_of = suite["as_of"]
     now = dt.datetime.combine(as_of, dt.time(12, 0), tzinfo=dt.UTC)
@@ -504,6 +530,7 @@ def run(session: Session, suite: dict | None = None) -> Report:
     superset = Check("stage 1a filters only what the rules exclude")
     excluded_by = Check("only a rule may exclude an applicant")
     capped = Check("an unread document never allows eligible")
+    ranked_check = Check("stage 2 gives a reason and ranks excluded last")
     latency: list[float] = []
     observed: dict[tuple[str, str], Observed] = {}
 
@@ -511,7 +538,9 @@ def run(session: Session, suite: dict | None = None) -> Report:
         profile = case_profile.profile(as_of)
         started = time.perf_counter()
         outcomes = stage1.run(session, profile, now)
+        ranked = stage2.rank(outcomes, profile, now)
         latency.append((time.perf_counter() - started) * 1000)
+        _ranking_check(ranked_check, key, by_id, ranked)
 
         shown = {by_id[o.call.id]: o for o in outcomes}
         for slug in fixtures:
@@ -548,7 +577,7 @@ def run(session: Session, suite: dict | None = None) -> Report:
                     f"{key} × {slug}: filtered by stage 1a, but the rules say {verdict}"
                 )
 
-    checks += [superset, excluded_by, capped]
+    checks += [superset, excluded_by, capped, ranked_check]
     results = [Result(case, observed[(case.profile, case.call)]) for case in cases]
     return Report(
         as_of=as_of,
@@ -560,4 +589,6 @@ def run(session: Session, suite: dict | None = None) -> Report:
         unanswered=unanswered,
         latency_ms=latency,
         gate=suite["gate"],
+        weights_version=stage2.WEIGHTS_VERSION,
+        open_calls=sum(1 for f in fixtures.values() if f.shortlistable),
     )

@@ -364,3 +364,17 @@ def test_a_source_is_due_daily_and_again_after_any_failure(sessions, store, site
         ).first()
     assert not due(started + dt.timedelta(hours=4))
     assert due(started + dt.timedelta(hours=21))
+
+
+@pytest.mark.parametrize("grant_share,expected", [(40, 60.0), (100, 0.0), (None, None)])
+def test_the_call_stores_the_applicants_share_not_the_grants(grant_share, expected):
+    """ "кофинансирање на 40% од трошоците" is what the grant pays; stage 2 compares the
+    applicant's own share, so the column holds the other side of the sentence."""
+    from app.ai.schemas import CitedPercent
+
+    cited = (
+        None
+        if grant_share is None
+        else CitedPercent(document=1, quote="кофинансирање на 40%", value=grant_share)
+    )
+    assert pipeline.applicant_share(cited) == expected

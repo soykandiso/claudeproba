@@ -40,7 +40,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.ai.gateway import Gateway, InvalidModelOutput
-from app.ai.schemas import CallExtraction, CitedAmount
+from app.ai.schemas import CallExtraction, CitedAmount, CitedPercent
 from app.config import Settings
 from app.ingestion.extract import TASK, Document, Extraction, extract_call
 from app.ingestion.fetcher import Fetcher, FoundCall, RunResult, run_fetcher
@@ -278,6 +278,7 @@ class _Pipeline:
         call.total_budget_mkd, call.total_budget_eur = _by_currency(out.total_budget)
         call.grant_min_mkd = _mkd_only(out.grant_min, "grant_min", notes)
         call.grant_max_mkd = _mkd_only(out.grant_max, "grant_max", notes)
+        call.cofinancing_pct = applicant_share(out.grant_share_pct)
         call.canonical_url = found.public_url
         call.eligibility_gap = found.eligibility_gap or None
         call.primary_snapshot_id = primary.id
@@ -505,6 +506,16 @@ def _by_currency(amount: CitedAmount | None) -> tuple[float | None, float | None
     if amount is None:
         return None, None
     return (amount.amount, None) if amount.currency == "MKD" else (None, amount.amount)
+
+
+def applicant_share(grant_share: CitedPercent | None) -> float | None:
+    """What the applicant must fund themselves: the rest of what the grant pays.
+
+    The call says "кофинансирање на 40% од докажаните трошоци" — the share the
+    grant covers. `call.cofinancing_pct` holds the other side of that sentence,
+    because it is compared with what the applicant says they can put in.
+    """
+    return None if grant_share is None else round(100 - grant_share.value, 2)
 
 
 def _mkd_only(amount: CitedAmount | None, name: str, notes: list[str]) -> float | None:

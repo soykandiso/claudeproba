@@ -11,6 +11,9 @@ published_at: 2026-04-01
 deadline_at: 2026-10-01 23:59:59+02:00
 eligibility_gap: Дел од условите на овој повик се во документот на повикот или во работната програма,
   кои сè уште не се прочитани.
+grant_min_mkd: null
+grant_max_mkd: null
+cofinancing_pct: null
 document:
   path: document.txt
   sha256: 39f3e50a757ee91a3615dd3b8155fac130ae07c03f9d8166bddbe2ee3a1422f4

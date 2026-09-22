@@ -141,6 +141,8 @@ class CallOutcome:
     outcomes: list[CriterionOutcome]
     # Why `eligible` was withheld although the criteria allowed it, or None.
     capped_by: str | None = None
+    # Approved `soft_scored` criteria: extra points in stage 2, never judged here.
+    preferences: tuple[EligibilityCriterion, ...] = ()
 
     @property
     def open_items(self) -> list[CriterionOutcome]:
@@ -198,9 +200,15 @@ def judge(call: Call, criteria: Iterable[EligibilityCriterion], profile: Profile
     An unapproved criterion is a model's unreviewed opinion; letting one decide
     anything would put the model back in the eligibility path (invariant 1).
     """
-    outcomes = []
+    outcomes, preferences = [], []
     for criterion in criteria:
         if not criterion.is_approved:
+            continue
+        if criterion.kind == CriterionKind.SOFT_SCORED:
+            # A preference raises a call's rank and excludes no one, so it has no
+            # say in the verdict: judged, it would come out *unclear* and pull an
+            # otherwise decided call down to needs_verification.
+            preferences.append(criterion)
             continue
         decision, reason = _decide(criterion, profile)
         outcomes.append(CriterionOutcome(criterion, decision, criterion_verdict(decision), reason))
@@ -209,7 +217,7 @@ def judge(call: Call, criteria: Iterable[EligibilityCriterion], profile: Profile
     capped = None
     if call.eligibility_gap and verdict in (Verdict.ELIGIBLE, Verdict.LIKELY_ELIGIBLE):
         verdict, capped = Verdict.NEEDS_VERIFICATION, call.eligibility_gap
-    return CallOutcome(call, verdict, outcomes, capped)
+    return CallOutcome(call, verdict, outcomes, capped, tuple(preferences))
 
 
 # ------------------------------------------------------------------ both steps
@@ -235,7 +243,7 @@ def _criteria_by_call(session: Session, calls: Sequence[Call]) -> dict:
 def run(session: Session, profile: Profile, now: dt.datetime | None = None) -> list[CallOutcome]:
     """Stage 1 end to end: the open registry narrowed, then judged.
 
-    Order is by deadline, which is stage 1a's; ranking is stage 2's (P2 s27) and
+    Order is by deadline, which is stage 1a's; ranking is `stage2.rank` and
     deliberately not done here. Calls the rules exclude are returned too — the
     shortlist page shows them separately, with the reason, rather than dropping
     them silently (docs/matching.md §3).

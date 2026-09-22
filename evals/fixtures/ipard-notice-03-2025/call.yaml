@@ -10,6 +10,9 @@ status: announced
 published_at: null
 deadline_at: null
 eligibility_gap: null
+grant_min_mkd: null
+grant_max_mkd: null
+cofinancing_pct: null
 document:
   path: document.txt
   sha256: edef2d915e04a0e035e03dc98083e0feb67dc171a3a8ef4b534803c7bbbcbf86

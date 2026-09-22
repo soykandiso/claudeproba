@@ -253,6 +253,45 @@ similarity is a tiebreaker here, not a decision procedure.
 only once a source actually publishes award lists — a scoring component with no data is a weight of
 zero with extra code.
 
+### Built 22.09.2026 — `app/matching/stage2.py`
+
+`stage2.rank(outcomes, profile, now)` scores what stage 1 returned and orders it: highest score
+first, an earlier deadline breaking a tie, and every `not_eligible` call last so the shortlist can
+show it apart with its reason. Nothing in stage 2 reads or changes a verdict. Every component
+returns a value and a Macedonian reason, and the weights version travels with every score.
+
+**The weights are untuned**, and the file says so (`config/weights/v1.yaml`). They are the table
+above, with `semantic_fit` at 0 and its 0.10 moved to `timeline_fit`. The acceptance's "rank
+quality ≥ 90%" **was not measured and cannot be yet**: the suite has four open calls, every ordering
+of four puts every call in the top five, and the cases hold verdicts, not an expected order. The
+harness prints "not measurable" rather than a green 100%. Tune when the registry has more calls than
+a shortlist shows and someone has said, per profile, which call should come first.
+
+**Missing data scores neutral (0.5) and the reason says what is missing.** Most calls state no
+project size, co-financing share or target sector, and many profiles skip those questions. Neutral
+moves nothing between two silent calls, and never claims a fit nobody measured.
+
+Where the build departs from the table, and why:
+
+| Component | As built |
+|---|---|
+| `sector_fit` | Read from `allowed_nace_prefixes`, matched against the profile's own chain of codes — the same test as stage 1a. НКД's finest level is the class, so the levels are class 1.0, group 0.85, division 0.7, section 0.5; outside every prefix 0.0. A call open to every activity is neutral |
+| `size_fit` | **Changed after measuring it.** Investment against the grant band put the Economy call — the one the bakery profile can actually use — last in the bakery's shortlist, because its 200.000 МКД cap is far below a 3–10 million investment, and it made every call that states its cap rank below the silent ones. Now: up to the largest project the cap pays its full share of (cap ÷ the grant's share) is 1.0; above it is neutral with the reason "covers only part"; below a stated minimum grant it falls linearly to 0 at half the minimum |
+| `timeline_fit` | Preparation time only: under 14 days 0.2, otherwise 1.0, no deadline neutral. The comparison with the project's own length waits for a call column holding an implementation period |
+| `cofinancing_fit` | As designed. `call.cofinancing_pct` is now filled by the pipeline from the extracted `grant_share_pct`, as the applicant's side: a grant paying 40% stores 60 |
+| `soft_criteria` | Neutral, naming the preferences in its reason. No intake answer can meet one yet (women-owned, youth, less-developed region are not asked) |
+| `semantic_fit` | Weight 0, not computed. Where the description's embedding is made is still open (above) |
+
+**Fixed on the way — a preference never decides.** `stage1.judge` used to interpret a `soft_scored`
+criterion like any other undecided one, as *unclear*, which would have pulled a call the rules had
+settled down to `needs_verification`. It now sets them aside as `CallOutcome.preferences` for stage
+2 to read. None of the frozen calls has one, which is why the gate never saw it.
+
+**Not built: the `match_run` row.** The table's `profile_id` references `applicant_profile`, and
+nothing writes one yet — the profile lives in the session cookie (`decisions.md`). The weights
+version is carried on every `Scored` result, ready for the row; the row and the profile appear
+together, in s28 or the order flow of P4.
+
 ---
 
 ## 5. Stage 3 — verification pass

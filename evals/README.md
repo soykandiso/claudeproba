@@ -37,7 +37,7 @@ third adjustment cannot be told from the first.
 
 ## What tier A checks without a single expected verdict
 
-Four properties hold for every profile and every call, and they run on every commit from today:
+Five properties hold for every profile and every call, and they run on every commit:
 
 1. **Every quote is verbatim** at the offsets it cites — no citation, no claim, checked in code.
 2. **Stage 1a is a superset filter**: a call the SQL threw away is one the interpreter would have
@@ -46,6 +46,11 @@ Four properties hold for every profile and every call, and they run on every com
 3. **Only a rule excluded anyone** — no `not_eligible` from a model or an attestation.
 4. **A call whose documents are knowingly incomplete never rose above `needs_verification`**,
    however well its extracted criteria went.
+5. **Stage 2 gave every ranked call a score in [0, 1] and a reason for every component**, and
+   no call the rules exclude ranks above one the company may apply for (P2 s27).
+
+Rank quality — "is the right call in the top five" — is printed as **not measurable**: with four
+open calls every ordering passes it, and the cases record verdicts, not an expected order.
 
 ## Filling in a case (P2 s26)
 

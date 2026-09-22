@@ -214,6 +214,8 @@ class Call(Base):
     total_budget_eur: Mapped[float | None] = mapped_column(Numeric(14, 2))
     grant_min_mkd: Mapped[float | None] = mapped_column(Numeric(14, 2))
     grant_max_mkd: Mapped[float | None] = mapped_column(Numeric(14, 2))
+    # The applicant's own share of the costs, in percent: 100 minus the share the
+    # grant pays (`pipeline.applicant_share`). Read by stage 2's cofinancing_fit.
     cofinancing_pct: Mapped[float | None] = mapped_column(Numeric(5, 2))
 
     # Denormalised hard-filter columns. An empty array means "no restriction",
