@@ -36,10 +36,11 @@ target-version = "py312"
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
-# Alembic's autogenerate emits long op.create_index calls and older-style type
-# annotations. Rewriting them by hand to satisfy the linter would mean editing
-# migrations that have already run somewhere, which is never worth it.
-"migrations/versions/*" = ["E501", "UP007", "UP035", "I001"]
+# Alembic's autogenerate emits long op.create_index calls, older-style type
+# annotations, and an import of every custom type in app/models/ whether the
+# migration uses it or not. Rewriting them by hand to satisfy the linter would
+# mean editing migrations that have already run somewhere, which is never worth it.
+"migrations/versions/*" = ["E501", "F401", "UP007", "UP035", "I001"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

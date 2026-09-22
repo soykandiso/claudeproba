@@ -23,6 +23,7 @@ from app.ingestion.snapshots import SnapshotStore
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers
 from app.ingestion.sources.eu_portal import (
+    ELIGIBILITY_GAP,
     PUBLIC_URL,
     SCOPE,
     SEARCH_URL,
@@ -264,6 +265,25 @@ def test_an_open_topic_becomes_an_unpublished_cited_call(sessions, tmp_path):
     for path, citation in item.payload["citations"].items():
         start, end = citation["char_start"], citation["char_end"]
         assert snapshot.normalised_text[start:end] == citation["source_quote"], path
+
+
+@needs_database
+def test_every_eu_call_records_that_its_conditions_are_not_all_read(sessions, tmp_path):
+    """docs/sources.md §6.6: a topic's own text is knowingly not all of its eligibility.
+
+    The gap is recorded unconditionally, not only where a condition link was found:
+    absence of a link is not evidence the topic is complete. `app/matching/stage1.py`
+    refuses to show such a call as eligible (CLAUDE.md invariant 3).
+    """
+    run(
+        sessions,
+        SnapshotStore(tmp_path),
+        EuPortal(),
+        ScriptedProvider(cassette("eu-digital-2026-skills-10-edtech")),
+    )
+
+    [call] = eu_calls(sessions)
+    assert call.eligibility_gap == ELIGIBILITY_GAP
 
 
 @needs_database

@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 23** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 24** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -22,7 +22,9 @@ eighty municipalities and the eight planning regions are versioned files in [`da
 imported from the statistical office, and stage 0 turns an intake into the profile the rules read
 (`app/matching/normalise.py`). The first customer screen is live: the intake form at `/profil`, in
 Macedonian, mobile first, four required answers and an activity picker that searches the whole
-classification over HTMX (`app/matching/intake.py`, `app/web/intake/`).
+classification over HTMX (`app/matching/intake.py`, `app/web/intake/`). Stage 1 then narrows the
+registry in SQL and judges each surviving call with the rule interpreter (`app/matching/stage1.py`);
+a call whose conditions are knowingly not all read can never be shown as eligible.
 See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no

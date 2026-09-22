@@ -279,6 +279,7 @@ class _Pipeline:
         call.grant_min_mkd = _mkd_only(out.grant_min, "grant_min", notes)
         call.grant_max_mkd = _mkd_only(out.grant_max, "grant_max", notes)
         call.canonical_url = found.public_url
+        call.eligibility_gap = found.eligibility_gap or None
         call.primary_snapshot_id = primary.id
         call.last_verified_at = min(s.last_seen_at for s in snapshots)
         call.extraction_confidence = min((c.confidence for c in out.criteria), default=None)

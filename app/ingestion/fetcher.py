@@ -47,11 +47,18 @@ class FoundCall:
 
     `listing` is what the source's own listing says about the call (dates, audience),
     kept for the reviewer: it is not citable text, so it never becomes a claim.
+
+    `eligibility_gap` is a fetcher saying, in Macedonian, that the documents it
+    fetched are knowingly not all of this call's conditions — an EU topic pointing
+    at a call document on another host, say (docs/sources.md §6.6). It is written
+    to `call.eligibility_gap`, and stage 1 refuses to show such a call as eligible
+    however well its extracted criteria come out (CLAUDE.md invariant 3).
     """
 
     public_url: str  # where a person can read the call; shown next to every citation
     snapshot_ids: tuple[int, ...]  # the primary document first
     listing: dict[str, str] = field(default_factory=dict)
+    eligibility_gap: str = ""
 
 
 @dataclass
@@ -79,12 +86,16 @@ class CrawlContext:
         return fetched
 
     def found_call(
-        self, public_url: str, documents: list[Fetched], listing: dict[str, str] | None = None
+        self,
+        public_url: str,
+        documents: list[Fetched],
+        listing: dict[str, str] | None = None,
+        eligibility_gap: str = "",
     ) -> None:
         if not documents:
             raise ValueError("a found call needs at least one document")
         ids = tuple(doc.recorded.snapshot.id for doc in documents)
-        self.found.append(FoundCall(public_url, ids, dict(listing or {})))
+        self.found.append(FoundCall(public_url, ids, dict(listing or {}), eligibility_gap))
 
 
 class Fetcher(ABC):

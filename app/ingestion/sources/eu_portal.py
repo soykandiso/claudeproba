@@ -249,6 +249,12 @@ def render_topic(topic: dict) -> str:
 _LINK = re.compile(r'<a[^>]+href="([^"]+)"', re.IGNORECASE)
 
 
+ELIGIBILITY_GAP = (
+    "Дел од условите на овој повик се во документот на повикот или во работната "
+    "програма, кои сè уште не се прочитани."
+)
+
+
 def condition_links(topic: dict) -> list[str]:
     """Every document the conditions point to, in order, for the reviewer.
 
@@ -329,6 +335,13 @@ class EuPortalFetcher(Fetcher):
             ctx.found_call(
                 PUBLIC_URL.format(identifier),
                 [detail],
+                # Unconditional, not only when a link was found: a topic states
+                # some of its conditions inline and leaves the rest to the call
+                # document or the work programme, and neither is fetched yet
+                # (docs/sources.md §6.6). Absence of a link is not evidence the
+                # topic is complete, so every EU call carries the gap until those
+                # documents are read.
+                eligibility_gap=ELIGIBILITY_GAP,
                 listing={
                     "identifier": identifier,
                     "call_identifier": _first(metadata, "callIdentifier") or "",

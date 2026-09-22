@@ -234,8 +234,13 @@ existed for.
   several topics) is still to do. **Until it is, an EU call's criteria are incomplete by construction.**
   A call with no criteria already comes out `needs_verification` (`taxonomy.call_verdict`), but a
   call with a few satisfied criteria could add up to `eligible` while the country rule sits unread in
-  the PDF. The approval in P1 s15 is the guard for now; P2 s24 must not let such a call reach
-  `eligible` or `likely_eligible` (invariant 3).
+  the PDF. **Closed 22.09.2026 (P2 s24):** the fetcher writes `ELIGIBILITY_GAP` on every topic it
+  finds, the pipeline stores it in `call.eligibility_gap`, and `app/matching/stage1.py` refuses to
+  show such a call as `eligible` or `likely_eligible` however well its criteria come out. It is set
+  unconditionally, not only where a condition link was found: a topic states some conditions inline
+  and leaves the rest to the call document, and the absence of a link is not evidence of
+  completeness. The reviewer sees the same sentence on `/admin` before approving. Fetching and
+  extracting those PDFs is still to do; when it is done, the fetcher stops setting the gap.
 - **The text is English.** Titles are stored as the document states them. A Macedonian label over an
   English quote retrieves poorly across documents (roadmap P2 s30).
 - **Change detection ignores call news.** A topic's `latestInfos` changes whenever anything happens

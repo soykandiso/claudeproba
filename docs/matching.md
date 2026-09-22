@@ -126,9 +126,58 @@ evaluate_hard(profile, call) -> (passed: bool, outcomes: list):
 **Why an interpreter and not dynamic SQL.** Generating a SQL predicate per stored criterion is the
 clever-not-boring trap: it is hard to debug, hard to unit-test, and one malformed extracted criterion
 becomes a query error instead of a handled case. Over ≤200 candidate rows with ~10 criteria each,
-2,000 interpreted comparisons cost under a millisecond. `OPERATORS` is a fixed dictionary of nine
-functions and `crit.field` is checked against a whitelist, so a bad extraction can never reach
-`getattr` with something arbitrary.
+2,000 interpreted comparisons cost under a millisecond. `OPERATORS` is a fixed dictionary and
+`crit.field` is checked against a whitelist, so a bad extraction can never reach `getattr` with
+something arbitrary. (This paragraph said "nine functions" while the sketch was being written; the
+vocabulary settled at **seven** when `app/matching/operators.py` was built — `in`, `not_in`,
+`prefix_in`, `prefix_not_in`, `gte`, `lte`, `between`. Each is tested in
+`tests/test_hard_filter.py` and again through a stored row in `tests/test_stage1.py`.)
+
+### Built 22.09.2026 — `app/matching/stage1.py`
+
+`candidates()` is 1a, `judge()` is 1b, `run()` is both. Four things it settled:
+
+- **A predicate the profile cannot answer is not applied at all.** No activity in the profile means
+  no NACE clause in the SQL, not an overlap against an empty array. Filtering on a blank is how "we
+  do not know" silently becomes "you may not apply", and it is the easiest way to break invariant 3
+  in a place no test would otherwise look.
+- **A banded profile is filtered permissively and judged conservatively.** `min/max_company_age_months`
+  are exact months; `Profile.age_months` is a range. 1a keeps a call when *any* month in the range
+  could satisfy it, then 1b answers `unclear` where the range straddles the threshold. The two rules
+  point in opposite directions on purpose: 1a may only throw away what 1b would certainly exclude.
+- **Only approved criteria are read.** An unapproved criterion is a model's unreviewed opinion, and
+  letting one decide anything would put the model back in the eligibility path (invariant 1).
+- **`narrative_verify` and `documentary` are not decided yet.** The verification pass is s29; until
+  it runs, they are `unclear`, which is why most calls come out `needs_verification` today. That is
+  the honest state of the system, not a placeholder.
+
+**Which index actually does the work.** The `empty OR overlap` shape is what makes "empty array means
+no restriction" a single predicate, and it is also what stops PostgreSQL using the GIN indexes on
+`allowed_entity_types`, `allowed_nace_prefixes` and `allowed_regions`: an `OR` with a
+non-indexable side cannot be served from the index alone. The narrowing is therefore done by the
+partial index `ix_call_open` — published, open, deadline ahead — and the array clauses are a filter
+over what survives it. At a registry of a few hundred open calls that is the right trade; the
+alternative is dropping the empty-array convention for a nullable column, which buys an index scan
+and costs the readable single predicate. **Not measured at scale** — the development registry holds
+single-figure rows, so this is reasoning about the plan shape, not a benchmark. If s28's 3-second
+budget is ever threatened, this paragraph is where to start.
+
+**The eligibility gap.** `call.eligibility_gap` (new column, 22.09.2026) holds a fetcher's statement,
+in Macedonian, that the documents it fetched are knowingly not all of a call's conditions — set on
+every EU topic, whose conditions live in a call document or work programme that is not fetched yet
+(`sources.md` §6.6). A call carrying it can never be shown as `eligible` or `likely_eligible`,
+however well its extracted criteria come out. `not_eligible` still stands: an unread document can add
+a condition, never remove one. The reviewer sees the same sentence on `/admin` before approving.
+
+**Geography stays out of the rule vocabulary** — decided here, as `handoff.md` said s24 would. The
+data exists and `Profile` carries `municipality_code` and `region_code`, but putting `region_code`
+in `FIELDS` lets an extracted criterion *exclude* on location, and that needs a new extraction prompt
+version with an evaluation run behind it (s25–26). So `allowed_regions` is still always empty, and
+`prefilter_columns` still returns `[]` for it. What changed is that 1a's clause is written and
+tested: `allowed_regions && ARRAY[region_code, municipality_code]`, so filling the column is the only
+work left. A **Град Скопје** call, whose ten municipalities are not the seventeen of the Скопски
+planning region, is expressed by listing those ten municipality codes in the column — the same
+overlap handles it, with no special case.
 
 **Missing data never excludes.** If the profile does not answer a criterion, the outcome is
 `needs_verification`, not `not_eligible`. Wrongly excluding a company is a silent failure the user

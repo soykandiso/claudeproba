@@ -74,6 +74,14 @@ key. Nightly `pg_dump` stays small and restores stay fast.
 `allowed_regions` use `'{}'` for national or unrestricted calls, which keeps the stage-1 filter a
 single `&&` overlap test rather than a nullable special case.
 
+**`call.eligibility_gap` is a fetcher's confession** (added 22.09.2026, P2 s24). Nullable text: when
+set, it says in Macedonian that the documents fetched for this call are knowingly not all of its
+conditions — an EU topic whose eligibility lives in a call document on another host
+(`sources.md` §6.6). It is not a flag because the sentence is shown to the reviewer and to the
+customer; a boolean would have to be translated back into a reason somewhere. `app/matching/stage1.py`
+treats a call carrying it as never `eligible` and never `likely_eligible`, which is invariant 3
+expressed as data rather than as a rule someone has to remember.
+
 **Two check constraints carry the accuracy contract**, so it is enforced by the database rather than
 by discipline:
 

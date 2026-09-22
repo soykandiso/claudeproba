@@ -39,6 +39,14 @@
     </dl>
     <p class="small">{{ source.name_mk }}: <a class="break" href="{{ call.canonical_url }}" rel="noopener noreferrer" target="_blank">{{ call.canonical_url }}</a></p>
 
+    {% if call.eligibility_gap %}
+    {# The fetcher knows its documents are not all of this call's conditions. Approving
+       it is still right — the criteria below are cited — but the call can never be shown
+       as eligible while this stands (app/matching/stage1.py). #}
+    <p class="notice" role="note"><strong>Условите не се целосни.</strong> {{ call.eligibility_gap }}
+      Овој повик нема да биде прикажан како „Можете да аплицирате“ ниту по одобрувањето.</p>
+    {% endif %}
+
     {% if pending and not superseded_by %}
     <details class="why"{% if open_form == 'call' %} open{% endif %}>
       <summary>Измени наслов или рок</summary>

@@ -284,7 +284,8 @@ CREATE TABLE public.call (
     extraction_confidence numeric(3,2),
     is_published boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    eligibility_gap text
 );
 
 

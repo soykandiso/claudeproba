@@ -228,6 +228,13 @@ class Call(Base):
     min_company_age_months: Mapped[int | None] = mapped_column(Integer)
     max_company_age_months: Mapped[int | None] = mapped_column(Integer)
 
+    # Set when the call's own documents are known not to hold all of its eligibility
+    # — an EU topic whose conditions point at a call document we have not fetched
+    # (docs/sources.md §6.6). A call carrying this can never be shown as eligible or
+    # likely eligible, whatever its extracted criteria say (CLAUDE.md invariant 3,
+    # enforced in app/matching/stage1.py). The text is the reason, shown to the user.
+    eligibility_gap: Mapped[str | None] = mapped_column(Text)
+
     canonical_url: Mapped[str] = mapped_column(Text)
     primary_snapshot_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("raw_snapshot.id")
