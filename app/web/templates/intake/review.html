@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Што разбравме од одговорите{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Што разбравме од одговорите</h1>
+    <p class="soft">Профилот е зачуван во овој прелистувач. Според него се споредуваат условите
+      на отворените повици.</p>
+  </div>
+
+  <dl class="breakdown">
+    {% for label, value in rows %}
+    <div>
+      <dt>{{ label }}</dt>
+      <dd>{% if value %}{{ value }}{% else %}<span class="soft">{{ unknown }}</span>{% endif %}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+
+  <p class="privacy-note">Неодговорено поле не исклучува ниту еден повик. Условот што зависи од него
+    се означува за проверка и ве прашуваме тогаш.</p>
+
+  {% if profile.project_description %}
+  <section class="stack">
+    <h2>Опис на проектот</h2>
+    <p>{{ profile.project_description }}</p>
+    <h3>Ова стигнува до автоматската анализа</h3>
+    <figure class="excerpt excerpt--compact">
+      <blockquote>{{ scrubbed }}</blockquote>
+      <figcaption><span>Податоците по кои може да се препознае фирмата се заменети пред текстот да го напушти серверот.</span></figcaption>
+    </figure>
+  </section>
+  {% endif %}
+
+  <div class="actions">
+    <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">Измени го профилот</a>
+  </div>
+
+  {% if seconds %}
+  {# Roadmap P2 s23 acceptance is a timed run, so the page says what it measured. #}
+  <p class="small soft">Пополнувањето траеше {{ seconds }} секунди.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{# The real site's shell. /demo has its own (demo/base.html) and keeps it: the demo
+   is replaced, not extended, and a shared layout would couple the two.
+
+   The wordmark is descriptive on purpose — the name and the domain are docs/decisions.md
+   D2, and nothing here should quietly decide them. #}
+<!doctype html>
+<html lang="mk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:,">
+  <title>{% block title %}Платформа за грантови и субвенции{% endblock %}</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/fira-sans-cyrillic-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/source-serif-4-cyrillic-600-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+  <script src="{{ url_for('static', filename='js/htmx.min.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Оди на содржината</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="{{ url_for('intake.form') }}">Грантови и субвенции</a>
+      <nav class="site-nav" aria-label="Главна навигација">
+        <a href="{{ url_for('intake.form') }}" {% if request.endpoint in ('intake.form', 'intake.save') %}aria-current="page"{% endif %}>Профил</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    {% block main %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap stack">
+      <p>Платформата не поднесува барања во ваше име и не одлучува за доделување средства. Одлуката ја носи институцијата што го објавила повикот.</p>
+    </div>
+  </footer>
+</body>
+</html>

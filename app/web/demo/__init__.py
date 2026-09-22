@@ -98,10 +98,16 @@ def demo_helpers():
             return f"уште {_DAYS_IN_WORDS[days]}"
         return None
 
+    from app.matching import intake
     from app.web.demo import store
 
     return {
         "days_left": days_left,
+        # An answer said back to the applicant, in the words P2 s23 established.
+        "form_label": intake.form_label,
+        "employees_label": intake.employees_label,
+        "amount_label": intake.amount_label,
+        "municipality_label": intake.municipality_label,
         "verdict_labels": VERDICT_LABELS,
         "criterion_labels": CRITERION_LABELS,
         "decided_by_labels": DECIDED_BY_LABELS,

@@ -442,3 +442,46 @@ details.why > summary { list-style: none; gap: var(--s-8); }
 details.why > summary::-webkit-details-marker { display: none; }
 details.why > summary::before { content: "+"; font-family: var(--font-id); width: 1ch; }
 details.why[open] > summary::before { content: "−"; }
+
+/* ------------------------------------------------------------------ intake form */
+
+.skip {
+  position: absolute; left: var(--s-16); top: -100px; z-index: 2;
+  background: var(--paper); border: 1px solid var(--ink); padding: var(--s-12) var(--s-16);
+}
+.skip:focus { top: var(--s-8); }
+#main:focus { outline: none; }
+
+.form h2 { font-family: var(--font-display); margin-bottom: var(--s-8); }
+.form > div > h2 + .field, .form > div > h2 + fieldset.field { border-top: 0; }
+.optional { font-weight: 400; font-size: var(--text-14); color: var(--ink-soft); }
+
+/* A number that carries a unit: the unit sits in the control, not in the label. */
+.measured { display: flex; align-items: stretch; max-width: 14rem; }
+/* Only where a suffix follows: a year has no unit and keeps all four borders. */
+.measured .input:not(:last-child) { border-right: 0; }
+.measured__suffix {
+  display: flex; align-items: center; padding-inline: var(--s-12);
+  border: 1px solid var(--rule-strong); border-left: 0; background: var(--paper-sunk);
+  font-size: var(--text-14); color: var(--ink-soft); white-space: nowrap;
+}
+.measured .input[aria-invalid="true"] + .measured__suffix { border-width: 2px; border-left: 0; }
+
+/* Activity picker (HTMX): results are rows to pick, never a decision */
+.picker:empty { display: none; }
+.picker__list { list-style: none; padding: 0; border: 1px solid var(--rule-strong); }
+.picker__row {
+  display: block; width: 100%; text-align: left; min-height: 44px;
+  font: var(--text-16)/1.4 var(--font-body); color: var(--ink);
+  background: var(--paper); border: 0; border-top: 1px solid var(--rule);
+  padding: var(--s-12); cursor: pointer;
+}
+.picker__list > li:first-child .picker__row { border-top: 0; }
+.picker__row:hover { background: var(--paper-sunk); }
+.picker__row:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.picker__row .id { color: var(--ink-soft); margin-right: var(--s-8); }
+.chosen { font-size: var(--text-14); color: var(--verified); font-weight: 500; }
+
+/* HTMX loading state, on the element that was actioned (design system: Interaction) */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: block; }

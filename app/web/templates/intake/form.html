@@ -1,9 +1,9 @@
-{% extends "demo/base.html" %}
+{% extends "base.html" %}
 {% block title %}Профил на фирмата{% endblock %}
 {% block main %}
 <div class="wrap">
-  {% set action = url_for('demo.intake') %}
-  {% set submit_label = 'Прикажи ги повиците' %}
+  {% set action = url_for('intake.save') %}
+  {% set submit_label = 'Зачувај го профилот' %}
   {% include "intake/_form.html" %}
 </div>
 {% endblock %}

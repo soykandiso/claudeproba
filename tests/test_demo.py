@@ -4,6 +4,8 @@ import pytest
 
 from app import create_app
 from app.config import load_settings
+from app.matching import intake
+from app.matching.normalise import normalise
 from app.models.enums import Verdict
 from app.web.demo import data, engine
 
@@ -90,7 +92,7 @@ def test_intake_errors_are_shown_and_nothing_is_saved(client):
 
     assert response.status_code == 422
     assert "Внесете година со четири цифри" in body
-    assert "Почнете со шифрата" in body
+    assert "Не ја препознаваме оваа дејност" in body
     assert "Листата се прави од профилот" in client.get("/demo/lista").get_data(as_text=True)
 
 
@@ -102,7 +104,7 @@ def test_profile_changes_the_shortlist(client):
 
     hotel = dict(it, nace="55.10 Хотели", inv=["equipment"])
     client.post("/demo/profil", data=hotel)
-    profile = engine.normalise(engine.clean_answers(_form(hotel))[0])
+    profile = normalise(intake.clean(_form(hotel))[0])
     tourism = engine.match(data.find("apptr-smestuvanje"), profile)
     assert tourism.verdict == Verdict.ELIGIBLE
 
@@ -118,8 +120,8 @@ def _form(d):
 
 def test_farm_passes_ipard_rule_and_company_does_not():
     ipard = data.find("ipard-merka-1")
-    company = engine.normalise(engine.DEFAULT_ANSWERS)
-    farm = engine.normalise(dict(engine.DEFAULT_ANSWERS, entity="farm", nace="01.13"))
+    company = normalise(engine.DEFAULT_ANSWERS)
+    farm = normalise(dict(engine.DEFAULT_ANSWERS, entity="farm", nace="01.13"))
 
     assert engine.match(ipard, company).verdict == Verdict.NOT_ELIGIBLE
     assert engine.match(ipard, farm).verdict == Verdict.LIKELY_ELIGIBLE
@@ -128,7 +130,7 @@ def test_farm_passes_ipard_rule_and_company_does_not():
 def test_model_answers_never_exclude():
     """A recorded not_satisfied from the text check is needs_verification (invariant 1)."""
     green = data.find("skopje-zeleni")
-    profile = engine.normalise(engine.DEFAULT_ANSWERS)  # digital, not green
+    profile = normalise(engine.DEFAULT_ANSWERS)  # digital, not green
     m = engine.match(green, profile)
 
     model = [r for r in m.results if r.decision.decided_by == "model"]
@@ -141,7 +143,7 @@ def test_founding_year_straddling_a_threshold_is_unclear_not_excluded():
     from datetime import date
 
     six_years_ago = str(date.today().year - 6)
-    profile = engine.normalise(dict(engine.DEFAULT_ANSWERS, founded=six_years_ago))
+    profile = normalise(dict(engine.DEFAULT_ANSWERS, founded=six_years_ago))
     age = next(r for r in engine.match(fitr, profile).results if r.criterion.key == "age")
 
     assert age.verdict == Verdict.NEEDS_VERIFICATION

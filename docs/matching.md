@@ -63,6 +63,24 @@ waiting for now exists, but adding `region_code` there lets a criterion exclude 
 needs a new extraction prompt version and an evaluation run — so it belongs to s24, with the harness
 of s25–26 behind it, not to the session that produced the files.
 
+### The questions themselves
+
+**Built 22.09.2026** as `app/matching/intake.py`: the eleven questions, their Macedonian wording,
+what a refused answer is told, and the labels that say a profile back to the applicant. The form at
+`/profil` renders it (`app/web/intake/`), and so does `/demo/profil` — one questionnaire, one
+validation, one stage 0.
+
+Two decisions in it that the rest of matching depends on:
+
+- **Only four answers are required** — legal form, municipality, founding year and headcount. Every
+  other question may be skipped, because an answer that is not given is `None`, and `None` is
+  *unclear*, which asks rather than excludes (§3). Requiring more would buy nothing in correctness
+  and cost the three minutes the roadmap's acceptance is measured in.
+- **An unresolvable activity is an error, not a silence.** It is the one exception: everything else
+  degrades quietly, but a person who typed their НКД code and got no match would otherwise never
+  learn that the field they cared most about had been discarded. The picker searches the 1000-row
+  classification by name over HTMX so that the code does not have to be known at all.
+
 ---
 
 ## 3. Stage 1 — hard filter

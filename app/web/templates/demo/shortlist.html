@@ -47,7 +47,7 @@
 <div class="wrap">
   <div class="report-head stack">
     <h1>Отворени повици за вашиот профил</h1>
-    <p class="soft">{{ profile.form_label }}{% if profile.nace_code %}, дејност {{ profile.nace_code }}{% endif %}, {{ profile.municipality }}. Основана {{ profile.answers.founded }}, {{ profile.employees_label }} вработени.</p>
+    <p class="soft">{{ form_label(profile) }}{% if profile.nace_code %}, дејност {{ profile.nace_code }}{% endif %}, {{ municipality_label(profile) }}. Основана {{ profile.answers.founded }}, {{ employees_label(profile) }} вработени.</p>
     <p class="small"><a href="{{ url_for('demo.intake') }}">Измени го профилот</a></p>
   </div>
 

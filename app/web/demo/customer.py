@@ -2,14 +2,16 @@
 
 from flask import abort, redirect, render_template, request, url_for
 
+from app.matching import intake, reference
+from app.matching.normalise import Profile, normalise
 from app.models.enums import Verdict
 from app.web.demo import bp, engine, store
-from app.web.demo.data import PURPOSES, by_snapshot
+from app.web.demo.data import by_snapshot
 
 
-def current_profile() -> engine.Profile | None:
+def current_profile() -> Profile | None:
     answers = store.answers()
-    return engine.normalise(answers) if answers else None
+    return normalise(answers) if answers else None
 
 
 @bp.get("/")
@@ -33,24 +35,19 @@ def reset():
 
 
 def _intake_context(answers, errors):
+    """The real questionnaire (app/matching/intake.py), in the demo's shell."""
     return {
         "a": answers,
         "errors": errors,
-        "entity_forms": engine.ENTITY_FORMS,
-        "municipalities": engine.MUNICIPALITIES,
-        "employees": engine.EMPLOYEES,
-        "turnover": engine.TURNOVER,
-        "amounts": engine.AMOUNTS,
-        "timelines": engine.TIMELINES,
-        "purposes": PURPOSES,
-        "nace_examples": engine.NACE_EXAMPLES,
+        "sections": intake.sections(),
+        "chosen_nace": reference.resolve_nace(answers.get("nace")),
     }
 
 
-@bp.route("/profil", methods=["GET", "POST"])
-def intake():
+@bp.route("/profil", methods=["GET", "POST"], endpoint="intake")
+def profile_form():
     if request.method == "POST":
-        answers, errors = engine.clean_answers(request.form)
+        answers, errors = intake.clean(request.form)
         if errors:
             return render_template("demo/intake.html", **_intake_context(answers, errors)), 422
         store.save_answers(answers)
@@ -88,7 +85,7 @@ def report(slug: str):
     call = next((c for c in store.published_calls() if c.slug == slug), None)
     if call is None:
         abort(404)
-    profile = current_profile() or engine.normalise(engine.DEFAULT_ANSWERS)
+    profile = current_profile() or normalise(engine.DEFAULT_ANSWERS)
     return render_template(
         "demo/report.html",
         m=engine.match(call, profile),

@@ -9,6 +9,7 @@ import re
 from flask import abort, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
 
+from app.matching.normalise import normalise
 from app.reports.lint import find_banned
 from app.web.demo import bp, engine, store
 from app.web.demo.data import SOURCES
@@ -98,7 +99,7 @@ def admin_call_decide(slug: str):
 
 def _report_checks(m, order) -> dict:
     body = render_template(
-        "demo/_report_body.html", m=m, profile=engine.normalise(order["profile"]), order=order
+        "demo/_report_body.html", m=m, profile=normalise(order["profile"]), order=order
     )
     text = re.sub(r"<[^>]+>", " ", body)
     citations_ok = all(
@@ -126,8 +127,8 @@ def admin_order(no: int):
         o=o,
         m=m,
         rows=rows,
-        profile=engine.normalise(o["profile"]),
-        shape=engine.applicant_shape(engine.normalise(o["profile"])),
+        profile=normalise(o["profile"]),
+        shape=engine.applicant_shape(normalise(o["profile"])),
         checks=_report_checks(m, o),
         review=store.review(f"order:{no}"),
         product_name=store.PRODUCTS[o["product"]][0],

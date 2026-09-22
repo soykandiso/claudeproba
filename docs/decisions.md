@@ -384,6 +384,32 @@ there is an account to point at.
 
 ---
 
+## Decided in code, not by you
+
+Conservative defaults taken during a session, recorded here so they can be overruled deliberately
+rather than discovered later.
+
+### An intake profile lives in the session cookie, not in a row (22.09.2026, P2 s23)
+
+`applicant_profile` needs an `account_id`, and there are no accounts until the magic link at P3 s44
+(D11). Rather than invent an anonymous account row, `/profil` keeps the answers in the signed session
+cookie, exactly as `/demo` does. It is also the more honest default: nothing is stored about a
+visitor who never orders anything, which is what §3.3 of the brief asks for.
+
+**Consequence:** a profile does not survive clearing the browser, and cannot be reached from another
+device. The first screen that must persist one is the order (P4), and that is the session that
+should create the account and write the row — with `applicant_profile.version`, so a profile edited
+after a purchase does not change what the delivered report was computed from.
+
+### The intake form carries a CSRF token, `/demo` still does not (22.09.2026, P2 s23)
+
+`app/web/csrf.py` is now shared between `/admin` and `/profil`, and both check every unsafe request.
+The eleven forms on `/demo` do not, because they were written without one and write nothing but the
+visitor's own session cookie. Harmless while `/demo` is registered outside production only — but the
+day any demo form touches the database, protect the blueprint first.
+
+---
+
 ## Summary — what to decide, and by when
 
 | # | Decision | Needed by | My recommendation |

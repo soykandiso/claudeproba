@@ -19,20 +19,15 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from functools import cached_property
 
+from app.matching import intake
 from app.matching.hard_filter import Range
 from app.matching.operators import Operator, ProfileField
 from app.models.enums import CriterionKind
 
 EUR_TO_MKD = 61.5  # docs/decisions.md, "Rate used throughout"
 
-PURPOSES = {
-    "digital": "дигитализација",
-    "equipment": "опрема и машини",
-    "jobs": "нови вработувања",
-    "rnd": "истражување и развој",
-    "green": "енергетска ефикасност",
-    "export": "извоз и нови пазари",
-}
+# The intake question, not a demo list of its own: the calls below name these keys.
+PURPOSES = intake.PURPOSES
 
 
 @dataclass(frozen=True)

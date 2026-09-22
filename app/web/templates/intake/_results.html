@@ -1,0 +1,19 @@
+{# Search results for the activity picker. Swapped into #nace-results.
+
+   Picking re-renders the whole field (hx-target #nace-field, outerHTML) rather than
+   writing into the input, so no JavaScript of our own is needed to set a value. #}
+{% if results %}
+<ul class="picker__list">
+  {% for n in results %}
+  <li>
+    <button type="button" class="picker__row"
+            hx-get="{{ url_for('intake.activities', pick=n.code) }}"
+            hx-target="#nace-field" hx-swap="outerHTML">
+      <span class="id">{{ n.code }}</span> {{ n.name_mk }}
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+{% elif query|length > 1 %}
+<p class="small soft">Нема дејност со такво име. Обидете се со друг збор, или внесете ја шифрата од решението.</p>
+{% endif %}

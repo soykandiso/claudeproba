@@ -24,10 +24,10 @@
           <tr><th scope="row">Назив на барателот</th><td>{{ o.buyer.name }}</td></tr>
           <tr><th scope="row">ЕМБС</th><td class="id id--14">{{ o.buyer.embs }}</td></tr>
           <tr><th scope="row">ЕДБ</th><td class="id id--14">{{ o.buyer.edb }}</td></tr>
-          <tr><th scope="row">Седиште</th><td>{{ o.buyer.city }}, општина {{ profile.municipality }}</td></tr>
+          <tr><th scope="row">Седиште</th><td>{{ o.buyer.city }}, општина {{ municipality_label(profile) }}</td></tr>
           <tr><th scope="row">Главна дејност</th><td>{{ profile.answers.nace or unfilled('шифра и назив на дејноста од Централниот регистар') }}</td></tr>
           <tr><th scope="row">Година на основање</th><td>{{ profile.answers.founded }}</td></tr>
-          <tr><th scope="row">Број на вработени</th><td>{{ unfilled('точниот број од последниот годишен извештај, профилот има само опсег ' ~ profile.employees_label) }}</td></tr>
+          <tr><th scope="row">Број на вработени</th><td>{{ unfilled('точниот број од последниот годишен извештај, профилот има само опсег ' ~ employees_label(profile)) }}</td></tr>
           <tr><th scope="row">Одговорно лице</th><td>{{ unfilled('име и презиме на управителот') }}</td></tr>
           <tr><th scope="row">Вкупна вредност на проектот</th><td>{{ unfilled('износ во МКД според понудите') }}</td></tr>
           <tr><th scope="row">Сопствено учество</th><td>{{ unfilled('износ во МКД, најмалку ' ~ call.cofinancing_pct ~ '% од вредноста') if call.cofinancing_pct else unfilled('износ во МКД') }}</td></tr>
@@ -43,7 +43,7 @@
       <p class="soft">Прочитајте го и поправете го. Ништо во него не смее да остане ако не е точно за вашата фирма.</p>
     </div>
     <div class="draft stack">
-      <p>{{ o.buyer.name }} е {{ profile.form_label }} од општина {{ profile.municipality }}, основано во {{ profile.answers.founded }} година{% if profile.nace_code %}, со главна дејност {{ profile.nace_code }}{% endif %}.</p>
+      <p>{{ o.buyer.name }} е {{ form_label(profile) }} од општина {{ municipality_label(profile) }}, основано во {{ profile.answers.founded }} година{% if profile.nace_code %}, со главна дејност {{ profile.nace_code }}{% endif %}.</p>
       <p>Со проектот „{{ profile.answers.description or 'опис на проектот' }}“ фирмата планира инвестиција во: {{ purpose_words or 'опишете ја инвестицијата' }}. {{ unfilled('два до три реда за тоа кој проблем го решава проектот и за кого') }}</p>
       <p>Очекувани резултати: {{ unfilled('мерливи резултати, на пример нови производи, вработувања или заштеда') }}</p>
       <p>{% set purpose = call.criteria|selectattr('kind', 'equalto', 'narrative_verify')|first %}Проектот е во согласност со намената на повикот наведена во {{ purpose.clause if purpose else 'текстот на повикот' }}. {{ unfilled('објаснување зошто, со ваши зборови') }}</p>

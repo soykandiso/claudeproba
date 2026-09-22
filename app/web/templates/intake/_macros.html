@@ -1,0 +1,80 @@
+{# One macro per kind of question in app/matching/intake.py. Import with:
+   {% import "intake/_macros.html" as f with context %} #}
+
+{% macro label(q) %}
+<label for="{{ q.key }}">{{ q.label_mk }}{% if not q.required %} <span class="optional">(по избор)</span>{% endif %}</label>
+{% endmacro %}
+
+{% macro hint(q) %}{% if q.hint_mk %}<span class="hint" id="{{ q.key }}-hint">{{ q.hint_mk }}</span>{% endif %}{% endmacro %}
+
+{% macro error(errors, key) %}{% if errors.get(key) %}<span class="field-error" id="{{ key }}-error">{{ errors[key] }}</span>{% endif %}{% endmacro %}
+
+{# aria-describedby carries the hint as well as the error: a screen reader should hear
+   "the code is in the Централен регистар decision" before it hears that the code is wrong. #}
+{% macro described(q, errors) %}
+{%- set ids = [] -%}
+{%- if errors.get(q.key) %}{% set _ = ids.append(q.key ~ '-error') %}{% endif -%}
+{%- if q.hint_mk %}{% set _ = ids.append(q.key ~ '-hint') %}{% endif -%}
+{%- if errors.get(q.key) %} aria-invalid="true"{% endif -%}
+{%- if ids %} aria-describedby="{{ ids|join(' ') }}"{% endif -%}
+{% endmacro %}
+
+{% macro select(q, a, errors) %}
+<select class="select" id="{{ q.key }}" name="{{ q.key }}" {{ described(q, errors) }}>
+  <option value="">{% if q.required %}Изберете{% else %}Не е важно за мене{% endif %}</option>
+  {% for value, text in q.options %}
+  <option value="{{ value }}" {% if value == a.get(q.key) %}selected{% endif %}>{{ text }}</option>
+  {% endfor %}
+  {% for group, rows in q.groups %}
+  <optgroup label="{{ group }}">
+    {% for value, text in rows %}
+    <option value="{{ value }}" {% if value == a.get(q.key) %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </optgroup>
+  {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro number(q, a, errors, maxlength, pattern) %}
+<span class="measured">
+  <input class="input" id="{{ q.key }}" name="{{ q.key }}" inputmode="numeric" pattern="{{ pattern }}"
+         maxlength="{{ maxlength }}" value="{{ a.get(q.key, '') }}" {{ described(q, errors) }}>
+  {% if q.suffix_mk %}<span class="measured__suffix" aria-hidden="true">{{ q.suffix_mk }}</span>{% endif %}
+</span>
+{% endmacro %}
+
+{% macro checkboxes(q, a) %}
+<div class="choices">
+  {% for value, text in q.options %}
+  <label class="choice">
+    <input type="checkbox" name="{{ q.key }}" value="{{ value }}" {% if value in a.get(q.key, []) %}checked{% endif %}>
+    {{ text|capitalize }}
+  </label>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{# The activity field is not here: it is a partial of its own (intake/_activity.html),
+   because HTMX swaps it whole when a search result is picked. #}
+{% macro field(q, a, errors) %}
+{% if q.kind == 'checkboxes' %}
+<fieldset class="field">
+  <legend>{{ q.label_mk }}{% if not q.required %} <span class="optional">(по избор)</span>{% endif %}</legend>
+  {{ checkboxes(q, a) }}
+  {{ hint(q) }}
+</fieldset>
+{% else %}
+<div class="field">
+  {{ label(q) }}
+  {% if q.kind == 'select' %}{{ select(q, a, errors) }}
+  {% elif q.kind == 'year' %}{{ number(q, a, errors, 4, '[0-9]{4}') }}
+  {% elif q.kind == 'percent' %}{{ number(q, a, errors, 5, '[0-9]{1,3}([.,][0-9]+)?') }}
+  {% elif q.kind == 'number' %}{{ number(q, a, errors, 3, '[0-9]{1,3}') }}
+  {% else %}
+  <textarea class="textarea" id="{{ q.key }}" name="{{ q.key }}" maxlength="300" {{ described(q, errors) }}>{{ a.get(q.key, '') }}</textarea>
+  {% endif %}
+  {{ hint(q) }}
+  {{ error(errors, q.key) }}
+</div>
+{% endif %}
+{% endmacro %}

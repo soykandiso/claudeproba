@@ -79,11 +79,16 @@ each feature to its session. The demo was tried and approved on 16.09.2026; P1 c
 > went to s22, the one P2 row that needs nothing from anybody: reference data is either correct or
 > it is not. It is also the row s23's intake form cannot start without. s21 remains next as soon as
 > a price and a domain exist.
+>
+> **And then s23, same day, asked for and chosen by the user** over deciding D1/D2 first. It is the
+> second row that costs nothing either way: whatever the demand test says, a company has to be able
+> to describe itself, and the form is what the landing page of s21 would send people to. **s21 is
+> still the next row**, and the warning below still stands — do not build s24 onwards before it.
 
 | # | Task | Acceptance |
 |---|------|-----------|
 | 22 | Reference data (NACE, municipalities, regions) + `normalise()` — *built 22.09.2026 out of order (s21 still blocked on D1/D2): imported from the statistical office's own archives into `data/`, with the two systematic defects in the published workbook repaired and recorded (`data/README.md`)* | 30 fixture intakes normalise correctly; reference data is versioned files, not production rows |
-| 23 | Intake form in Macedonian, HTMX, mobile-first | A real person completes it in **under 3 minutes**, timed |
+| 23 | Intake form in Macedonian, HTMX, mobile-first — *built 22.09.2026: `/profil` over `app/matching/intake.py`; eleven questions, four of them required; the activity picker searches the 1000-row classification over HTMX and degrades to a typed code without JavaScript. `/demo/profil` now renders the same form and runs the real stage 0, so the demo's own thirteen municipalities and its own `normalise` are gone* | A real person completes it in **under 3 minutes**, timed — **not yet proven**: the page measures and reports the time, and the user has to run it once |
 | 24 | Stage 1: SQL filter + rule interpreter — *also: a call whose eligibility lives in a document not yet extracted (EU call-document PDFs, `sources.md` §6.6) never reaches `eligible`* | Unit tests for all 9 operators; missing profile data yields `needs_verification`, never `not_eligible` |
 | 25 | Evaluation harness tier A skeleton + 10 generated boundary profiles | Harness runs in CI (red, with no cases yet) |
 | 26 | **Your session: mark expected verdicts for ~40 cases** | Cases committed with a one-line reason each. Highest-value evening in P2 |

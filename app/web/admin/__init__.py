@@ -13,7 +13,6 @@ the day a login puts a cookie in front of them.
 
 import datetime as dt
 import re
-import secrets
 import uuid
 from zoneinfo import ZoneInfo
 
@@ -25,7 +24,6 @@ from flask import (
     redirect,
     render_template,
     request,
-    session,
     url_for,
 )
 from markupsafe import Markup
@@ -36,6 +34,7 @@ from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
 from app.models.enums import CriterionKind, ReviewState
 from app.review import extraction as review
+from app.web import csrf
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -122,23 +121,7 @@ def _sessions():
     return session_factory(_settings())
 
 
-def csrf_token() -> str:
-    if "csrf" not in session:
-        session["csrf"] = secrets.token_urlsafe(32)
-    return session["csrf"]
-
-
-@bp.before_request
-def _check_csrf():
-    if request.method == "POST":
-        sent = request.form.get("csrf", "")
-        if not sent or not secrets.compare_digest(sent, session.get("csrf", "")):
-            abort(400, "CSRF token missing or wrong; reload the page and try again")
-
-
-@bp.app_context_processor
-def _globals():
-    return {"csrf_token": csrf_token}
+csrf.protect(bp)
 
 
 @bp.app_template_filter("date_mk")

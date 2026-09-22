@@ -11,12 +11,12 @@
     <h2 id="profile-h">Профил на фирмата</h2>
     {% if profile %}
     <dl class="facts facts--wide">
-      <div><dt>Вид на субјект</dt><dd>{{ profile.form_label }}</dd></div>
+      <div><dt>Вид на субјект</dt><dd>{{ form_label(profile) }}</dd></div>
       <div><dt>Дејност</dt><dd>{{ profile.answers.nace or 'не е внесена' }}</dd></div>
-      <div><dt>Општина</dt><dd>{{ profile.municipality }}</dd></div>
+      <div><dt>Општина</dt><dd>{{ municipality_label(profile) }}</dd></div>
       <div><dt>Основана</dt><dd>{{ profile.answers.founded }}</dd></div>
-      <div><dt>Вработени</dt><dd>{{ profile.employees_label }}</dd></div>
-      <div><dt>Инвестиција</dt><dd>{{ profile.amount_label }}</dd></div>
+      <div><dt>Вработени</dt><dd>{{ employees_label(profile) }}</dd></div>
+      <div><dt>Инвестиција</dt><dd>{{ amount_label(profile) or 'не е внесена' }}</dd></div>
     </dl>
     <div class="actions">
       <a class="btn btn--quiet" href="{{ url_for('demo.intake') }}">Измени го профилот</a>

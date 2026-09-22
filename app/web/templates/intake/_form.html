@@ -1,0 +1,42 @@
+{# The intake form itself, without a page around it: /profil renders it inside the
+   site shell and /demo/profil inside the demo shell. The caller sets `action`.
+
+   One form in one place is the point of P2 s23 — the demo used to keep its own. #}
+{% import "intake/_macros.html" as f with context %}
+
+<div class="report-head stack">
+  <h1>Профил на фирмата</h1>
+  <p class="soft">Четири одговори се доволни за листа. Сè друго е по избор и ја стеснува листата.
+    Одговорите служат само за да се споредат со условите на отворените повици.</p>
+</div>
+
+{% if errors %}
+<div class="notice" role="alert" tabindex="-1" id="form-errors">
+  <p><strong>Профилот не е зачуван.</strong>
+    {{ errors|length }} {{ 'поле треба' if errors|length == 1 else 'полиња треба' }} да се поправи.
+    Пораката е под секое поле.</p>
+</div>
+{% endif %}
+
+<form class="form stack-lg" method="post" action="{{ action }}" novalidate>
+  {# The CSRF token comes from the blueprint that checks it (app/web/csrf.py). /demo
+     does not check one: it is registered outside production and its forms write
+     nothing but the visitor's own session cookie. #}
+  {% if csrf_token is defined %}<input type="hidden" name="csrf" value="{{ csrf_token() }}">{% endif %}
+
+  {% for title, rows in sections %}
+  <div>
+    <h2>{{ title }}</h2>
+    {% for q in rows %}
+      {% if q.kind == 'activity' %}{% include "intake/_activity.html" %}{% else %}{{ f.field(q, a, errors) }}{% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <p class="privacy-note">Назив, ЕМБС и контакт ги бараме дури ако нарачате извештај.
+    Во автоматската анализа никогаш не се праќаат податоци по кои може да се препознае фирмата.</p>
+
+  <div class="actions">
+    <button class="btn" type="submit">{{ submit_label }}</button>
+  </div>
+</form>

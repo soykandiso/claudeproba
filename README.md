@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 22** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 23** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -20,13 +20,16 @@ bounding box: the `%` that model cannot write, and the Albanian half of a biling
 read at all (`docs/sources.md` §6.10–6.11). Matching now begins: the activity classification, the
 eighty municipalities and the eight planning regions are versioned files in [`data/`](data/README.md),
 imported from the statistical office, and stage 0 turns an intake into the profile the rules read
-(`app/matching/normalise.py`). See [`docs/roadmap.md`](docs/roadmap.md).
+(`app/matching/normalise.py`). The first customer screen is live: the intake form at `/profil`, in
+Macedonian, mobile first, four required answers and an activity picker that searches the whole
+classification over HTMX (`app/matching/intake.py`, `app/web/intake/`).
+See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
 database: profile, cited shortlist, report, order and proforma invoice, human review in an admin
 queue, document package draft and monitoring alerts. The stage-1 rule interpreter
-(`app/matching/hard_filter.py`), the verdict taxonomy and the banned-phrase lint are real code; the
-rest is simulated. `/demo/vodic` lists, feature by feature, what is real and which session makes the
+(`app/matching/hard_filter.py`), the verdict taxonomy, the banned-phrase lint and — since 22.09.2026
+— the intake form and stage 0 are real code; the rest is simulated. `/demo/vodic` lists, feature by feature, what is real and which session makes the
 rest real. `/demo` is never registered in production.
 
 ```bash

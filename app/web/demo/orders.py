@@ -4,6 +4,7 @@ import re
 
 from flask import abort, redirect, render_template, request, url_for
 
+from app.matching.normalise import normalise
 from app.web.demo import bp, engine, store
 from app.web.demo.data import PURPOSES
 
@@ -100,7 +101,7 @@ def order_pay(no: int):
 def delivered_match(o: dict):
     """The match as it was for the profile saved with the order, not the current one."""
     call = store.find_call(o["slug"])
-    return engine.match(call, engine.normalise(o["profile"]))
+    return engine.match(call, normalise(o["profile"]))
 
 
 @bp.get("/naracki/<int:no>/izvestaj")
@@ -110,7 +111,7 @@ def order_report(no: int):
         abort(404)
     m = delivered_match(o)
     return render_template(
-        "demo/report.html", m=m, profile=engine.normalise(o["profile"]), order=o,
+        "demo/report.html", m=m, profile=normalise(o["profile"]), order=o,
         review=store.review(f"order:{no}"), sample_profile=False,
     )  # fmt: skip
 
@@ -125,7 +126,7 @@ def order_package(no: int):
         "demo/package.html",
         m=m,
         o=o,
-        profile=engine.normalise(o["profile"]),
+        profile=normalise(o["profile"]),
         review=store.review(f"order:{no}"),
         purpose_words=", ".join(PURPOSES[p] for p in o["profile"].get("inv", [])),
     )

@@ -31,10 +31,13 @@ def create_app(settings: Settings | None = None) -> Flask:
     app.config["TEMPLATES_AUTO_RELOAD"] = not settings.is_production
 
     from app.web.health import bp as health_bp
+    from app.web.intake import bp as intake_bp
     from app.web.public import bp as public_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(public_bp)
+    # The intake form is a real customer screen and is registered everywhere.
+    app.register_blueprint(intake_bp)
 
     # Invented calls and citations; must never be reachable in production.
     if not settings.is_production:

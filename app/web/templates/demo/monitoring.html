@@ -32,7 +32,7 @@
   <section class="stack-lg" aria-labelledby="sub-h">
     <div class="stack">
       <h2 id="sub-h">Следењето е вклучено</h2>
-      <p class="soft">Од {{ sub.since|mkdate }}, {{ 'неделен преглед во понеделник' if sub.frequency == 'weekly' else 'известување веднаш по објавата' }}. Профил: {{ profile.form_label }}{% if profile.nace_code %}, {{ profile.nace_code }}{% endif %}, {{ profile.municipality }}.</p>
+      <p class="soft">Од {{ sub.since|mkdate }}, {{ 'неделен преглед во понеделник' if sub.frequency == 'weekly' else 'известување веднаш по објавата' }}. Профил: {{ form_label(profile) }}{% if profile.nace_code %}, {{ profile.nace_code }}{% endif %}, {{ municipality_label(profile) }}.</p>
     </div>
     <form method="post"><input type="hidden" name="action" value="cancel"><button class="btn btn--quiet" type="submit">Откажи следење</button></form>
   </section>
