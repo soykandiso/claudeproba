@@ -123,6 +123,10 @@ cases:
     answers: {entity: tp, employees: "2-9"}
     expect: {entity_types: [micro, sole_trader], size_band: micro}
 
+  - name: a registered craftsman is a craftsman and a size band, never a sole trader
+    answers: {entity: craft, employees: "0-1"}
+    expect: {entity_types: [craftsman, micro], size_band: micro}
+
   - name: a farm is a farm, and no size band is claimed for it
     answers: {entity: farm, employees: "2-9"}
     expect: {entity_types: [farm], size_band: null}

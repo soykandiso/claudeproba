@@ -206,6 +206,16 @@ def test_the_sql_overlaps_on_the_denormalised_columns(registry, column, value, k
         assert bool(stage1.candidates(s, profile(), NOW)) is kept
 
 
+@pytest.mark.parametrize("allowed,kept", [(["craftsman"], True), (["sole_trader"], False)])
+def test_a_craftsman_reaches_the_sql_as_a_value_the_database_knows(registry, allowed, kept):
+    """The profile's types are cast to the column's enum: a value missing from the
+    migration would not filter wrongly, it would fail every search a craftsman runs."""
+    factory, source, snapshot = registry
+    with factory() as s:
+        make_call(s, source, snapshot, allowed_entity_types=allowed)
+        assert bool(stage1.candidates(s, profile(entity="craft"), NOW)) is kept
+
+
 @pytest.mark.parametrize(
     "bounds,kept",
     [

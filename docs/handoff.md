@@ -4,8 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s26 — the 41 expected verdicts, marked with the user in
-one walk-through. Before it: stage 1 at scale, the OCR page image, the stale-text warning and P2
+**Last updated:** 22.09.2026, after the craftsman entity form (out of order, found by s26). Before
+it: P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
 s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
@@ -27,7 +27,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 41 marked cases: the gate is green** (0 false eligible, 0 false exclusion, 3 over-claimed, 14 under-decided). **The next P2 row is s27, scoring** — technically unblocked, but it is the row the roadmap names as the point where building before the demand test (s21) stops costing nothing. Ask the user before starting it; the over-claim in §8 is a candidate that does not depend on s21 |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **The next P2 row is s27, scoring** — technically unblocked, but it is the row the roadmap names as the point where building before the demand test (s21) stops costing nothing. Ask the user before starting it; the over-claim in §8 is a candidate that does not depend on s21 |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -41,6 +41,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | Craftsman form | `git log --grep 'craftsman'` | Out of order, the first §8 item s26 found. `EntityType.CRAFTSMAN` (hand-written migration `1b093080ae25` — autogenerate cannot see a new enum value), «Занаетчија» on `/profil`, sized like a sole trader under the EU SME definition. **The extraction prompt was deliberately not changed** (`decisions.md`): Skopje's call is also for permit holders, so `entity_type in [craftsman]` would be a false exclusion by rule. New boundary profile **p11**, p07 with only the form changed; the user accepted its four verdicts. `run.py --worksheet` now appends rows for a new profile to a marked file instead of skipping the file. Gate green at 45 cases; p11's Economy and Skopje rows are under-decided, which is the measurement of what a prompt version would buy. Checked at 375/768/1440 |
 | 22.09 | P2 s26 | `git log --grep 'session 26'` | **The expected verdicts**, marked by the user: I read the five calls in full, drafted a verdict and a Macedonian reason for each of the 41 rows, and the user accepted every one and two conventions, now written in `evals/README.md` — the truth is what an expert would say from the answers and the call's text (not what the system can do), and `not_shown` is for location only. 9 likely_eligible, 18 needs_verification, 7 not_eligible, 7 not_shown; no `eligible`, because every call but the notice has an attestation outstanding. **The gate is green**: 22 exact, 0 false eligible, 0 false exclusion. **What it found**: 3 over-claims, all on AV — `likely_eligible` for p03 (≤ 5 months old) and p07/p08 (0–1 employees), whose own answers put the six-month employee attestation in doubt (§8); 7 Skopje rows where geography would say `not_shown` and the rules can only say `needs_verification` — the measurement the geography decision was waiting for (§8). The report now names over-claimed cases instead of counting them. Also found reading the calls, all in §8: the intake has no *занаетчија* form, the frozen Economy criteria miss four conditions, and the suite's clock predates the AV call |
 | 22.09 | Stage 1 at scale | `git log --grep 'bench'` | Out of roadmap order, closing a §8 unknown rather than guessing at s28. `ops/dev/bench_stage1.py` writes a synthetic registry in a rolled-back transaction (two thirds national, every call with criteria), times each step and prints the planner's own account. **The array clauses are not the bottleneck** — 66 ms of SQL over 20.000 open calls, and a seq scan is correct because while most calls are national every profile matches most rows. **The cost is per candidate**: 2 s of it is loading their criteria. `stage1.run` is 26 ms at 200 open calls, 274 ms at 2.000 and 3,3 s at 20.000, so the three-second budget breaks somewhere above 2.000 and the fix is to rank before judging (s28), not an index. Noted for later: the planner estimates 9 rows where 13.311 match |
 | 22.09 | OCR page image | `git log --grep 'page image'` | Out of roadmap order, the other half of **D9 rule 1**: an OCR'd quote is now shown with the scanned page underneath it on the review item. `render_page` in `normalise/pdf.py` (pdftoppm, 110 dpi, colour — a stamp and a date are what the reviewer is looking for) and `/admin/dokument/<snapshot>/strana/<page>`, rendered on demand from the content-addressed bytes and never stored, with an ETag so a page is fetched once. **Only OCR and mixed text gets an image**: a photograph of a document that already gave us its characters proves nothing and would make the mark meaningless. The page number comes from `page_of` over the form feeds, so the reviewer gets the page the quote is actually on. ~200 KB and ~0.4 s per page, lazy-loaded; PNG not JPEG, because artefacts on small Cyrillic are the one thing this image must not add. Checked at 375/768/1440 over the real Skopje scan |
@@ -135,6 +136,10 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   (bit s15 after the dev DB held real calls).
 - **A backgrounded `pytest … | tail` always exits 0**: read the summary line for `failed`, never
   the exit code.
+- **Run the full suite to a log file**: `uv run pytest -p no:cacheprovider -rfE > log 2>&1; echo
+  exit=$?`, then read the last line (`671 passed, 3 xfailed` on 22.09). `addopts = "-q"` already, so
+  an extra `-q` or `-rN` hides the summary, and filtering the output with `grep -v` can hide a
+  `FAILED` line — both happened on 22.09 and nearly let a drift test's failure through.
 - The full suite takes several minutes (retrieval paraphrase tests embed with the local model): run it
   with `run_in_background` and wait on the notification.
 - CLI outside cron: `uv run flask --app "app:create_app()" ingest <command>`. Scripts that import
@@ -333,11 +338,11 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   verdict is `not_shown` and stage 1 says `needs_verification`. This is the evaluation run the
   geography decision (below) was waiting for; filling `allowed_regions` should turn exactly those
   seven, and the gate will say if it turns anything else.
-- **The intake has no *занаетчија* (registered craftsman) form.** Two of five frozen calls turn on
-  it: Skopje's is for craftsmen and craft-permit holders only, and Economy exempts them from its
-  manufacturing and two-employee conditions. p07/p08 had to be a *трговец поединец*, and their
-  verdicts say "the profile does not say whether they hold a craft permit". One entity form, one
-  question, and a boundary profile — worth doing before s28 shows these calls to anyone.
+- **A craftsman is in the profile but in no rule.** The form exists since 22.09 (`decisions.md`),
+  but `prompts/extract_call/2026-09-13.1.md` does not list `craftsman`, so p11's Economy and Skopje
+  rows stay under-decided. The next prompt version should add it **together with** a craft-permit
+  question on the intake — alone it would exclude permit-holding companies from Skopje's call by
+  rule. Not asked yet: whether a company or sole trader holds a craft permit (p07/p08's verdicts).
 - **The frozen Economy criteria are incomplete**: the call text also excludes anyone subsidised by
   the ministry in 2024 or 2025, exempts craftsmen and craft-permit holders from the sector and
   headcount conditions (§2.2 of the call), lowers the headcount to one for a woman-owned company,

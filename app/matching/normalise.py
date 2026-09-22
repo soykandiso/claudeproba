@@ -53,6 +53,7 @@ ENTITY_FORMS = {
     "doo": "ДОО",
     "ad": "АД",
     "tp": "Трговец поединец",
+    "craft": "Занаетчија",
     "farm": "Земјоделско стопанство",
     "ngo": "Здружение на граѓани",
 }
@@ -96,11 +97,17 @@ SME_BANDS = (
 # small companies, and an association or a farm is neither excluded nor included
 # by that sentence. Erring the other way would exclude them silently, which is
 # the failure this codebase is built to avoid (docs/matching.md §3).
+#
+# A craftsman is sized: the EU definition counts "self-employed persons and family
+# businesses engaged in craft" as enterprises whatever their legal form
+# (Recommendation 2003/361/EC, Annex, Art. 1), and the Economy ministry's call for
+# "микро, мали и средни претпријатија и занаетчии" is written on that footing.
 FORM_TYPES: dict[str, tuple[frozenset[EntityType], bool]] = {
     "dooel": (frozenset(), True),
     "doo": (frozenset(), True),
     "ad": (frozenset(), True),
     "tp": (frozenset({EntityType.SOLE_TRADER}), True),
+    "craft": (frozenset({EntityType.CRAFTSMAN}), True),
     "farm": (frozenset({EntityType.FARM}), False),
     "ngo": (frozenset({EntityType.NGO}), False),
 }

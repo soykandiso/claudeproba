@@ -456,6 +456,30 @@ again, which is a deliberate job with its own session.
 is three snapshots — the s20 IPARD run and one Skopje document — with nothing published on them.
 **P2 s29 must not write verdicts from a snapshot this command still lists.**
 
+### A registered craftsman is an entity type, and extraction does not know it yet (22.09.2026)
+
+s26 found two of the five evaluation calls turning on a legal form the intake could not express: a
+*занаетчија* registered under the Закон за занаетчиство is neither a trading company nor a sole
+trader. `EntityType.CRAFTSMAN` (migration `1b093080ae25`), the form «Занаетчија» on `/profil`, and a
+boundary profile p11 that differs from p07 in nothing else.
+
+**Sized, like a sole trader.** A craftsman also gets a size band. The EU SME definition counts
+"self-employed persons and family businesses engaged in craft" as enterprises whatever their form
+(Recommendation 2003/361/EC, Annex Art. 1), and the Economy ministry's call is written on that
+footing. The other way would let a call's `in [micro, small, medium]` exclude a craftsman by rule.
+
+**The extraction prompt is not changed.** `prompts/extract_call/2026-09-13.1.md` still lists the
+entity values without `craftsman`, so no model can write a criterion on it. That is deliberate:
+Skopje's call is for craftsmen *and* holders of a craft permit, who may be companies or sole
+traders; an extracted `entity_type in [craftsman]` would exclude those by rule, a false exclusion
+invariant 1 would let through because it is a rule. Adding it needs a new prompt version, a
+permit question on the intake, and the tier B run of P2 s29 behind it. A reviewer can already
+write such a criterion by hand in `/admin`, and should not for that reason.
+
+**Not asked**: whether a company or sole trader holds a craft permit (*вршител на занаетчиска
+дејност*). It is what p07/p08's verdicts turn on, but every question costs the three-minute
+intake; it waits until a rule or a verification step reads the answer.
+
 ---
 
 ## Summary — what to decide, and by when

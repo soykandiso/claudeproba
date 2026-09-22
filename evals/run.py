@@ -4,8 +4,8 @@
     PYTHONPATH=. uv run python evals/run.py --worksheet  # the case files to fill in
 
 Exit code 0 means the gate passed and this code may be deployed; 1 means it did
-not. **It is 1 today, on purpose**: there are no expected verdicts yet, and an
-empty suite proves nothing (roadmap P2 s25 → s26).
+not. An empty suite is 1 on purpose — it proves nothing — and the 41 cases marked
+in P2 s26 are what made it 0.
 
 The suite runs inside a transaction that is rolled back, over the development
 database, and it refuses to touch a production one: `load_registry` deletes the
@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 from textwrap import wrap
 
+import yaml
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -39,6 +40,15 @@ def quote_words(quote: str) -> str:
     return f"„{said}“"
 
 
+def profile_rows(key: str, case_profile, as_of) -> list[str]:
+    """One blank row, with the applicant's answers above it as comments."""
+    profile = case_profile.profile(as_of)
+    lines = [f"  # {case_profile.name}"]
+    for label, value in intake.describe(profile):
+        lines.append(f"  #   {label}: {value if value else '—'}")
+    return lines + [f"  - profile: {key}", "    expect:", '    reason: ""', ""]
+
+
 def worksheet() -> int:
     """Write the case files for the user's evening (roadmap P2 s26).
 
@@ -47,6 +57,10 @@ def worksheet() -> int:
     system's own verdict is deliberately **not** shown. The whole value of these
     forty lines is that they were written by someone reading the call, and a
     number already on the page is the fastest way to stop reading.
+
+    A file that already exists is never rewritten — it holds a person's judgement.
+    A profile added since gets its blank row appended at the end, and nothing else
+    in the file is touched.
     """
     suite = harness.load_suite()
     profiles, fixtures = harness.load_profiles(), harness.load_fixtures()
@@ -57,9 +71,23 @@ def worksheet() -> int:
         fixture = fixtures[slug]
         keys = list(profiles) if roster == "all" else list(roster)
         path = harness.CASES / f"{slug}.yaml"
-        existing = harness.load_cases(profiles, {slug: fixture})[0] if path.exists() else []
-        if existing:
-            print(f"{path.name}: {len(existing)} answered row(s) already — left alone")
+        if path.exists():
+            present = {
+                row.get("profile")
+                for row in (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("cases")
+                or []
+            }
+            missing = [key for key in keys if key not in present]
+            if missing:
+                rows = [
+                    line
+                    for key in missing
+                    for line in profile_rows(key, profiles[key], suite["as_of"])
+                ]
+                text = path.read_text(encoding="utf-8").rstrip("\n") + "\n\n"
+                path.write_text(text + "\n".join(rows).rstrip() + "\n", encoding="utf-8")
+            print(f"{path.name}: {len(missing)} new row(s) appended, the rest left alone")
+            written += len(missing)
             continue
 
         # dd.mm.yyyy, like everything else a person reads here (CLAUDE.md).
@@ -92,12 +120,7 @@ def worksheet() -> int:
             "cases:",
         ]
         for key in keys:
-            case_profile = profiles[key]
-            profile = case_profile.profile(suite["as_of"])
-            lines.append(f"  # {case_profile.name}")
-            for label, value in intake.describe(profile):
-                lines.append(f"  #   {label}: {value if value else '—'}")
-            lines += [f"  - profile: {key}", "    expect:", '    reason: ""', ""]
+            lines += profile_rows(key, profiles[key], suite["as_of"])
         path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
         print(f"{path.name}: {len(keys)} row(s) to fill in")
         written += len(keys)

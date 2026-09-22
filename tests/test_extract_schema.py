@@ -183,8 +183,12 @@ def test_the_prompt_names_exactly_the_vocabulary_the_schema_enforces():
         assert table[field] == set(spec.operators), field
     assert set(Operator) == set().union(*table.values())
     entity_line = next(line for line in text.splitlines() if line.startswith("| `entity_type`"))
+    # Held back on purpose (docs/decisions.md, 22.09.2026): an extracted
+    # `in [craftsman]` would exclude craft-permit holders by rule. The next prompt
+    # version adds it together with the permit question, and moves it out of here.
+    not_yet_in_prompt = {EntityType.CRAFTSMAN}
     for entity in EntityType:
-        assert entity in entity_line
+        assert (entity in entity_line) is (entity not in not_yet_in_prompt), entity
     assert ProfileField.INVESTMENT_SIZE_MKD in text
 
 

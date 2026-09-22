@@ -94,6 +94,7 @@ CREATE TYPE public.criterion_kind AS ENUM (
 
 CREATE TYPE public.entity_type AS ENUM (
     'sole_trader',
+    'craftsman',
     'micro',
     'small',
     'medium',

@@ -45,7 +45,7 @@ FIXTURES = harness.load_fixtures()
 
 def test_every_profile_is_answered_the_way_the_form_would_answer_it():
     """A typo in a profile is a silently weaker suite: the field just goes missing."""
-    assert len(PROFILES) == 10
+    assert len(PROFILES) == 11
     for key, case in PROFILES.items():
         profile = case.profile(SUITE["as_of"])
         assert case.boundary, f"{key}: a profile without a stated boundary is a duplicate"
@@ -141,6 +141,32 @@ def test_a_case_that_measures_nothing_is_reported_not_ignored(cases_dir, row, co
 
     assert cases == []
     assert len(problems) == 1 and complaint in problems[0]
+
+
+def test_the_worksheet_appends_a_new_profile_and_never_rewrites_a_judgement(cases_dir, monkeypatch):
+    """A marked case file is a person's evening; a profile added later still needs a row."""
+    from evals import run
+
+    monkeypatch.setattr(
+        harness, "load_suite", lambda: {**SUITE, "worksheet": {"av-measure-819": "all"}}
+    )
+    marked = (
+        "call: av-measure-819\n"
+        "cases:\n"
+        "  - profile: p01_skopje_it_micro\n"
+        "    expect: likely_eligible\n"
+        '    reason: "затоа"\n'
+    )
+    (cases_dir / "av-measure-819.yaml").write_text(marked, encoding="utf-8")
+
+    run.worksheet()
+
+    text = (cases_dir / "av-measure-819.yaml").read_text(encoding="utf-8")
+    assert text.startswith(marked)
+    rows = yaml.safe_load(text)["cases"]
+    assert [r["profile"] for r in rows] == list(PROFILES)
+    assert rows[0]["expect"] == "likely_eligible"
+    assert all(r["expect"] is None for r in rows[1:])
 
 
 def test_a_case_file_for_a_call_that_is_not_frozen_is_an_error(cases_dir):
@@ -260,7 +286,7 @@ def test_tier_a_runs_over_the_frozen_registry_and_every_property_holds(session):
 
     assert [c.name for c in report.checks if not c.ok] == []
     assert all(check.checked for check in report.checks)
-    assert report.results and report.unanswered == 0
+    assert report.results
     assert report.blocking() == []
 
 

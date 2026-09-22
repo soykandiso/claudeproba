@@ -9,7 +9,8 @@ PYTHONPATH=. uv run python evals/run.py --worksheet  # write the blank case file
 ```
 
 **It passes since P2 s26 (22.09.2026)**, when the 41 expected verdicts were marked: 0 false
-eligible, 0 false exclusion, 3 over-claimed (named in the report), 14 under-decided. Before that it
+eligible, 0 false exclusion, 3 over-claimed (named in the report), 14 under-decided. A profile added
+later (p11, the same evening) gets its rows from `--worksheet`, appended to each marked file. Before that it
 exited 1 on purpose — an empty suite proves nothing — and P2 s27 still must not tune a weight
 without reading this report first: weights tuned without a measurement are tuned by vibes, and the
 third adjustment cannot be told from the first.

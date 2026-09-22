@@ -17,6 +17,9 @@ class Lang(enum.StrEnum):
 
 class EntityType(enum.StrEnum):
     SOLE_TRADER = "sole_trader"
+    # A registered craftsman (Закон за занаетчиство), not a trading company: a
+    # form of its own, and the one calls for crafts are written for.
+    CRAFTSMAN = "craftsman"
     MICRO = "micro"
     SMALL = "small"
     MEDIUM = "medium"
