@@ -356,8 +356,11 @@ each clause is there, is in `decisions.md` D9.
   call, so ~1.4× for this pass alone. Unchanged documents are still never re-read (content hash).
 - **Only new snapshots get this.** Normalised text is written once and never recomputed (property 3
   in `normalise/__init__.py`), so anything ingested before the bump still holds the wrong numbers.
-  There is no re-normalisation path; the affected documents are IPARD's, and they are re-fetched when
-  their content hash changes.
+  There is still no re-normalisation path, and an unchanged document is never fetched again — so
+  since 22.09 the versions carry their repair history (`REPAIRS` in `normalise/__init__.py`): the
+  review item warns, per document, that its text predates this fix, and `flask ingest stale-text`
+  lists every snapshot in that state with what cites it. The remedy stays delete-and-re-fetch
+  (`decisions.md`, "Decided in code"; `runbook.md` §5).
 
 ### 6.11 The Albanian half, read — 21.09.2026 (out of roadmap order, D9)
 

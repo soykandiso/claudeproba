@@ -47,6 +47,19 @@
       Овој повик нема да биде прикажан како „Можете да аплицирате“ ниту по одобрувањето.</p>
     {% endif %}
 
+    {% if stale_text %}
+    {# The text these quotes index into was written by an older normaliser and is never
+       rewritten (app/review/extraction.py stale_text_notices). The citation check cannot
+       see this: the quote is verbatim against our text, which is itself wrong. #}
+    <div class="notice stack" role="note">
+      <p><strong>Текстот е прочитан со постара верзија.</strong></p>
+      {% for notice in stale_text %}
+      <p>Прочитан со <span class="id id--14 id--keep">{{ notice.version }}</span>, сега <span class="id id--14 id--keep">{{ notice.current }}</span>. {{ notice.text }}</p>
+      <p class="small break"><a href="{{ notice.url }}" rel="noopener noreferrer" target="_blank">{{ notice.url }}</a></p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     {% if pending and not superseded_by %}
     <details class="why"{% if open_form == 'call' %} open{% endif %}>
       <summary>Измени наслов или рок</summary>

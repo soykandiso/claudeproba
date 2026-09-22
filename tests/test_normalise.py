@@ -16,12 +16,15 @@ import pytest
 from pypdf import PdfReader, PdfWriter
 
 from app.ingestion.normalise import (
+    NORMALISER_VERSION,
     PAGE_BREAK,
     NormaliseError,
     UnsupportedFormat,
     find_quote,
+    missing_repairs,
     normalise,
     page_of,
+    version_of,
 )
 from app.ingestion.normalise.html import normalise_html
 from app.ingestion.normalise.pdf import (
@@ -483,3 +486,39 @@ def test_a_language_model_that_is_not_installed_is_skipped(monkeypatch):
 
     assert TesseractOcr(foreign_pass="sqi")._foreign is None
     assert TesseractOcr(foreign_pass="eng")._foreign == "eng"
+
+
+# -- what a stored text predates ---------------------------------------------------------
+#
+# Normalised text is written once and never rewritten, so text from before a repair
+# keeps what that version got wrong. These are the questions the reviewer's warning
+# and `flask ingest stale-text` both rest on (docs/sources.md §6.10, §6.11).
+
+
+def test_the_ocr_engine_is_not_part_of_the_version():
+    assert version_of("2026-09-21.2+tesseract-5.3.4-mkd-300dpi") == "2026-09-21.2"
+    assert version_of("2026-09-21.2") == "2026-09-21.2"
+    assert version_of(None) is None and version_of("") is None
+
+
+@pytest.mark.parametrize(
+    "version,source,missing",
+    [
+        ("2026-09-13.1", TextSource.OCR, ["percent", "foreign"]),
+        ("2026-09-21.1", TextSource.OCR, ["foreign"]),
+        ("2026-09-21.1+tesseract-5.3.4", TextSource.MIXED, ["foreign"]),
+        ("2026-09-21.2", TextSource.OCR, []),
+        (NORMALISER_VERSION, TextSource.MIXED, []),
+        # Both repairs are OCR-only: a text layer was never at risk from either.
+        ("2026-09-13.1", TextSource.NATIVE, []),
+        # An unknown version is old, because it certainly is.
+        (None, TextSource.OCR, ["percent", "foreign"]),
+    ],
+)
+def test_which_repairs_a_stored_text_predates(version, source, missing):
+    assert missing_repairs(version, source) == missing
+
+
+def test_a_two_digit_revision_is_newer_than_a_one_digit_one():
+    """String order would put `.10` before `.2` and silently stop warning."""
+    assert missing_repairs("2026-09-21.10", TextSource.OCR) == []

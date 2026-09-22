@@ -15,6 +15,7 @@ from sqlalchemy import select
 from app import create_app
 from app.config import load_settings
 from app.ingestion import pipeline
+from app.ingestion.normalise import NORMALISER_VERSION
 from app.matching.hard_filter import Stored, prefilter_columns
 from app.matching.operators import Operator, ProfileField
 from app.models import Call, EligibilityCriterion, RawSnapshot, ReviewQueueItem
@@ -473,3 +474,84 @@ def test_ocr_text_is_marked_on_each_quote_and_a_doubtful_read_is_not_called_unre
 
     assert READ_WITH_DOUBT in admin.get("/admin/").get_data(as_text=True)
     assert READ_WITH_DOUBT in admin.get(f"/admin/stavka/{doubt_id}").get_data(as_text=True)
+
+
+# -- text an older normaliser wrote -------------------------------------------------------
+
+
+def age_the_text(sessions, written, version="2026-09-13.1+tesseract-5.3.4", source=None):  # noqa: F811
+    from app.models.enums import TextSource
+
+    with sessions() as s:
+        call = s.get(Call, written.call_id)
+        snapshot = s.get(RawSnapshot, call.primary_snapshot_id)
+        snapshot.normaliser_version = version
+        snapshot.text_source = TextSource.OCR if source is None else source
+        s.commit()
+        return snapshot.url
+
+
+@pytest.mark.usefixtures("store")
+def test_a_document_read_before_the_repairs_is_flagged_to_the_reviewer(sessions, written):  # noqa: F811
+    """The citation check cannot see this: the quote is verbatim against wrong text."""
+    url = age_the_text(sessions, written)
+
+    with sessions() as s:
+        [notice] = review.stale_text_notices(s, s.get(Call, written.call_id))
+
+    assert notice.url == url
+    assert notice.version == "2026-09-13.1" and notice.current == NORMALISER_VERSION
+    assert "755" in notice.text and "не се на македонски" in notice.text  # both repairs
+    assert "Проверете го цитатот" in notice.text
+
+
+@pytest.mark.usefixtures("store")
+def test_only_the_repairs_the_text_predates_are_named(sessions, written):  # noqa: F811
+    age_the_text(sessions, written, version="2026-09-21.1+tesseract-5.3.4")
+
+    with sessions() as s:
+        [notice] = review.stale_text_notices(s, s.get(Call, written.call_id))
+
+    assert "755" not in notice.text  # the percent repair is already in this text
+    assert "не се на македонски" in notice.text
+
+
+@pytest.mark.usefixtures("store")
+def test_current_text_raises_no_notice(sessions, written):  # noqa: F811
+    with sessions() as s:
+        assert review.stale_text_notices(s, s.get(Call, written.call_id)) == []
+
+
+@pytest.mark.usefixtures("store")
+def test_old_text_with_a_layer_raises_no_notice(sessions, written):  # noqa: F811
+    """Both repairs are OCR-only. Warning about a DOCX would train the reviewer to skim."""
+    from app.models.enums import TextSource
+
+    age_the_text(sessions, written, source=TextSource.NATIVE)
+
+    with sessions() as s:
+        assert review.stale_text_notices(s, s.get(Call, written.call_id)) == []
+
+
+@pytest.mark.usefixtures("store")
+def test_the_warning_does_not_block_approval(sessions, written):  # noqa: F811
+    """A block the reviewer cannot clear teaches them to stop reading the notices.
+
+    There is no re-normalisation path: the remedy is to delete the snapshot and
+    re-fetch, which is `flask ingest stale-text` and its own decision.
+    """
+    age_the_text(sessions, written)
+
+    with sessions() as s:
+        item = s.get(ReviewQueueItem, written.review_item_id)
+        assert review.approval_problems(s, item) == []
+
+
+@pytest.mark.usefixtures("store")
+def test_the_reviewer_sees_the_warning_on_the_item(admin, sessions, written):  # noqa: F811
+    age_the_text(sessions, written)
+
+    html = admin.get(f"/admin/stavka/{written.review_item_id}").get_data(as_text=True)
+
+    assert "Текстот е прочитан со постара верзија." in html
+    assert "Прифати и објави</button>" in html  # still approvable

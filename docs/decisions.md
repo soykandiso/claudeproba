@@ -428,6 +428,28 @@ deploy on a non-zero exit, which is what "blocks deploy" in §8 has meant all al
 Actions workflow running tier A alone is twenty lines the day the user wants one; the fixtures,
 the thresholds and the exit code are already in place for it.
 
+### Old normalised text warns the reviewer; it does not block, and nothing rewrites it (22.09.2026)
+
+Snapshots read before 21.09.2026 keep the missing percent signs and the garbled Albanian for ever:
+normalised text is written once (evidence cites it by offset) and an unchanged document is never
+fetched again (content hash). The citation check cannot see the problem — the quote *is* verbatim
+against our text, which is itself wrong.
+
+**What was built:** the review item now says which of its documents were read by an older version
+and what to distrust in them, and `flask ingest stale-text` lists every such snapshot with the
+criteria and published calls that cite it.
+
+**What was deliberately not built.** Blocking approval: most quotes out of an old document are
+correct, and a block the reviewer cannot clear — there is no re-normalisation path and a re-fetch of
+unchanged bytes finds the same row — would only teach them to stop reading notices. And
+re-normalisation in place: it moves every offset that cites the text, so every criterion on the call
+would silently stop matching. The remedy is to delete the snapshot and let it be fetched and read
+again, which is a deliberate job with its own session.
+
+**Before launch:** run `flask ingest stale-text` and clear it. In the development database today it
+is three snapshots — the s20 IPARD run and one Skopje document — with nothing published on them.
+**P2 s29 must not write verdicts from a snapshot this command still lists.**
+
 ---
 
 ## Summary — what to decide, and by when

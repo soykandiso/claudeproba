@@ -4,7 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s25 (the evaluation harness). s22–s25 were all taken out of
+**Last updated:** 22.09.2026, after the stale-text warning (out of roadmap order, while s26
+waits for the user). Before it, P2 s25 (the evaluation harness). s22–s25 were all taken out of
 order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
 decide D1/D2 first.
 
@@ -39,6 +40,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | Stale text | `git log --grep 'stale text'` | Out of roadmap order: s26 is the user's own evening and nothing else in P2 may go first. Closed the §8 hole "nothing warns a reviewer": `app/ingestion/normalise` now remembers **which repair each version brought** (`REPAIRS`, `missing_repairs`), `/admin` says on the item which documents were read by an older version and what to distrust in them, and `flask ingest stale-text` lists every such snapshot with the criteria and published calls that cite it. Three decisions. **It warns, it does not block** — most quotes out of an old document are right, there is no re-normalisation path, and a block the reviewer cannot clear teaches them to skim notices. **Nothing is rewritten in place**: re-normalising moves every offset that cites the text, so the remedy is delete-and-re-fetch, its own deliberate job. **Only OCR text is at risk** — both repairs were OCR-only, so a DOCX read in September raises nothing. In the dev database the command finds three snapshots (the s20 IPARD run and one Skopje document) with nothing published on them |
 | 22.09 | P2 s25 | `git log --grep 'session 25'` | The evaluation harness, tier A. `evals/` holds five real calls frozen with their document and their approved criteria (`ops/dev/freeze_eval_fixtures.py`, from the captured documents and the extraction cassettes), ten boundary profiles as intake answers, `suite.yaml` (one clock — 01.06.2026 — and the gate's thresholds), `harness.py` and `run.py`. **Tier A loads the frozen calls into PostgreSQL in a rolled-back transaction**: stage 1a is SQL, and a harness that simulated the registry would measure a different program. Three things it settled. **The harness is worth running before anyone marks a case**: four properties hold over every profile × call with no expected verdicts at all — quotes verbatim at their offsets, stage 1a discarding only what the rules would exclude anyway, nothing but a rule excluding anyone, and no call with an unread document ever rising above `needs_verification`. **An expected verdict may be `not_shown`**, and for the gate that counts as an exclusion: a call silently missing from the shortlist is worse for the customer than one listed with a reason. **Being less certain than the truth is not a failure** — expected `eligible`, produced `needs_verification` is reported as under-decided and gated by nothing, because it is the distance s27 and s29 have to close. CI stays a command, not a hosted service (`decisions.md`, "Decided in code"). Acceptance: the gate runs and is red for exactly one reason — no cases yet — and 24 tests prove each property can fail. Also fixed, found by the worksheet: `intake.entity_label` no longer says "Земјоделско стопанство, земјоделско стопанство" |
 | 22.09 | P2 s24 | `git log --grep 'session 24'` | Stage 1 over the registry. `app/matching/stage1.py`: `candidates()` is the SQL on the denormalised columns, `judge()` the interpreter over **approved** criteria only, `run()` both. Three things it settled. **A predicate the profile cannot answer is not applied at all** — no activity means no NACE clause, not an overlap against an empty array; filtering on a blank is the easiest way to break invariant 3 where no test would look. **An age band is filtered permissively and judged conservatively**: 1a keeps a call if any month in the range could pass, 1b answers unclear where it straddles — 1a may only throw away what 1b would certainly exclude. **`narrative_verify` and `documentary` are not decided at all** until s29, so most calls are `needs_verification` today; that is honest, not a placeholder. New column **`call.eligibility_gap`** (migration `3adfce186d77`) closes the EU hole in `sources.md` §6.6: the fetcher sets it on every topic, the reviewer sees it on `/admin`, and such a call can never be `eligible` or `likely_eligible` — but `not_eligible` still stands, because an unread document adds conditions, never removes one. **Geography stays out of the rule vocabulary** (the decision s24 owed, `matching.md` §3); 1a's region clause is written and tested so filling the column is the only work left. Acceptance: 42 tests, including the whole path fetch → extract → human approval → stage 1 with nothing hand-built |
 | 22.09 | P2 s23 | `git log --grep 'session 23'` | The intake form. `app/matching/intake.py` is the one questionnaire — eleven questions, their Macedonian wording, the validation, and the labels that say a profile back; `app/web/intake/` renders it at `/profil` and `/profil/pregled`. **Only four answers are required** (form, municipality, founding year, headcount): everything else is skippable because a missing answer is *unclear*, not an exclusion, and the acceptance is a three-minute completion. **The one loud failure is an activity we cannot resolve** — everything else degrades quietly, but a discarded НКД code has to be said. The picker searches all 1000 classes over HTMX and needs no JavaScript to work (a typed code resolves). **The demo's own 13 municipalities and its own `normalise` are gone**: `/demo/profil` includes the same partial and the real stage 0, and the `/demo/vodic` row is now `real`. CSRF moved to `app/web/csrf.py`, shared with `/admin`. Left open: **the timed run is the user's to do** — the review page reports the seconds it took, but nobody has run it yet; and the profile lives in the session cookie, not a row (`decisions.md`, "Decided in code") |
@@ -270,16 +272,17 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   banded profile is compared to them is s24's to get right.
 - **Removing an approved criterion** is refused once match outcomes reference it (the FK cascades into
   delivered reports). A proper "retire" needs a column; decide when P2 writes outcomes.
-- **Snapshots normalised before 21.09.2026 hold the wrong rates and the garbled Albanian.** The `%` fix is live
-  (`sources.md` §6.10) but normalised text is written once and never recomputed, and an unchanged
-  document is never re-fetched (content hash), so a document ingested under `2026-09-13.1` keeps
-  "755" forever. **There is no re-normalisation path and nothing warns a reviewer** that an old
-  snapshot predates the fix — `raw_snapshot.normaliser_version` is the only way to tell. In the dev DB
-  that is the s20 IPARD run. Nothing has reached a customer, so the cheap answer is to delete those
-  snapshots before launch rather than build a migration; decide it before P2 s29 writes verdicts from
-  them. The two 21.09 fixes are separate bumps -- `2026-09-21.1` restored `%` only, `2026-09-21.2`
-  added the Albanian blocks -- so `normaliser_version == 2026-09-21.2` is the test for "read by the
-  current normaliser". Nothing was ingested under `.1`.
+- **Snapshots normalised before 21.09.2026 still hold the wrong rates and the garbled Albanian.**
+  Normalised text is written once and an unchanged document is never re-fetched, so this does not
+  heal on its own. **What exists now** (22.09): `flask ingest stale-text` lists every such snapshot
+  with what cites it and exits non-zero if a published call does, and `/admin` warns the reviewer on
+  the item, per document, what to distrust. **What does not exist**: any way to re-read them.
+  Clearing `normalised_text` moves every offset citing it, so the remedy is to delete the snapshot
+  and let the next run fetch it again — a deliberate job with its own session. In the dev DB it is
+  three snapshots, nothing published on them. **P2 s29 must not write verdicts from a snapshot the
+  command still lists**, and the decision is recorded (`decisions.md`, "Decided in code").
+  `normaliser_version == 2026-09-21.2` is still the test for "read by the current normaliser";
+  nothing was ingested under `.1`.
 - **IPARD 02/2024** was never given a ranking on the site, so it stays in scope; the pipeline closes
   it from its extracted deadline, a reviewer rejects it. Notice-only calls stay ANNOUNCED until rejected.
 - **D9 rule 1 is only half built**: the admin marks OCR quotes and links the document, but does not

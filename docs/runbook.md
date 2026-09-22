@@ -232,6 +232,24 @@ unreadable document) has nothing to publish. Read why, and close it with a reaso
 is not sent to the model again until it changes at the source; if the model was wrong, the fix is a
 prompt change (a new version file and an evaluation run), not a retry.
 
+**„Текстот е прочитан со постара верзија"** on an item means what it says: that document's text was
+written by a normaliser older than the OCR repairs of 21.09.2026, and normalised text is never
+rewritten. The quote you are reading can be verbatim against our text and still not be what the
+paper says — a rate may have lost its `%` (`sources.md` §6.10) and a non-Macedonian passage may be
+noise (§6.11). It does not block approval, because most quotes out of such a document are fine and
+there is no re-normalisation path; **open the original document and compare before you approve.**
+
+To see every document in this state and what still cites it:
+
+```
+docker compose exec web flask ingest stale-text
+```
+
+It changes nothing. It exits non-zero if a *published* call cites one, which is the case to fix
+first. The fix is to delete the snapshot and let the next run fetch and read it again — that moves
+every offset citing it, so it is its own deliberate job, not something to do on a weeknight between
+approvals.
+
 Every edit and every reason is kept on the item (`corrected_payload`, `reviewer_note`); P2 s34 turns
 them into evaluation cases.
 

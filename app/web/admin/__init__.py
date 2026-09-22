@@ -302,6 +302,7 @@ def _render_item(db, item, *, error: str | None = None, open_form: str | None = 
             days_left=_days_left(call.deadline_at),
             deadline_local=call.deadline_at.astimezone(_tz()) if call.deadline_at else None,
             problems=review.approval_problems(db, item) if stage == review.APPROVE_CALL else [],
+            stale_text=review.stale_text_notices(db, call),
             superseded_by=review.superseded_by(db, item),
         )
     elif stage == review.NORMALISE and payload.get("snapshot_id"):

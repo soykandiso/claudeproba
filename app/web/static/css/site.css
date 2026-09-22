@@ -293,6 +293,9 @@ fieldset.field legend + * { clear: both; }
 .legend--column { flex-direction: column; }
 .label-heading { font: 500 var(--text-14)/1.4 var(--font-body); }
 .id--14 { font-size: var(--text-14); }
+/* A short identifier inside a sentence: broken across lines it stops being one.
+   Only for identifiers that always fit a phone line, never a reference code. */
+.id--keep { white-space: nowrap; }
 .id--20 { font-size: var(--text-20); }
 .break { overflow-wrap: anywhere; }
 .criterion__title { font-size: var(--text-20); font-family: var(--font-display); font-weight: 600; line-height: 1.3; }

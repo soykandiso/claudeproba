@@ -24,6 +24,50 @@ from app.models.enums import TextSource
 NORMALISER_VERSION = "2026-09-21.2"  # OCR restores "%" and reads non-Macedonian blocks
 # 2026-09-21.1 restored "%" only (pdf.restore_percents); .2 added pdf.restore_foreign_blocks.
 
+# Property 3 above has a cost: text written by an older version keeps whatever that
+# version got wrong, for ever, and an unchanged document is never fetched again. So
+# the repairs have to be remembered — a reviewer approving a quote out of old OCR
+# text is the last person who can catch it (docs/sources.md §6.10, §6.11).
+REPAIRS: tuple[tuple[str, str], ...] = (
+    # (the version that fixed it, what the text may be missing without it)
+    ("2026-09-21.1", "percent"),  # `mkd` cannot write "%", so a rate read as "755"
+    ("2026-09-21.2", "foreign"),  # `mkd` cannot read Albanian, so a bilingual page is noise
+)
+
+
+def version_of(stored: str | None) -> str | None:
+    """The normaliser version out of `raw_snapshot.normaliser_version`.
+
+    Stored as `2026-09-21.2+tesseract-5.3.4` when OCR ran, so the engine is dropped.
+    """
+    if not stored:
+        return None
+    return stored.split("+", 1)[0].strip() or None
+
+
+def _sortable(version: str) -> tuple:
+    """`2026-09-21.10` is newer than `2026-09-21.2`, which string order gets wrong."""
+    date, _, ordinal = version.partition(".")
+    try:
+        return (date, int(ordinal or 0))
+    except ValueError:
+        return (date, 0)
+
+
+def missing_repairs(normaliser_version: str | None, text_source: TextSource | None) -> list[str]:
+    """Which known repairs this stored text predates. Empty means it is current.
+
+    Both repairs so far are OCR-only, so text with a layer is never at risk; an
+    unknown version is treated as old, because it certainly is.
+    """
+    if text_source not in (TextSource.OCR, TextSource.MIXED):
+        return []
+    version = version_of(normaliser_version)
+    if version is None:
+        return [name for _, name in REPAIRS]
+    return [name for fixed_in, name in REPAIRS if _sortable(version) < _sortable(fixed_in)]
+
+
 PAGE_BREAK = "\f"
 
 

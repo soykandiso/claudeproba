@@ -14,13 +14,14 @@ from app.heartbeat import ping
 from app.ingestion.extract import Document, extract_call
 from app.ingestion.fetcher import CrawlContext, Fetcher, run_fetcher
 from app.ingestion.health import run_health_check
+from app.ingestion.normalise import NORMALISER_VERSION, missing_repairs
 from app.ingestion.normalise.pdf import TesseractOcr
 from app.ingestion.normalise.snapshot import normalise_snapshot, pending_snapshots
 from app.ingestion.pipeline import ERROR, UNCHANGED, due_sources, run_source
 from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers, manual
-from app.models import RawSnapshot, SourceFeed
+from app.models import Call, EligibilityCriterion, RawSnapshot, SourceFeed
 from app.retrieval.embedder import LocalEmbedder
 from app.retrieval.index import index_pending
 
@@ -252,6 +253,73 @@ def normalise_command(snapshot_id, limit):
             click.echo(f"snapshot {outcome.snapshot_id}: {outcome.detail}{flag}")
     if not snapshots:
         click.echo("nothing to normalise")
+
+
+@ingest.command(
+    "stale-text",
+    help="Snapshots whose text predates a normaliser repair, and what still cites them.",
+)
+def stale_text_command():
+    """What is still being read out of text an older normaliser wrote.
+
+    Normalised text is written once and an unchanged document is never fetched
+    again, so a snapshot read before 21.09.2026 keeps the missing percent signs and
+    the garbled Albanian for ever (`docs/sources.md` §6.10, §6.11). The citation
+    check cannot see it — the quote is verbatim against text that is itself wrong —
+    so this is the inventory of what has to be deleted and re-fetched before launch.
+
+    Nothing is changed here. Clearing a snapshot's text moves every offset that
+    cites it, so it is its own decision and its own session.
+    """
+    settings = _settings()
+    published_ids = []
+    with session_factory(settings)() as session:
+        rows = session.scalars(
+            select(RawSnapshot)
+            .where(RawSnapshot.normalised_text.is_not(None))
+            .order_by(RawSnapshot.id)
+        )
+        affected = [
+            (snapshot, missing)
+            for snapshot in rows
+            if (missing := missing_repairs(snapshot.normaliser_version, snapshot.text_source))
+        ]
+        if not affected:
+            click.echo(f"every stored text is current ({NORMALISER_VERSION})")
+            return
+        for snapshot, missing in affected:
+            criteria = list(
+                session.scalars(
+                    select(EligibilityCriterion).where(
+                        EligibilityCriterion.snapshot_id == snapshot.id
+                    )
+                )
+            )
+            approved = [c for c in criteria if c.is_approved]
+            calls = {c.call_id for c in criteria}
+            published = session.scalars(
+                select(Call.id).where(Call.id.in_(calls), Call.is_published.is_(True))
+            ).all()
+            published_ids.extend(published)
+            click.echo(
+                f"snapshot {snapshot.id}: {snapshot.normaliser_version} "
+                f"({snapshot.text_source}), missing {', '.join(missing)}"
+            )
+            click.echo(f"    {snapshot.url}")
+            click.echo(
+                f"    {len(criteria)} criteria ({len(approved)} approved) on "
+                f"{len(calls)} call(s), {len(published)} of them published"
+            )
+    click.echo(
+        f"\n{len(affected)} snapshot(s) predate {NORMALISER_VERSION}."
+        " Delete and re-fetch before launch; nothing re-normalises in place.",
+        err=True,
+    )
+    if published_ids:
+        # A published call built on text known to be wrong is the case this command
+        # exists to make impossible to forget.
+        click.echo(f"{len(set(published_ids))} published call(s) cite one", err=True)
+        sys.exit(1)
 
 
 @ingest.command(

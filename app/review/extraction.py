@@ -40,7 +40,12 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.ai.schemas import ExtractedCriterion
-from app.ingestion.normalise import find_quote
+from app.ingestion.normalise import (
+    NORMALISER_VERSION,
+    find_quote,
+    missing_repairs,
+    version_of,
+)
 from app.matching.hard_filter import Stored, prefilter_columns
 from app.matching.operators import FIELDS, LIST_OPERATORS, Operator, ProfileField
 from app.models import (
@@ -154,6 +159,68 @@ def citation_holds(criterion: EligibilityCriterion, snapshot: RawSnapshot | None
         and snapshot.normalised_text[criterion.quote_start : criterion.quote_end]
         == criterion.source_quote
     )
+
+
+# What a reader of this text may be looking at, per repair it predates
+# (app/ingestion/normalise/__init__.py REPAIRS, docs/sources.md §6.10 and §6.11).
+STALE_TEXT = {
+    "percent": (
+        "процентите може да недостасуваат — стапка напишана како „7,55 %“ во документот "
+        "стои како „755“ во текстот подолу"
+    ),
+    "foreign": (
+        "деловите што не се на македонски се прочитани со погрешен јазик, па може да се "
+        "цитирани како бесмислица"
+    ),
+}
+
+
+@dataclass(frozen=True)
+class StaleText:
+    """One document of a call whose text predates a repair, and what to distrust in it.
+
+    The version numbers stay their own fields rather than being glued into the
+    sentence: they are identifiers a reader compares, which the design system sets
+    apart and does not break across lines.
+    """
+
+    url: str
+    version: str
+    current: str
+    text: str
+
+
+def stale_text_notices(session: Session, call: Call) -> list[StaleText]:
+    """Documents of this call whose text predates a repair the normaliser has since had.
+
+    Normalised text is written once and never rewritten (property 3 of
+    `app/ingestion/normalise`), and an unchanged document is never fetched again
+    (content hash), so a document read before 21.09.2026 keeps what that version got
+    wrong — for ever, and invisibly: the quote is verbatim against *our* text and the
+    citation check therefore holds. The reviewer is the only person left who can
+    catch it, so they are told, by document, what to distrust.
+
+    This warns rather than blocks on purpose. Most quotes out of an old document are
+    perfectly correct, there is no re-normalisation path today, and a block a
+    reviewer cannot clear would only teach them to stop reading the notices
+    (`docs/decisions.md`, "Decided in code").
+    """
+    notices = []
+    for snapshot in call_documents(session, call):
+        missing = missing_repairs(snapshot.normaliser_version, snapshot.text_source)
+        if not missing:
+            continue
+        version = version_of(snapshot.normaliser_version) or "непозната верзија"
+        notices.append(
+            StaleText(
+                url=snapshot.url,
+                version=version,
+                current=NORMALISER_VERSION,
+                text="; ".join(STALE_TEXT[name] for name in missing).capitalize()
+                + ". Проверете го цитатот во оригиналниот документ пред да одобрите.",
+            )
+        )
+    return notices
 
 
 def approval_problems(session: Session, item: ReviewQueueItem) -> list[str]:
