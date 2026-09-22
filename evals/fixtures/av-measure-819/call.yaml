@@ -1,0 +1,49 @@
+# Frozen by ops/dev/freeze_eval_fixtures.py from tests/fixtures and
+# tests/cassettes/extract_call. Do not hand-edit: re-run the script.
+slug: av-measure-819
+shape: 'мерка за вработување: еден структуриран услов и две изјави'
+title_mk: Јавен повик до работодавачите за вклучување во мерката 4. Практикантство
+institution: Агенција за вработување на РСМ
+canonical_url: https://av.gov.mk/oglasi-za-aktivni-merki.nspx
+reference_code: null
+status: open
+published_at: 2026-08-05
+deadline_at: 2026-08-21 23:59:59+02:00
+eligibility_gap: null
+document:
+  path: document.txt
+  sha256: b0c2b2800492edd1ce512efa82b9ddb0cb781ef5af5193d79e50bedbb5fd3c61
+  characters: 2270
+  text_source: native
+criteria:
+- kind: hard_structured
+  label_mk: Работодавачи од приватен или граѓански сектор
+  field: entity_type
+  operator: not_in
+  value_json:
+    values:
+    - municipality
+  confidence: 0.75
+  quote: се од приватен и од граѓански сектор;
+  quote_start: 723
+  quote_end: 760
+- kind: applicant_attest
+  label_mk: Најмалку едно вработено лице на неопределено време, 6 месеци пред аплицирањето
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.9
+  quote: имаат најмалку едно вработено лице на неопределено време, најмалку 6 (шест) месеци пред аплицирањето,
+    со исклучок на граѓанските организации
+  quote_start: 762
+  quote_end: 902
+- kind: applicant_attest
+  label_mk: Подмирени обврски за плати и придонеси
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.95
+  quote: ги имаат подмирено сите обврски врз основа на исплатени плати и придонеси од задолжително социјално
+    осигурување.
+  quote_start: 991
+  quote_end: 1103

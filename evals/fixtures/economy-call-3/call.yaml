@@ -1,0 +1,115 @@
+# Frozen by ops/dev/freeze_eval_fixtures.py from tests/fixtures and
+# tests/cassettes/extract_call. Do not hand-edit: re-run the script.
+slug: economy-call-3
+shape: 'грант за ММСП: возраст и големина како правила, дејноста како текст'
+title_mk: Јавен повик за финансиска поддршка на микро, мали и средни претпријатија и занаетчии
+institution: Министерство за економија и труд
+canonical_url: https://www.economy.gov.mk/mk-MK/javni-objavi/javni-oglasi/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii
+reference_code: null
+status: open
+published_at: null
+deadline_at: 2026-06-30 23:59:59+02:00
+eligibility_gap: null
+document:
+  path: document.txt
+  sha256: 8a54484daa11400a96da5cef06aafc18fbaf71a0aa57dd42eb9eace1b8df46dc
+  characters: 10279
+  text_source: native
+criteria:
+- kind: hard_structured
+  label_mk: Најмалку 12 месеци работење пред објавувањето на повикот
+  field: age_months
+  operator: gte
+  value_json:
+    min: 12.0
+  confidence: 0.9
+  quote: Работење во траење од најмалку 12 (дванаесет) месеци пред објавувањето на јавниот повик;
+  quote_start: 2755
+  quote_end: 2843
+- kind: hard_structured
+  label_mk: Големи претпријатија немаат право на учество
+  field: entity_type
+  operator: not_in
+  value_json:
+    values:
+    - large
+  confidence: 0.8
+  quote: Микро, мали и средни претпријатија со мнозински домашен капитал (над 50%)
+  quote_start: 2310
+  quote_end: 2383
+- kind: applicant_attest
+  label_mk: Мнозински домашен капитал (над 50%)
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.85
+  quote: Микро, мали и средни претпријатија со мнозински домашен капитал (над 50%)
+  quote_start: 2310
+  quote_end: 2383
+- kind: applicant_attest
+  label_mk: Активен субјект без стечајна постапка или ликвидација
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.95
+  quote: Имаат статус на активен деловен субјект над кој не е покрената стечајна постапка или ликвидација;
+  quote_start: 2657
+  quote_end: 2754
+- kind: applicant_attest
+  label_mk: Позитивен финансиски резултат во 2025 година
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.95
+  quote: Имаат остварено позитивен финансиски резултат во 2025 година;
+  quote_start: 2844
+  quote_end: 2905
+- kind: applicant_attest
+  label_mk: Помош од мало значење под 300.000 евра во последните три фискални години
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.9
+  quote: Не го надминале максималниот дозволен износ од 300.000 евра на вкупно добиена помош за период
+    од три последни фискални години
+  quote_start: 3303
+  quote_end: 3428
+- kind: narrative_verify
+  label_mk: 'За претпријатија: претежна дејност во Преработувачка индустрија (10-33.20)'
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.85
+  quote: Вршат претежна дејност наведена во Тековната состојба од ЦРРСМ, која спаѓа во секторот C/B -
+    Преработувачка индустрија (10-33.20)
+  quote_start: 3833
+  quote_end: 3962
+- kind: narrative_verify
+  label_mk: 'За претпријатија: најмалку 2 вработени на неопределено време'
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.85
+  quote: Имаат минимум 2 (двајца) вработени на неопределено работно време, пред датумот на објавување
+    на јавниот повик.
+  quote_start: 4025
+  quote_end: 4135
+- kind: documentary
+  label_mk: Образец „Барање – ММСП/З 2026“
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.95
+  quote: Пополнет Образец „Барање – ММСП/З 2026“
+  quote_start: 5397
+  quote_end: 5436
+- kind: documentary
+  label_mk: Уверение од УЈП за платени даноци и придонеси, не постаро од 6 месеци
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.95
+  quote: Уверение за состојба на даноци, придонеси и други јавни приходи и давачки од Управата за јавни
+    приходи на Република Северна Македонија, не постаро од 6 (шест) месеци;
+  quote_start: 6222
+  quote_end: 6388

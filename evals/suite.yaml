@@ -1,0 +1,29 @@
+# The tier A suite: the clock it runs on, and what blocks a deploy.
+# The thresholds are docs/matching.md §8 ("Metrics and the deploy gate") in a file
+# the harness can read; change them there and here together, never only here.
+
+# One fixed date, because a harness that answers differently on Tuesday measures
+# nothing. 01.06.2026 is the day on which all four applicable calls are still open
+# by their own deadlines (30.06, 21.08, 01.10 and 30.11.2026); the fifth fixture is
+# an advance notice and is not open on any date.
+as_of: 2026-06-01
+
+gate:
+  # A false eligible costs a customer money on an application they could never
+  # win. It is the one number with no tolerance at all (CLAUDE.md).
+  false_eligible_max: 0
+  # A false exclusion costs one missed opportunity. Bad, not fatal.
+  false_exclusion_rate_max: 0.02
+  # Stage 1 over the whole open registry, per profile (brief §12: 3 seconds).
+  median_latency_warn_ms: 3000
+  median_latency_block_ms: 5000
+
+# Which profiles each frozen call is worth asking about, for `run.py --worksheet`.
+# `all` is the ten profiles; an advance notice has the same answer for everybody,
+# so it costs one line of the user's evening instead of ten.
+worksheet:
+  av-measure-819: all
+  economy-call-3: all
+  eu-digital-2026-skills-10-edtech: all
+  skopje-call-12149: all
+  ipard-notice-03-2025: [p09_strumica_farm]

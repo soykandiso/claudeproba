@@ -148,9 +148,7 @@ class CallOutcome:
 
 
 FIELD_NOTE = {
-    ProfileField.ENTITY_TYPE: lambda p: ", ".join(
-        x for x in (intake.form_label(p), intake.size_label(p)) if x
-    ),
+    ProfileField.ENTITY_TYPE: lambda p: intake.entity_label(p) or "",
     ProfileField.NACE_CODE: lambda p: f"дејност {p.nace_code}" if p.nace_code else "",
     ProfileField.AGE_MONTHS: lambda p: (
         f"основана {p.answers.get('founded')}" if p.age_months else ""

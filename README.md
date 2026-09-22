@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 24** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 25** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -24,7 +24,13 @@ imported from the statistical office, and stage 0 turns an intake into the profi
 Macedonian, mobile first, four required answers and an activity picker that searches the whole
 classification over HTMX (`app/matching/intake.py`, `app/web/intake/`). Stage 1 then narrows the
 registry in SQL and judges each surviving call with the rule interpreter (`app/matching/stage1.py`);
-a call whose conditions are knowingly not all read can never be shown as eligible.
+a call whose conditions are knowingly not all read can never be shown as eligible. Matching is now
+measured rather than argued about: [`evals/`](evals/README.md) freezes five real calls with their
+documents and their approved criteria, runs ten boundary profiles through the real SQL, and checks
+on every run that every quote is verbatim, that the SQL filter never discards a call the rules would
+keep, that nothing but a rule excluded anyone, and that a call whose documents are knowingly
+incomplete never claims more than "needs verification". The gate is red until the expected verdicts are
+marked — an empty suite proves nothing.
 See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no

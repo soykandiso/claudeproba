@@ -408,6 +408,26 @@ The eleven forms on `/demo` do not, because they were written without one and wr
 visitor's own session cookie. Harmless while `/demo` is registered outside production only — but the
 day any demo form touches the database, protect the blueprint first.
 
+### The evaluation gate is a command, not a hosted CI service (22.09.2026, P2 s25)
+
+`docs/matching.md` §8 says tier A runs "every commit, in CI", and the roadmap row asks for a harness
+that runs in CI. There is no CI in this repository and s25 did not add one. The gate is
+`PYTHONPATH=. uv run python evals/run.py`: exit 0 or 1, run before a deploy and after any change to
+matching.
+
+Three reasons, in order of weight. **Nothing deploys automatically yet** — P0.5 s4 has not happened,
+there is no VPS and no deploy script, so there is no pipeline for a gate to sit in front of.
+**The suite is not cheap to host**: PostgreSQL 16 with pgvector, Tesseract with three language
+packs, and a 2,2 GB embedding model, rebuilt on a runner for a project maintained on weeknights.
+And **a check that is red on every push is a check that gets ignored** — tier A is deliberately red
+until s26 fills in the cases, which is exactly the period in which a hosted red badge would train
+its only reader to stop looking.
+
+**Revisit when a deploy script exists** (P3): that script calls `evals/run.py` and refuses to
+deploy on a non-zero exit, which is what "blocks deploy" in §8 has meant all along. A GitHub
+Actions workflow running tier A alone is twenty lines the day the user wants one; the fixtures,
+the thresholds and the exit code are already in place for it.
+
 ---
 
 ## Summary — what to decide, and by when

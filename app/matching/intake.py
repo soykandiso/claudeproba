@@ -232,6 +232,19 @@ def size_label(p) -> str | None:
     )
 
 
+def entity_label(p) -> str | None:
+    """The form and the size band in one phrase, without saying the same word twice.
+
+    A ДООЕЛ is a micro enterprise: two different facts, and both are worth showing.
+    A земјоделско стопанство is only itself — its form *is* its class — so joining
+    the two blindly reads "Земјоделско стопанство, земјоделско стопанство".
+    """
+    form, size = form_label(p), size_label(p)
+    if size and form and size.casefold() == form.casefold():
+        size = None
+    return ", ".join(x for x in (form, size) if x) or None
+
+
 def band_label(bands: dict[str, Band], p, key: str) -> str | None:
     band = bands.get(p.answers.get(key, ""))
     return band.label_mk if band else None
@@ -283,7 +296,7 @@ def describe(p) -> list[tuple[str, str | None]]:
         founded = p.answers.get("founded")
         age = f"{int(p.age_months.lo)}–{int(p.age_months.hi)} месеци, основана {founded}"
     return [
-        ("Вид на субјект", ", ".join(x for x in (form_label(p), size_label(p)) if x) or None),
+        ("Вид на субјект", entity_label(p)),
         ("Дејност", f"{p.nace.code} {p.nace.name_mk}" if p.nace else None),
         ("Седиште", seat_label(p)),
         ("Старост", age),

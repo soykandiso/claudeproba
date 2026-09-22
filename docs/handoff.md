@@ -4,9 +4,9 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s24 (stage 1 over the registry). s22, s23 and s24 were all
-taken out of order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2
-rather than decide D1/D2 first.
+**Last updated:** 22.09.2026, after P2 s25 (the evaluation harness). s22–s25 were all taken out of
+order because P1 s21 is still blocked on D1 and D2; the user chose to carry on down P2 rather than
+decide D1/D2 first.
 
 ---
 
@@ -25,20 +25,21 @@ rather than decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22, s23 and s24 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen. The demo now renders the same form and runs the same stage 0. `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3 for calls whose conditions are not all read. **Next P2 row is s25 (evaluation harness skeleton), then s26, the user's own evening of marking ~40 expected verdicts.** s26 cannot be done by anyone else, and s27's scoring should not be built before it. Ask the user: decide D1/D2 and do the demand test, or do s25 and then sit down with s26 |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and 41 blank case rows. **The next P2 row is s26 — the user's own evening, and nobody else can do it.** Open `evals/cases/*.yaml`, write a verdict and one sentence per row. s27's scoring must not be built before it |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
-back negative**. s22, s23 and s24 are the rows that cost nothing either way: correct reference data,
-a form a company can describe itself in, and a filter that cannot silently exclude anyone are worth
-having whatever the answer is. **s27 is where that stops being true** — scoring weights are tuned to
-a product the demand test may reshape. s25 and s26 sit in between: the harness is cheap and s26 is
-the user's own judgement, which is worth having early either way.
+back negative**. s22–s25 are the rows that cost nothing either way: correct reference data, a form a
+company can describe itself in, a filter that cannot silently exclude anyone, and a way to measure
+whether a change made any of it better. **s27 is where that stops being true** — scoring weights are
+tuned to a product the demand test may reshape. s26 sits in between: it is the user's own judgement
+about real calls, which is worth having whatever the demand test says.
 
 ### Session log
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 22.09 | P2 s25 | `git log --grep 'session 25'` | The evaluation harness, tier A. `evals/` holds five real calls frozen with their document and their approved criteria (`ops/dev/freeze_eval_fixtures.py`, from the captured documents and the extraction cassettes), ten boundary profiles as intake answers, `suite.yaml` (one clock — 01.06.2026 — and the gate's thresholds), `harness.py` and `run.py`. **Tier A loads the frozen calls into PostgreSQL in a rolled-back transaction**: stage 1a is SQL, and a harness that simulated the registry would measure a different program. Three things it settled. **The harness is worth running before anyone marks a case**: four properties hold over every profile × call with no expected verdicts at all — quotes verbatim at their offsets, stage 1a discarding only what the rules would exclude anyway, nothing but a rule excluding anyone, and no call with an unread document ever rising above `needs_verification`. **An expected verdict may be `not_shown`**, and for the gate that counts as an exclusion: a call silently missing from the shortlist is worse for the customer than one listed with a reason. **Being less certain than the truth is not a failure** — expected `eligible`, produced `needs_verification` is reported as under-decided and gated by nothing, because it is the distance s27 and s29 have to close. CI stays a command, not a hosted service (`decisions.md`, "Decided in code"). Acceptance: the gate runs and is red for exactly one reason — no cases yet — and 24 tests prove each property can fail. Also fixed, found by the worksheet: `intake.entity_label` no longer says "Земјоделско стопанство, земјоделско стопанство" |
 | 22.09 | P2 s24 | `git log --grep 'session 24'` | Stage 1 over the registry. `app/matching/stage1.py`: `candidates()` is the SQL on the denormalised columns, `judge()` the interpreter over **approved** criteria only, `run()` both. Three things it settled. **A predicate the profile cannot answer is not applied at all** — no activity means no NACE clause, not an overlap against an empty array; filtering on a blank is the easiest way to break invariant 3 where no test would look. **An age band is filtered permissively and judged conservatively**: 1a keeps a call if any month in the range could pass, 1b answers unclear where it straddles — 1a may only throw away what 1b would certainly exclude. **`narrative_verify` and `documentary` are not decided at all** until s29, so most calls are `needs_verification` today; that is honest, not a placeholder. New column **`call.eligibility_gap`** (migration `3adfce186d77`) closes the EU hole in `sources.md` §6.6: the fetcher sets it on every topic, the reviewer sees it on `/admin`, and such a call can never be `eligible` or `likely_eligible` — but `not_eligible` still stands, because an unread document adds conditions, never removes one. **Geography stays out of the rule vocabulary** (the decision s24 owed, `matching.md` §3); 1a's region clause is written and tested so filling the column is the only work left. Acceptance: 42 tests, including the whole path fetch → extract → human approval → stage 1 with nothing hand-built |
 | 22.09 | P2 s23 | `git log --grep 'session 23'` | The intake form. `app/matching/intake.py` is the one questionnaire — eleven questions, their Macedonian wording, the validation, and the labels that say a profile back; `app/web/intake/` renders it at `/profil` and `/profil/pregled`. **Only four answers are required** (form, municipality, founding year, headcount): everything else is skippable because a missing answer is *unclear*, not an exclusion, and the acceptance is a three-minute completion. **The one loud failure is an activity we cannot resolve** — everything else degrades quietly, but a discarded НКД code has to be said. The picker searches all 1000 classes over HTMX and needs no JavaScript to work (a typed code resolves). **The demo's own 13 municipalities and its own `normalise` are gone**: `/demo/profil` includes the same partial and the real stage 0, and the `/demo/vodic` row is now `real`. CSRF moved to `app/web/csrf.py`, shared with `/admin`. Left open: **the timed run is the user's to do** — the review page reports the seconds it took, but nobody has run it yet; and the profile lives in the session cookie, not a row (`decisions.md`, "Decided in code") |
 | 22.09 | P2 s22 | `git log --grep 'session 22'` | Reference data + stage 0. Imported from the statistical office's own archives (`ops/dev/import_reference_data.py`, hash-pinned in `data/reference.yaml`) rather than typed: НКД Рев.2 (1000 rows) and НТЕС 2013 (8 regions, 80 municipalities). **The published workbook has two systematic defects**, both repaired and recorded in `data/README.md`: fourteen division rows carry their first group's code (division 10 typed `10.0`, so `10` did not exist), and Latin `x` stands for Cyrillic `х` in 92 names. **A Macedonian section letter is not the Latin one** (manufacturing is `C`, written `В`) — `resolve_nace` takes either. `normalise()` is total: any dict at all produces a profile, unresolved answers are None, and None is unclear. Acceptance: 36 intakes in `tests/fixtures/intake/profiles.yaml`. Left open: geography is still out of the rule vocabulary (see §8), and the demo still uses its own 13-municipality list |
@@ -72,6 +73,11 @@ the user's own judgement, which is worth having early either way.
   questionnaire (the eleven questions, their validation, and the labels that say a profile back),
   `stage1.py` the SQL candidate filter and the interpreter over a call's approved criteria.
   Scoring (s27) and verification (s29) are still to come.
+- `evals/` — the measurement (P2 s25). `harness.py` loads `profiles/` (ten applicants),
+  `fixtures/` (five frozen calls + their documents) and `cases/` (expected verdicts, empty until
+  s26), writes the frozen registry into PostgreSQL in a rolled-back transaction, runs stage 1 and
+  scores it. `run.py` is the gate (`--worksheet` writes the blank case files). Fixtures are rebuilt
+  by `ops/dev/freeze_eval_fixtures.py`, never hand-edited.
 - `data/` — versioned reference data, rebuilt only by `ops/dev/import_reference_data.py`
   (`uv run --with xlrd …`), provenance and repairs in `data/README.md`.
 - `app/ingestion/sources/economy.py`; `ipard.py` (call page = primary document, stages by file label); `municipal.py` registers one fetcher per `sources.yaml` entry
@@ -98,6 +104,7 @@ the user's own judgement, which is worth having early either way.
 | D10 | EU portal scope — default in code, user to confirm or widen | first EU approvals |
 | D11 | Operator sign-in — recommended SSH tunnel, then magic link at s44 | production admin |
 | D7 | Named Albanian reviewer — **now bites earlier than `sq` shipping** | since 21.09 a model can quote real Albanian into a criterion, and a reviewer who does not read Albanian cannot check it (`sources.md` §6.11) |
+| — | **P2 s26: mark the 41 expected verdicts** in `evals/cases/*.yaml` | the whole evaluation gate, and s27 after it |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
 | — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
 
@@ -178,6 +185,14 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   typing swaps `#nace-results`, picking re-renders the whole `#nace-field` (`outerHTML`), which is
   how the value gets written into the input without a line of script. With JS off it is a text
   input and a typed code still resolves — keep it that way.
+- **The evaluation gate needs the stack up and takes seconds**:
+  `PYTHONPATH=. uv run python evals/run.py`. It deletes every published call — inside a transaction
+  it rolls back — so the frozen fixtures are the whole registry, and it refuses to run against a
+  production database. Exit 1 today is correct (no cases yet).
+- **After a Codespace restart docker can refuse to start a container** with "RWLayer of container …
+  is unexpectedly nil" (seen 22.09.2026). `docker rm -f` the five containers and run `./run.py
+  --detach` again; the data is in named volumes (`grants_postgres-data` and friends), so nothing is
+  lost. This is a different failure from the iptables one below it and the cure is not the same.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
 
 ## 6. How a session is finished
@@ -187,6 +202,9 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
    acceptance of the roadmap row proven by a test whenever it can be.
 3. `uv run ruff check . && uv run ruff format --check .` and the full suite green (the strict
    `xfail`s listed in `KNOWN_MISSES` in `test_retrieval_paraphrase.py` are expected).
+   **Matching touched → also run the gate**, `PYTHONPATH=. uv run python evals/run.py`, and read the
+   properties: they fail before any case does. It exits 1 until s26, so read the report, not the
+   exit code, while that is still true.
 4. UI touched → load the design-system skill first; afterwards the §7 check at 375/768/1440, fix,
    re-check. Keep `/demo/vodic` rows true.
 5. Docs in the same commit: roadmap row marker (*built dd.mm.yyyy: …*), README status line, and
@@ -289,6 +307,20 @@ from the page), inserting `<base href="http://localhost:8080/">`, and screenshot
   reports how many seconds the completion took (the clock starts when the form is first rendered in
   a session), but only the user can run it as a real person would. Do that once before s28 uses the
   profile for anything, and if it is over three minutes the thing to cut is questions, not hints.
+- **The evaluation suite has no expected verdicts** (P2 s26). `evals/cases/` holds 41 blank rows,
+  the gate is red for that one reason, and nothing else in the harness is waiting on anything. Until
+  they are filled in, the accuracy thresholds in `matching.md` §8 measure zero cases — only the
+  three properties are actually being checked. **s27 must not tune a weight before this.**
+- **A frozen eval fixture is a hand-written extraction, not a real approval.** The criteria in
+  `evals/fixtures/*/call.yaml` come from `tests/cassettes/extract_call/`, which earlier sessions
+  wrote by hand. They are read and plausible, but no reviewer has ever approved them in `/admin`.
+  When real approvals exist in the database, re-freeze from those instead — the script is the place
+  to change, and the cases' reasons have to be re-read if a criterion changes.
+- **Only one call in the suite exercises stage 1a's filter at all**: the Economy call's minimum age.
+  Every other frozen call has an empty prefilter (their structured criteria are `not_in`, which the
+  SQL cannot express), so the superset property is checked on one pair out of forty. It will get
+  stronger on its own as calls with `in`/`prefix_in` criteria are approved — but do not read "1
+  checked, ok" as coverage of stage 1a.
 - **Nothing writes an `applicant_profile` row yet.** `/profil` keeps the answers in the signed
   session cookie (`decisions.md`, "Decided in code"). The order flow (P4) is where an account and a
   versioned row have to appear, together, or a delivered report will not be reproducible against the

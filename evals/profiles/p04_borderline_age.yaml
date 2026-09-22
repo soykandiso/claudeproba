@@ -1,0 +1,17 @@
+name: Производство во Велес, основано 2025
+boundary: >
+  Годината на основање дава опсег што го пресекува прагот од 12 месеци: дел од
+  опсегот поминува, дел не. Точниот случај за кој интake прашува само година —
+  одговорот мора да биде „ќе провериме“, никогаш „не“.
+answers:
+  entity: dooel
+  municipality: MK00101
+  founded: "2025"
+  employees: "2-9"
+  nace: "16.29"
+  turnover: lt10
+  inv: [equipment, export]
+  amount: "1-3"
+  cofinancing: "40"
+  timeline_months: "12"
+  description: Столарска работилница за нарачки

@@ -333,14 +333,29 @@ frequently says "you are eligible" is a product that is about to be wrong in pub
 
 ### Layout
 
+Built in P2 s25; `evals/README.md` is the operating manual.
+
 ```
 evals/
-  profiles/       p001_skopje_it_micro.yaml       applicant fixtures
-  fixtures/       fitr_2026_03/snapshot.txt       frozen snapshots + extracted criteria
+  profiles/       p01_skopje_it_micro.yaml        ten applicants, as intake answers
+  fixtures/       av-measure-819/call.yaml        five real calls, frozen with their document
+                  av-measure-819/document.txt     the normalised text the quotes index into
   cases/          expected verdicts per (profile × call), with a human reason
-  cases/from_review/                              auto-generated from reviewer corrections
-  cassettes/      recorded model responses for stage 3
+  cases/from_review/                              auto-generated from reviewer corrections (s34)
+  cassettes/      recorded model responses for stage 3 (s29)
+  suite.yaml      the clock and the gate's thresholds
+  harness.py      loading, the frozen registry, the properties, the metrics
+  run.py          the gate, and `--worksheet` for s26
 ```
+
+The fixtures are rebuilt by `ops/dev/freeze_eval_fixtures.py` from the documents already captured
+in `tests/fixtures/` and the extractions in `tests/cassettes/extract_call/`, with every quote
+located by the same code the pipeline runs. They are never hand-edited, for the same reason
+`data/` is not: a fixture someone corrected by hand is a measurement of nothing.
+
+Stage 1a **is** SQL, so tier A loads the frozen calls into PostgreSQL inside a transaction it rolls
+back rather than simulating the registry in memory. A harness that skipped the database would
+measure a different program than the one that answers customers.
 
 ### Three tiers
 
@@ -352,6 +367,26 @@ evals/
 
 Tier C exists because the model provider can change behaviour under you without warning. Tier A is
 the one that runs constantly, which is why it is built to need neither network nor tokens.
+
+**"Every commit, in CI" is a command, not a service** (`docs/decisions.md`, "Decided in code"). Nothing deploys
+automatically, the suite needs PostgreSQL, Tesseract and a local embedding model, and a hosted
+check that is red on every push is a check that gets ignored. The gate is
+`PYTHONPATH=. uv run python evals/run.py`, run before a deploy and whenever matching changes; the
+day a deploy script exists, it calls this and refuses on a non-zero exit.
+
+### What tier A checks before anyone has marked a single case
+
+Four properties hold for every profile against every call, with no expected verdicts at all, and
+they are what makes the harness worth running from the day it is written:
+
+1. **Every quote is verbatim** at the offsets it cites (invariant 2), checked against the frozen
+   document rather than trusted.
+2. **Stage 1a is a superset filter**: any call the SQL threw away is one the interpreter would have
+   called `not_eligible` anyway (§3). This is the one error the product cannot show — a call that
+   never reaches the shortlist has no reason beside it.
+3. **Only a rule excluded anyone** (invariant 1).
+4. **A call carrying an `eligibility_gap` never rose above `needs_verification`** (invariant 3),
+   across every profile rather than in one hand-built test.
 
 ### Metrics and the deploy gate
 
@@ -368,16 +403,34 @@ could never win, and it is the reputational failure this business does not survi
 `not_eligible` costs one missed opportunity. They are not equally bad and the gate should not treat
 them as if they were.
 
+The thresholds live in `evals/suite.yaml` so the harness can read them; this table and that file
+are changed together. Two additions the implementation needed:
+
+- an expected verdict may also be **`not_shown`** — the call should not be in the shortlist at all.
+  For the gate it counts as an exclusion, because a call that is silently absent is worse for the
+  customer than one listed with a reason, never better.
+- **being less certain than the truth is not a failure.** Expected `eligible`, produced
+  `needs_verification` is reported as *under-decided* and gated by nothing: it is the distance s27
+  and s29 have to close, and today it will be most of the suite, because `narrative_verify` and
+  `documentary` criteria are not decided at all yet.
+
 ### Seeding the suite, given no past cases
 
 You answered that you have no archive of past client cases but can judge one quickly. So:
 
-1. Pick 4 real calls with different shapes — FITR, an employment measure, an EU call, an IPARD
-   measure.
+1. Pick 4 real calls with different shapes. **Done, with a fifth** (s25): an employment measure
+   (AV 819), a national SME grant (Economy 3), an EU topic (DIGITAL EdTech), a municipal craft
+   subsidy (Skopje 12149), and an IPARD advance notice — which is in the suite precisely because
+   it is *not* a call yet and must never be shortlisted. FITR is still unreachable, so it is not
+   among them.
 2. I generate 10 applicant profiles engineered to sit on the boundaries: one clearly eligible, one
-   clearly not, and several deliberately ambiguous per call.
+   clearly not, and several deliberately ambiguous per call. **Done** (s25, `evals/profiles/`);
+   each file states which edge it sits on, and a profile without one is a duplicate.
 3. **You spend one session marking the expected verdict and a one-line reason for each.** That
-   session produces roughly 40 cases and is the single highest-value evening in P2.
+   session produces roughly 40 cases and is the single highest-value evening in P2. The blank files
+   are already written and waiting in `evals/cases/` — 41 rows, the call's conditions and the
+   applicant's answers in the comments, and the system's own answer deliberately absent so the
+   judgement is made by reading the call.
 4. The suite then grows on its own from reviewer corrections (§6). Real cases displace synthetic ones
    as they arrive.
 

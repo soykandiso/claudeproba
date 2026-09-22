@@ -1,0 +1,17 @@
+name: Новоосновано производство во Куманово, основано 2026
+boundary: >
+  Основана оваа година: секој месец од опсегот е под дванаесет, па условот
+  „најмалку 12 месеци работење“ ја исклучува со правило, не со сомнеж. Ова е
+  единствениот вид случај во кој системот смее да каже not_eligible.
+answers:
+  entity: dooel
+  municipality: MK00703
+  founded: "2026"
+  employees: "2-9"
+  nace: "13.92"
+  turnover: lt10
+  inv: [equipment]
+  amount: lt1
+  cofinancing: "20"
+  timeline_months: "6"
+  description: Шиење на постелнина за хотели
