@@ -16,6 +16,7 @@ measurement and catastrophic anywhere else.
 import argparse
 import sys
 from pathlib import Path
+from textwrap import wrap
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -25,6 +26,17 @@ from app.matching import intake
 from evals import harness
 
 ROOT = Path(__file__).resolve().parent
+
+
+QUOTE_LIMIT = 400
+
+
+def quote_words(quote: str) -> str:
+    """One criterion's quote on the page, whitespace flattened and very long cut."""
+    said = " ".join((quote or "").split())
+    if len(said) > QUOTE_LIMIT:
+        said = said[:QUOTE_LIMIT].rsplit(" ", 1)[0] + " …"
+    return f"„{said}“"
 
 
 def worksheet() -> int:
@@ -62,9 +74,14 @@ def worksheet() -> int:
             lines.append(f"# Празнина: {fixture.data['eligibility_gap']}")
         lines.append(f"# Целиот текст: evals/fixtures/{slug}/document.txt")
         lines.append("#")
-        lines.append("# Условите на повикот, онака како се одобрени:")
+        # The call's own sentences, not only our labels: the judgement in a case is
+        # supposed to come from reading the call, and nobody should have to open a
+        # PDF to do it. A long quote is cut, and the document is there in full.
+        lines.append("# Условите на повикот, онака како се одобрени, со неговите зборови:")
         for criterion in fixture.criteria:
             lines.append(f"#   [{criterion['kind']}] {criterion['label_mk']}")
+            for part in wrap(quote_words(criterion["quote"]), width=88):
+                lines.append(f"#       {part}")
         lines += [
             "#",
             "# За секој профил впишете еден од: eligible, likely_eligible,",

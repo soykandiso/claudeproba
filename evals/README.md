@@ -47,9 +47,11 @@ Four properties hold for every profile and every call, and they run on every com
 
 ## Filling in a case (P2 s26)
 
-`run.py --worksheet` writes one file per call with a blank row per profile, the call's conditions
-and the applicant's answers in the comments, and **deliberately not** what the system says — a
-number already on the page is the fastest way to stop reading the call. Write one of
+`run.py --worksheet` writes one file per call with a blank row per profile, and everything needed to
+decide in the comments: the call's conditions **in the call's own words**, quoted from the frozen
+document, and each applicant's answers. What it deliberately leaves out is what the system says — a
+number already on the page is the fastest way to stop reading the call. Nothing has to be opened;
+the whole document is there if you want it. Write one of
 `eligible`, `likely_eligible`, `needs_verification`, `not_eligible`, `not_shown` and one sentence
 of why:
 
