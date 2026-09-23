@@ -37,7 +37,7 @@ NARRATIVE = (CriterionKind.NARRATIVE_VERIFY, None, None, None)
 
 
 def passages(text=TEXT, complete=True):
-    def retrieve(call, query):
+    def retrieve(call, criterion):
         return Retrieval(
             passages=[Passage(1, 42, 100, 100 + len(text), text, 1.0, 1, 1)],
             unembedded=0 if complete else 3,

@@ -54,7 +54,14 @@ from app.matching import stage1, stage2
 from app.matching.hard_filter import Stored, prefilter_columns
 from app.matching.normalise import Profile, normalise
 from app.matching.taxonomy import DecidedBy
-from app.models import Call, EligibilityCriterion, Programme, RawSnapshot, SourceFeed
+from app.models import (
+    Call,
+    CallDocument,
+    EligibilityCriterion,
+    Programme,
+    RawSnapshot,
+    SourceFeed,
+)
 from app.models.enums import AccessMethod, CallStatus, CriterionKind, TextSource, Verdict
 
 ROOT = Path(__file__).resolve().parent
@@ -283,6 +290,13 @@ def load_registry(session: Session, fixtures: dict[str, Fixture]) -> dict[str, C
         )
         session.add(call)
         session.flush()
+        # Retrieval scopes a call by its documents (search.call_snapshot_ids), as the
+        # pipeline links them; a call without this row has nothing to search.
+        session.add(
+            CallDocument(
+                call_id=call.id, snapshot_id=snapshot.id, role="call_text", is_primary=True
+            )
+        )
         for criterion in fixture.criteria:
             session.add(
                 EligibilityCriterion(

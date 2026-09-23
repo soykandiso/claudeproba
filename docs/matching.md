@@ -302,8 +302,9 @@ Top 5 results only. For each call, for each criterion the rules could not settle
 
 ```
 verify(profile, call, criterion) -> outcome:
-    query  = criterion.label_mk + ' ' + criterion.source_quote
-    chunks = hybrid_retrieve(call, query, k=6)      # app/retrieval/search.py
+    query  = criterion.source_quote                 # was label_mk + ' ' + quote; s30
+    chunks = hybrid_retrieve(call, query, k=6,      # app/retrieval/search.py
+                             pin=criterion's cited span)   # its chunk first, always
              # pgvector cosine on chunk.embedding  UNION  pg_trgm on chunk.text
              # reciprocal-rank-fused; trigram exists because Postgres has no
              # Macedonian FTS dictionary and codes/dates need exact matching.
@@ -377,9 +378,38 @@ Three defences worth naming explicitly:
 - **The shape the model sees** is form and size band, activity code and name, region, whether the
   seat is in Град Скопје, age in months, headcount, turnover and investment bands. Not the
   municipality, not the founding year, not the project description.
-- **Retrieval is passed in.** Production will pass `hybrid_retrieve` over the call's chunks (s31
-  wires it, with the embedder in the worker); tier B passes a deterministic retriever over the frozen
-  document. An incomplete retrieval is a failed one and costs no tokens.
+- **Retrieval is passed in.** Production passes `verify.call_retriever` — `hybrid_retrieve` over
+  the call's current documents (s31 constructs it, with the embedder in the worker); tier B passes a
+  deterministic retriever over the frozen document. An incomplete retrieval is a failed one and
+  costs no tokens.
+
+### Retrieval, tuned 23.09.2026 (P2 s30)
+
+Two changes to what stage 3 asks for, none to how chunks are ranked:
+
+- **The cited chunk is pinned first.** A criterion already carries `(snapshot_id, quote_start,
+  quote_end)`, checked verbatim at approval; searching for a clause whose address is on record can
+  only lose it — a call's long guideline repeats a standard clause under every measure. The chunk
+  holding the whole span comes first (every overlapping chunk, in order, if the span straddles a
+  boundary). The pin applies only when that snapshot is one of the call's *current* documents: a
+  criterion extracted from an older version cites text the source no longer shows, and then the
+  search decides alone.
+- **The query is the quote alone.** Measured over the frozen calls with every document pooled
+  (43 chunks, standing in for a long call), unpinned: `label + quote` put the criterion's clause
+  first for 21 of 24 and missed one from the top 6; the quote alone, first for 23 and 24 of 24 in
+  the top 6. The Macedonian label pulled an English EU quote's trigram score under the threshold,
+  and ranked the other statement of a twice-stated Skopje condition first. The label alone (18
+  first) and the two searched separately and fused (20 first) were both worse. The model still sees
+  the label; it is in the prompt.
+
+`PYTHONPATH=. uv run python evals/run.py --retrieval` measures it (`evals/retrieval.py`, about a
+minute with the real embedder): the criterion's own clause and the tier B cassettes' evidence
+quotes, each through the production path (gated at `suite.yaml` `retrieval`, ≥ 90% in the top 6)
+and through the unpinned search over the pooled documents (reported). On 23.09: production 24/24
+and 8/8; pooled search 23/24 first and 24/24 in the top 6, evidence 8/8 first. **The gated number is
+close to certain by construction** and says little about ranking; the pooled one is the measure of
+the search, and it rests on five documents. The trigram threshold and the chunk size were not
+retuned: there is no larger set to tune them on yet.
 - **Not on the free shortlist.** Stage 3 is the paid report's (§1); `/povici` still shows stage 1–2.
 
 ---
@@ -439,7 +469,9 @@ evals/
   cassettes/      recorded model responses for stage 3 (s29)
   suite.yaml      the clock and the gate's thresholds
   harness.py      loading, the frozen registry, the properties, the metrics
-  run.py          the gate, and `--worksheet` for s26
+  run.py          the gate, `--worksheet` for s26, `--tier b`, `--retrieval`
+  tier_b.py       tier B's cassette provider and fixture retriever (s29)
+  retrieval.py    stage 3's retrieval with the real embedder (s30)
 ```
 
 The fixtures are rebuilt by `ops/dev/freeze_eval_fixtures.py` from the documents already captured
@@ -457,6 +489,7 @@ measure a different program than the one that answers customers.
 |---|---|---|---|
 | **A — deterministic** | Stages 0–2 against frozen fixtures. No network, no model | Every commit, in CI | Seconds |
 | **B — recorded** | Stage 3 against cassettes. Tests prompt, schema, citation verification, clamping | Every commit | Seconds |
+| **Retrieval** | Stage 3's passages with the real local embedder (`--retrieval`, P2 s30) | Whenever retrieval, chunking or the embedding model changes | About a minute |
 | **C — live** | Stage 3 against the real model, same cases | Weekly, and before any prompt or model change | Minutes, costs money |
 
 Tier C exists because the model provider can change behaviour under you without warning. Tier A is

@@ -6,8 +6,10 @@ two stand-ins, both deterministic so the suite answers the same on every run:
 
 - **the model** is `CassetteProvider`, replaying `evals/cassettes/verify/<call>.yaml`;
 - **retrieval** is `FixtureRetriever`, the frozen document cut by the production
-  chunker and ranked by the words it shares with the query. Retrieval quality is
-  P2 s30's to measure; here it only has to hand the model the passages it needs.
+  chunker, the chunk holding the criterion's quote first like production, the rest
+  ranked by the words they share with the quote. Retrieval quality is measured on
+  its own, with the real embedder (`evals/run.py --retrieval`, P2 s30); here it only
+  has to hand the model the passages it needs.
 
 A recorded answer that fails a gate is not hidden: the harness reports every one as a
 property failure, because in tier B a rejected answer means the cassette or the
@@ -22,7 +24,8 @@ from pathlib import Path
 import yaml
 
 from app.ai.gateway import ProviderReply
-from app.models import Call
+from app.matching import verify
+from app.models import Call, EligibilityCriterion
 from app.retrieval.chunker import chunk_spans
 from app.retrieval.search import Passage, Retrieval
 
@@ -33,7 +36,7 @@ _LABEL = re.compile(r"The condition, as the call's reviewer labelled it:\n(.+)\n
 _PASSAGE = re.compile(r'<passage number="(\d+)">\n(.*?)\n</passage>', re.S)
 _WORD = re.compile(r"\w{4,}")
 
-K = 6
+K = verify.PASSAGES
 
 
 def load_cassettes() -> dict[str, dict]:
@@ -87,15 +90,23 @@ class FixtureRetriever:
         # call id -> (snapshot id, normalised text)
         self._texts = texts
 
-    def __call__(self, call: Call, query: str) -> Retrieval:
+    def __call__(self, call: Call, criterion: EligibilityCriterion) -> Retrieval:
         snapshot_id, text = self._texts[call.id]
-        wanted = {w.lower() for w in _WORD.findall(query)}
+        wanted = {w.lower() for w in _WORD.findall(verify.query_for(criterion))}
         spans = chunk_spans(text)
+        cited = next(
+            (
+                s.ordinal
+                for s in spans
+                if s.start <= (criterion.quote_start or -1) and (criterion.quote_end or 0) <= s.end
+            ),
+            None,
+        )
 
         def shared(span) -> int:
             return len(wanted & {w.lower() for w in _WORD.findall(text[span.start : span.end])})
 
-        best = sorted(spans, key=lambda s: (-shared(s), s.ordinal))[:K]
+        best = sorted(spans, key=lambda s: (s.ordinal != cited, -shared(s), s.ordinal))[:K]
         return Retrieval(
             passages=[
                 Passage(

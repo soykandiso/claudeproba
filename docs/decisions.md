@@ -520,6 +520,18 @@ write such a criterion by hand in `/admin`, and should not for that reason.
 дејност*). It is what p07/p08's verdicts turn on, but every question costs the three-minute
 intake; it waits until a rule or a verification step reads the answer.
 
+### Stage 3 is shown the cited chunk first and searches with the quote alone (23.09.2026, P2 s30)
+
+`matching.md` §5 sketched the verification query as `label_mk + ' ' + source_quote`. Measured over
+the frozen calls with every document pooled, the label only made the search worse (it pulled an
+English quote under a Macedonian label below the trigram threshold), so the query is now the quote.
+And the chunk the criterion cites is placed first without being searched for, because its address
+is on record and checked. **What this gives up:** the gated number (24/24 in the top 6) is close to
+certain by construction and is not evidence that the ranking is good; the pooled, unpinned number is,
+and it rests on five documents. **Not changed:** the trigram threshold, the chunk size and k. The
+day a call with a long guideline is approved, add it to the frozen set and re-run
+`evals/run.py --retrieval` before touching any of the three.
+
 ---
 
 ## Summary — what to decide, and by when

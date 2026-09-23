@@ -72,29 +72,28 @@ EXACT = [
 ]
 
 
-# Criteria whose chunk is not first, each for a reason production does not share or that
-# P2 s30 decides (16.09.2026). Strict: if one starts passing, the test says so.
+# Criteria whose chunk is not first when searched for without the pin, across every
+# document at once. Strict: if one starts passing, the test says so.
+#
+# P2 s30 closed two of the three found in P1 s12 by changing the query, not the ranking:
+# stage 3 now searches for the quote alone, and the label was what pushed an English quote
+# under its Macedonian label below the trigram threshold, and what ranked the other
+# statement of Skopje's twice-stated condition first. Production also pins the cited
+# chunk, so none of these is a miss there (`evals/run.py --retrieval`).
 KNOWN_MISSES = {
-    # A Macedonian label over an English quote: across all documents the label pulls
-    # Macedonian exclusion clauses ahead. Within its own call, as production searches,
-    # the chunk is first; the quote alone is first either way.
-    "4. Financial and operational capacity and exclusion": "cross-language query",
     # A standard required document, worded almost the same in the Economy call: first
-    # within its own call, second across documents.
+    # within its own call, third across documents. Only pooling makes it a miss.
     "Тековна состојба од Централниот регистар на Република Северна Македонија не постара "
     "од 6 (шест) месеци;": "the same standard clause in another call",
-    # The call states this condition twice; the other statement, without the OCR error
-    # "Дане", ranks first even within the call. Right clause, other chunk.
-    "Дане користеле средства од Град Скопје во тековната година;": "condition stated twice",
 }
 
 
 def verification_queries():
-    """docs/matching.md §5 builds its query from a criterion: label_mk + ' ' + source_quote."""
+    """Stage 3 searches for a criterion's quote (`verify.query_for`, P2 s30)."""
     for name in CASES:
         reply = json.loads((CASSETTES / f"{name}.json").read_text(encoding="utf-8"))
         for criterion in reply["criteria"]:
-            args = (name, f"{criterion['label_mk']} {criterion['quote']}", criterion["quote"])
+            args = (name, criterion["quote"], criterion["quote"])
             if criterion["quote"] in KNOWN_MISSES:
                 reason = f"{KNOWN_MISSES[criterion['quote']]}; see KNOWN_MISSES"
                 yield pytest.param(*args, marks=pytest.mark.xfail(strict=True, reason=reason))

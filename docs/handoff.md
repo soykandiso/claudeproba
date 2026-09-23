@@ -4,7 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 22.09.2026, after P2 s29 — the verification pass and tier B. Before it: P2 s28
+**Last updated:** 23.09.2026, after P2 s30 — retrieval tuned for verification. Before it: P2 s29
+(the verification pass and tier B), P2 s28
 (the shortlist page at `/povici`), P2 s27
 (stage 2 scoring, scoped with the user), the craftsman entity form (out of order, found by s26), P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
 s25 (the evaluation harness). s22–s25 were all taken out of
@@ -28,7 +29,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **s29 is built**: `app/matching/verify.py` and tier B (`evals/run.py --tier b`, green: 28 of 45 exact, 0 false eligible). **The next P2 row is s30, retrieval tuning** — the production retriever `verify` will be handed; its known misses are the strict xfails in `test_retrieval_paraphrase.py`. s31 then wires stage 3 into an RQ job with the embedder in the worker |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **s29 is built**: `app/matching/verify.py` and tier B (`evals/run.py --tier b`, green: 28 of 45 exact, 0 false eligible). **s30 is built** (23.09): stage 3 is shown the chunk a criterion cites first (`hybrid_retrieve(pin=…)`) and searches with the quote alone; `verify.call_retriever` is the production retriever and `evals/run.py --retrieval` measures it. **The next P2 row is s31**: stage 3 on RQ — construct `verify.call_retriever` in the worker (the embedder lives there), enqueue, persist outcomes and evidence for the top five calls |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -42,6 +43,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 23.09 | P2 s30 | `git log --grep 'session 30'` | **Retrieval for verification.** Measured first, in production conditions (a call's own documents, k=6): already 24/24 — but vacuous, calls here are 3–15 chunks and the query contains the verbatim quote. So the frozen documents were also pooled (43 chunks, a stand-in for a long call) and four queries compared: `label + quote` 21 first / 23 in top 6, **quote alone 23 / 24**, label alone 18 / 23, both fused 20 / 23. Two changes, none to the ranking: **the cited chunk is pinned first** (its address is on record and checked; a pin outside the call's current documents is ignored) and **the query is the quote**. That closed two of the three `KNOWN_MISSES` (cross-language, twice-stated); the standard clause repeated in another call stays, a pooling artefact. New: `evals/retrieval.py` + `run.py --retrieval` (criterion clauses and tier B evidence quotes, production path gated ≥ 90% in `suite.yaml`, pooled search reported), `verify.call_retriever`, `Retriever` now takes the criterion. **Found on the way**: the harness's frozen registry wrote no `call_document` rows, so a real retriever over it searched nothing — fixed in `load_registry`. Threshold, chunk size and k not retuned: five documents is no set to tune on (`decisions.md`) |
 | 22.09 | P2 s29 | `git log --grep 'session 29'` | **Stage 3's verification pass.** `verify_call` reads a call's undecided `narrative_verify` criteria through the gateway (`VerificationResult`, prompt `verify_criterion/2026-09-22.1`, `claude-opus-5`) and admits an answer only through three gates: valid output (else review, `review_kind = verification`, migration `13672ae6492a`), the quote verbatim in the passage it names by number (else review), confidence ≥ 0.7. `not_satisfied` is clamped to needs_verification by `taxonomy`. **Tier B** (`evals/tier_b.py`): hand-written cassettes per call, a provider that finds the passage holding the recorded quote, a deterministic retriever over the frozen document with the production chunker. **What tier B found**: verifying Skopje's craft list made the Bitola filigree maker `likely_eligible` for a Skopje-only subsidy — a false eligible, because residence is an attestation. Fixed by letting verification read attestations and **only lower them** (clear, cited `not_satisfied` → needs_verification). Also decided: `documentary` is the applicant's to bring, like an attestation (`decisions.md`). Tier A unchanged at 23 exact; tier B 28, over-claims 4 → 3 (p03 on AV closed; the 0–1-employee three straddle and stay). The acceptance "a paraphrased quote is rejected" is proven in `test_verify.py` and again through the harness |
 | 22.09 | P2 s28 | `git log --grep 'session 28'` | **The shortlist page.** `app/matching/shortlist.build` runs stages 1–2, then **finds every quote again** in one SQL query (substr of the stored text at the offsets = the quote); a criterion whose quote is gone is undecided and the call is settled again through the new `stage1.settle`, so a broken citation can only reach `needs_verification` — an exclusion included. Top ten (D6) with the total said, excluded calls apart. `/povici/izvor/<criterion>` shows the quote marked inside 600 characters of stored text either side, with the institution's link; 404 when the quote is not where it says. **Rank-before-judging not built** — 274 ms at 2.000 calls, a registry fifty times the real one (`decisions.md`). Dates, amounts and verdict words moved from the demo to `app/web/format.py` (the demo is not registered in production, so its filters were not either); deadlines are said in Skopje time. The eligibility-gap sentence is shown whenever it is true, not only when it lowered a verdict. Review page: a "see the open calls" button, and the note no longer touches the buttons. `ops/dev/seed_shortlist.py` publishes the frozen calls in dev. Checked at 375/768/1440 over the live server with the session cookie (§7 script plus `Network.setCookie`); 14 ms median locally |
 | 22.09 | P2 s27 | `git log --grep 'session 27'` | **Stage 2, scoped with the user** after I showed that the row's acceptance could not be met: most inputs are empty and four open calls make "top five" true of any order. `stage2.rank` scores stage 1's outcomes with six components, each a value and a Macedonian reason; missing data is neutral 0.5 and says what is missing; `not_eligible` ranks last; nothing touches a verdict. `v1.yaml` is the design's weights with `semantic_fit` at 0, **marked untuned**. **Measured and changed: `size_fit`** — the design's investment-vs-grant-band put the Economy call last for the bakery that can use it, and ranked every call that states a cap below the silent ones; a cap is now partial help (neutral), not a misfit (`matching.md` §4). **Also fixed**: `stage1.judge` interpreted `soft_scored` preferences as unclear, which would pull a settled call down to needs_verification — now `CallOutcome.preferences`. The pipeline now stores `call.cofinancing_pct` (the applicant's share, 100 − the extracted `grant_share_pct`); fixtures re-frozen with the grant columns. The harness runs stages 1–2, checks a fifth property (a reason for every component, excluded last) and prints rank quality as not measurable. `match_run` not written — no `applicant_profile` row exists (§8) |
@@ -103,7 +105,9 @@ about real calls, which is worth having whatever the demand test says.
   `_form.html` is the shared partial `/demo/profil` includes. Registered **everywhere**, including
   production — it is the first real customer screen. `templates/base.html` is the site shell.
 - `app/matching/verify.py` — stage 3: one call's narrative criteria and attestations through the
-  `verify_criterion` task, three gates, the clamp. Not run by anything yet (s31). Tier B is
+  `verify_criterion` task, three gates, the clamp. `call_retriever(session, embedder)` is the
+  production retriever (cited chunk pinned, quote as query, P2 s30). Not run by anything yet (s31).
+  Retrieval is measured by `evals/retrieval.py` (`run.py --retrieval`). Tier B is
   `evals/tier_b.py` + `evals/cassettes/verify/`, run with `evals/run.py --tier b`.
 - `app/web/shortlist/` — `/povici` (the top ten) and `/povici/izvor/<criterion>` (the passage).
   Registered everywhere. `app/matching/shortlist.py` is the service; `app/web/format.py` the dates,
@@ -147,7 +151,7 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **A backgrounded `pytest … | tail` always exits 0**: read the summary line for `failed`, never
   the exit code.
 - **Run the full suite to a log file**: `uv run pytest -p no:cacheprovider -rfE > log 2>&1; echo
-  exit=$?`, then read the last line (`671 passed, 3 xfailed` on 22.09). `addopts = "-q"` already, so
+  exit=$?`, then read the last line (`756 passed, 1 xfailed` on 23.09). `addopts = "-q"` already, so
   an extra `-q` or `-rN` hides the summary, and filtering the output with `grep -v` can hide a
   `FAILED` line — both happened on 22.09 and nearly let a drift test's failure through.
 - The full suite takes several minutes (retrieval paraphrase tests embed with the local model): run it
@@ -221,6 +225,13 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   transaction, and it refuses a production database). Re-run it after any change to stage 1's SQL or
   to how a call's criteria are loaded, and compare with the table in `matching.md` §3.
 - `sleep` in the foreground is blocked; wait with `run_in_background` until-loops.
+- **`evals/run.py --retrieval` takes one to three minutes** (it embeds the five frozen documents with
+  the real model inside the rolled-back transaction, every run). It needs the model in `models/` but
+  not the worker. Run it after touching `app/retrieval/`, the chunker, the embedding model, or
+  `verify.query_for` / `call_retriever`.
+- **On 23.09 the worker was restarting on a Redis timeout** after a Codespace restart — the
+  iptables failure below. Nothing in s30 needed the worker; s31 will, so fix it first (README
+  troubleshooting, or `./run.py --detach`).
 
 ## 6. How a session is finished
 
@@ -239,8 +250,8 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
    whichever of `sources.md` / `decisions.md` / `runbook.md` / `risks.md` the session changed.
    **Update this file** (§2 log, §4, §5, §8).
 6. Commit only the session's files — `git add <paths>`, never `-A` (the user's `CLAUDE.md` edit).
-   Message: `P1 session N: <what>`, a body of short bullets, ending
-   `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`. Then `git push`.
+   Message: `P2 session N: <what>`, a body of short bullets, ending
+   `Co-Authored-By: Claude <model> <noreply@anthropic.com>` (the model named in the session's attribution reminder). Then `git push`.
 7. Report to the user: what was built, what the acceptance proved and what it did not, decisions
    needed from them, and the next session.
 
@@ -300,8 +311,12 @@ open every `<details>` first so citations are in the picture.
   every EU topic and `app/matching/stage1.py` refuses `eligible` and `likely_eligible` for a call
   holding it. **When those PDFs are finally fetched and extracted, the fetcher must stop setting the
   gap**, or every EU call stays capped forever.
-- **Cross-language retrieval**: a Macedonian label over an English quote retrieves poorly across
-  documents; standard clauses repeat across calls; a condition stated twice ranks its other chunk first. All three are strict xfails in `KNOWN_MISSES` (`tests/test_retrieval_paraphrase.py`); P2 s30 decides.
+- **Retrieval rests on five small documents** (P2 s30). The gated number is certain by
+  construction (the cited chunk is pinned); the pooled, unpinned search is the real measure and it
+  is 43 chunks. **When a call with a long guideline is approved** (an IPARD guide, an EU call
+  document), freeze it into `evals/fixtures/` and re-run `--retrieval` before touching the trigram
+  threshold, the chunk size or k. One strict xfail is left in `KNOWN_MISSES`: a standard clause
+  repeated in another call, a pooling artefact.
 - **Stage-1 SQL** (P2 s24) must treat the prefilter columns as a superset filter only
   (`hard_filter.prefilter_columns` docstring). `min/max_company_age_months` are exact numbers; how a
   banded profile is compared to them is s24's to get right.

@@ -18,6 +18,12 @@ gate:
   median_latency_warn_ms: 3000
   median_latency_block_ms: 5000
 
+# Stage 3's retrieval, measured by `run.py --retrieval` (evals/retrieval.py, P2 s30).
+# Roadmap acceptance: the correct clause in the top 6 for at least 90% of criteria.
+retrieval:
+  k: 6
+  top_k_share_min: 0.9
+
 # Which profiles each frozen call is worth asking about, for `run.py --worksheet`.
 # `all` is the ten profiles; an advance notice has the same answer for everybody,
 # so it costs one line of the user's evening instead of ten.

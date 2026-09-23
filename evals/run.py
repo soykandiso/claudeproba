@@ -2,6 +2,7 @@
 
     PYTHONPATH=. uv run python evals/run.py              # the gate
     PYTHONPATH=. uv run python evals/run.py --worksheet  # the case files to fill in
+    PYTHONPATH=. uv run python evals/run.py --retrieval  # stage 3's retrieval (P2 s30)
 
 Exit code 0 means the gate passed and this code may be deployed; 1 means it did
 not. An empty suite is 1 on purpose — it proves nothing — and the 41 cases marked
@@ -147,6 +148,31 @@ def gate(tier: str = "a") -> int:
     return 1 if report.blocking() else 0
 
 
+def retrieval_gate() -> int:
+    """Stage 3's retrieval over the frozen calls, with the real embedder (evals/retrieval.py)."""
+    from app.retrieval.embedder import LocalEmbedder
+    from evals import retrieval
+
+    settings = load_settings()
+    if settings.is_production:
+        raise SystemExit("refusing to run the harness against a production database")
+    engine = create_engine(settings.sqlalchemy_url)
+    connection = engine.connect()
+    transaction = connection.begin()
+    factory = sessionmaker(
+        bind=connection, join_transaction_mode="create_savepoint", expire_on_commit=False
+    )
+    try:
+        with factory() as session:
+            report = retrieval.measure(session, factory, LocalEmbedder(settings.model_dir))
+    finally:
+        transaction.rollback()
+        connection.close()
+        engine.dispose()
+    print(report.text())
+    return 1 if report.blocking() else 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -160,8 +186,15 @@ def main() -> int:
         default="a",
         help="a: stages 0-2 (default); b: also stage 3 with recorded answers (evals/tier_b.py)",
     )
+    parser.add_argument(
+        "--retrieval",
+        action="store_true",
+        help="measure stage 3's retrieval with the local embedder (about a minute)",
+    )
     args = parser.parse_args()
-    return worksheet() if args.worksheet else gate(args.tier)
+    if args.worksheet:
+        return worksheet()
+    return retrieval_gate() if args.retrieval else gate(args.tier)
 
 
 if __name__ == "__main__":

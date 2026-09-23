@@ -17,8 +17,10 @@ Two rankings of the same chunks, fused:
   extraction fixtures (P1 s12): chunks that really contain the query's words
   scored 0.71-1.0, the best unrelated chunk for a paraphrased question at most
   0.54. 0.6 is also pg_trgm's own default word_similarity_threshold. The
-  measurement and the threshold used the same queries; P2 s30 retunes on a
-  larger set.
+  measurement and the threshold used the same queries. P2 s30 did not retune
+  it: stage 3's query became the criterion's verbatim quote, which scores
+  about 1.0 against its own chunk, so the threshold now matters only for
+  paraphrased questions, and there is still no larger set of those to tune on.
 
 Reciprocal rank fusion: score = Σ 1 / (RRF_K + rank) over the rankings a chunk
 appears in. Ranks, not raw scores, because cosine distances and trigram
@@ -28,6 +30,16 @@ Both rankings are exact scans over the chunks in scope -- tens of rows for a
 call. There is deliberately no vector index on chunk.embedding: an approximate
 index scanned under a WHERE filter can return fewer rows than asked for, which
 here would mean a missing clause and nobody told.
+
+**A cited span can be pinned** (P2 s30). A criterion already says where its words
+are -- (snapshot_id, quote_start, quote_end), checked verbatim when it was
+approved -- so a caller that has that address passes it and the chunk holding it
+comes first, whatever the rankings think. Searching for a clause whose location
+is on record would only be a way to lose it: a call's long guideline repeats a
+standard clause under every measure, and the fused rankings may prefer another
+copy. The pin applies only when the cited snapshot is one of the documents in
+scope; a criterion extracted from an older version of a document cites text the
+source no longer shows, and then the search decides alone.
 
 Retrieval does not decide anything. A caller that gets an incomplete result, or
 no passage containing what it needs, ends in needs_verification (CLAUDE.md
@@ -60,6 +72,8 @@ class Passage:
     score: float
     vector_rank: int | None
     trigram_rank: int | None
+    # Placed first because a caller named its span, not because it ranked.
+    pinned: bool = False
 
 
 @dataclass(frozen=True)
@@ -108,8 +122,15 @@ def hybrid_retrieve(
     query: str,
     *,
     k: int = 6,
+    pin: tuple[int, int, int] | None = None,
 ) -> Retrieval:
+    """The k best chunks for `query` among `snapshot_ids`.
+
+    `pin` is (snapshot_id, char_start, char_end) of a span the caller already
+    knows is relevant: the chunks holding it come first (see the module docstring).
+    """
     in_scope = Chunk.snapshot_id.in_(snapshot_ids)
+    pinned = _pinned(session, pin) if pin and pin[0] in snapshot_ids else []
 
     vector_ids = list(
         session.scalars(
@@ -136,7 +157,8 @@ def hybrid_retrieve(
                       if chunk_id in ranks)
         for chunk_id in vector_rank | trigram_rank
     }  # fmt: skip
-    best = sorted(scores, key=lambda chunk_id: (-scores[chunk_id], chunk_id))[:k]
+    ranked = sorted(scores, key=lambda chunk_id: (-scores[chunk_id], chunk_id))
+    best = (pinned + [chunk_id for chunk_id in ranked if chunk_id not in pinned])[:k]
     chunks = {c.id: c for c in session.scalars(select(Chunk).where(Chunk.id.in_(best)))}
 
     unembedded = session.scalar(
@@ -152,12 +174,39 @@ def hybrid_retrieve(
                 char_start=chunks[chunk_id].char_start,
                 char_end=chunks[chunk_id].char_end,
                 text=chunks[chunk_id].text,
-                score=scores[chunk_id],
+                score=scores.get(chunk_id, 0.0),
                 vector_rank=vector_rank.get(chunk_id),
                 trigram_rank=trigram_rank.get(chunk_id),
+                pinned=chunk_id in pinned,
             )
             for chunk_id in best
         ],
         unembedded=unembedded,
         unindexed_snapshots=len(set(snapshot_ids) - chunked),
+    )
+
+
+def _pinned(session: Session, pin: tuple[int, int, int]) -> list[int]:
+    """The chunk that holds the whole span, else every chunk that overlaps it.
+
+    The chunker's overlap exists so that a clause is whole in at least one chunk,
+    and then one is enough. A span longer than the overlap can still straddle a
+    boundary; then its pieces come in document order, and the model sees all of it.
+    """
+    snapshot_id, start, end = pin
+    of_snapshot = Chunk.snapshot_id == snapshot_id
+    whole = session.scalar(
+        select(Chunk.id)
+        .where(of_snapshot, Chunk.char_start <= start, Chunk.char_end >= end)
+        .order_by(Chunk.ordinal)
+        .limit(1)
+    )
+    if whole is not None:
+        return [whole]
+    return list(
+        session.scalars(
+            select(Chunk.id)
+            .where(of_snapshot, Chunk.char_start < end, Chunk.char_end > start)
+            .order_by(Chunk.ordinal)
+        )
     )

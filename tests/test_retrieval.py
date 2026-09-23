@@ -235,3 +235,102 @@ def test_a_call_searches_the_latest_version_of_each_of_its_documents(sessions, f
         session.commit()
 
         assert call_snapshot_ids(session, call.id) == sorted([call_new, annex])
+
+
+def test_a_pinned_span_comes_first_whatever_the_query_ranks(sessions, add_snapshot):
+    """P2 s30: the chunk a criterion cites is not searched for, it is placed first."""
+    text = fixture_text("economy-call-3")
+    snapshot_id = add_snapshot(text)
+    index_pending(sessions, TopicEmbedder())
+    start = text.index("722313 00")
+    span = (snapshot_id, start, start + len("722313 00"))
+
+    with sessions() as session:
+        plain = hybrid_retrieve(session, TopicEmbedder(), [snapshot_id], "стечај?", k=3)
+        pinned = hybrid_retrieve(session, TopicEmbedder(), [snapshot_id], "стечај?", k=3, pin=span)
+
+    assert all("722313 00" not in p.text for p in plain.passages)
+    first, *rest = pinned.passages
+    assert first.pinned and "722313 00" in first.text
+    assert first.char_start <= span[1] and span[2] <= first.char_end
+    assert not any(p.pinned for p in rest)
+    # The rest are the search's own order, without the pinned chunk twice.
+    assert [p.chunk_id for p in rest] == [
+        p.chunk_id for p in plain.passages if p.chunk_id != first.chunk_id
+    ][:2]
+
+
+def test_a_pin_outside_the_documents_in_scope_is_ignored(sessions, add_snapshot):
+    """A criterion extracted from an older version cites text the source no longer shows."""
+    old = add_snapshot(fixture_text("economy-call-3"))
+    current = add_snapshot(fixture_text("av-measure-819"))
+    index_pending(sessions, TopicEmbedder())
+
+    with sessions() as session:
+        result = hybrid_retrieve(
+            session, TopicEmbedder(), [current], "12.000,00 денари", pin=(old, 0, 50)
+        )
+
+    assert {p.snapshot_id for p in result.passages} == {current}
+    assert not any(p.pinned for p in result.passages)
+    assert "12.000,00 денари" in result.passages[0].text
+
+
+def test_a_span_no_single_chunk_holds_pins_every_piece_in_order(sessions, add_snapshot):
+    text = fixture_text("economy-call-3")
+    snapshot_id = add_snapshot(text)
+    index_pending(sessions, TopicEmbedder())
+    chunks = chunks_of(sessions, snapshot_id)
+    # From the start of the second chunk to the end of the third: longer than the overlap.
+    span = (snapshot_id, chunks[1].char_start, chunks[2].char_end)
+
+    with sessions() as session:
+        result = hybrid_retrieve(session, TopicEmbedder(), [snapshot_id], "рок", pin=span)
+
+    pinned = [p for p in result.passages if p.pinned]
+    overlapping = [c.id for c in chunks if c.char_start < span[2] and c.char_end > span[1]]
+    assert len(pinned) > 1 and [p.chunk_id for p in pinned] == overlapping
+    assert result.passages[: len(pinned)] == pinned
+    assert pinned[0].char_start <= span[1] and span[2] <= pinned[-1].char_end
+
+
+def test_verification_searches_the_calls_documents_for_the_quote_with_its_chunk_first(
+    sessions, feed, add_snapshot
+):
+    """The production retriever stage 3 is handed (app/matching/verify.py, P2 s30)."""
+    from app.matching import verify
+    from app.models import EligibilityCriterion
+
+    text = fixture_text("economy-call-3")
+    own = add_snapshot(text, url="https://gov.example/call")
+    other = add_snapshot(fixture_text("av-measure-819"), url="https://gov.example/other")
+    index_pending(sessions, TopicEmbedder())
+    quote = "не е покрената стечајна постапка"
+    start = text.index(quote)
+
+    with sessions() as session:
+        programme = Programme(
+            source_feed_id=feed.id, slug="test-verify-retrieval", name_mk="Тест", institution="Тест"
+        )
+        session.add(programme)
+        session.flush()
+        call = Call(
+            programme_id=programme.id, source_feed_id=feed.id, title_mk="Тест",
+            canonical_url="https://gov.example/call", primary_snapshot_id=own,
+        )  # fmt: skip
+        session.add(call)
+        session.flush()
+        session.add(CallDocument(call_id=call.id, snapshot_id=own, role="call_text"))
+        session.commit()
+        criterion = EligibilityCriterion(
+            label_mk="Ова го нема во текстот", source_quote=quote,
+            snapshot_id=own, quote_start=start, quote_end=start + len(quote),
+        )  # fmt: skip
+
+        result = verify.call_retriever(session, TopicEmbedder())(call, criterion)
+
+    assert result.complete and len(result.passages) <= verify.PASSAGES
+    assert {p.snapshot_id for p in result.passages} == {own}, other
+    first = result.passages[0]
+    assert first.pinned and quote in first.text
+    assert verify.query_for(criterion) == quote

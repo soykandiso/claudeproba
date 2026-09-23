@@ -6,6 +6,7 @@ this file is how it is run and how it grows.
 ```
 PYTHONPATH=. uv run python evals/run.py              # the gate: exit 0 passed, 1 failed
 PYTHONPATH=. uv run python evals/run.py --worksheet  # write the blank case files
+PYTHONPATH=. uv run python evals/run.py --retrieval  # stage 3's retrieval, real embedder (~1 min)
 ```
 
 **It passes since P2 s26 (22.09.2026)**, when the 41 expected verdicts were marked: 0 false
@@ -26,6 +27,7 @@ third adjustment cannot be told from the first.
 | `cassettes/` | recorded model replies for tier B (P2 s29) | a session |
 | `suite.yaml` | the clock and the deploy gate's thresholds | a session |
 | `harness.py`, `run.py` | the machinery | a session |
+| `tier_b.py`, `retrieval.py` | tier B's stand-ins; the retrieval measurement (P2 s30) | a session |
 
 ## The three tiers
 
@@ -34,6 +36,7 @@ third adjustment cannot be told from the first.
 | **A — deterministic** | stages 0–2 over the frozen calls. No network, no model, no tokens | built (P2 s25) |
 | **B — recorded** | stage 3 against cassettes: prompt, schema, citation check, clamping. `run.py --tier b` | built (P2 s29) |
 | **C — live** | the same cases against the real model, weekly and before any prompt change | P2 s36 |
+| **Retrieval** | whether stage 3 is shown the right passages: each criterion's clause and each cassette's evidence, production path (gated, ≥ 90% in the top 6) and the unpinned search over all five documents pooled (reported). `run.py --retrieval` | built (P2 s30) |
 
 ## What tier A checks without a single expected verdict
 

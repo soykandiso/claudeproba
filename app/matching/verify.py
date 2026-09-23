@@ -23,10 +23,18 @@ search everything counts as a failed retrieval (invariant 3).
 band, activity code, region, age, headcount and investment bands — nothing a
 person could be found by. The gateway scrubs again on the way out.
 
-**Retrieval is passed in.** Production uses `hybrid_retrieve` over the call's
-chunks; the evaluation's tier B uses a deterministic retriever over the frozen
-document, because what it measures is this module and the prompt, and retrieval
-quality is P2 s30's.
+**Retrieval is passed in.** Production uses `call_retriever`, `hybrid_retrieve`
+over the call's current documents; the evaluation's tier B uses a deterministic
+retriever over the frozen document, because what it measures is this module and
+the prompt. Retrieval itself is measured by `evals/run.py --retrieval` (P2 s30).
+
+**What is searched for is the criterion's own words, and where they are is not
+searched for at all.** The chunk holding the cited span is pinned first; the query
+is the source quote, which fills the other passages with what reads like it. The
+design sketched `label_mk + ' ' + source_quote`; measured over the frozen calls
+(P2 s30), the label only lowered the quote's trigram score — below the threshold
+for an English quote under a Macedonian label — and found nothing the quote alone
+did not.
 
 **Attestations are read too, and can only go down.** A condition only the
 applicant can confirm ("resident in one of the ten municipalities of Град Скопје",
@@ -46,6 +54,8 @@ applicant brings, so stage 1 treats it like an attestation (`stage1._decide`).
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 
+from sqlalchemy.orm import Session
+
 from app.ai.gateway import Gateway, InvalidModelOutput
 from app.ai.schemas import VerificationResult
 from app.matching import intake, stage1
@@ -54,7 +64,8 @@ from app.matching.stage1 import CallOutcome, CriterionOutcome
 from app.matching.taxonomy import DecidedBy, Decision, Outcome, criterion_verdict
 from app.models import Call, EligibilityCriterion, ReviewQueueItem
 from app.models.enums import CriterionKind, ReviewKind, Verdict
-from app.retrieval.search import Passage, Retrieval
+from app.retrieval.embedder import Embedder
+from app.retrieval.search import Passage, Retrieval, call_snapshot_ids, hybrid_retrieve
 
 TASK = "verify_criterion"
 
@@ -69,8 +80,38 @@ UNVERIFIABLE = (
     "условот го проверува уредник."
 )
 
-# (call, query) -> the passages to show the model, and whether everything was searched.
-Retriever = Callable[[Call, str], Retrieval]
+# How many passages the model is shown for one criterion (matching.md §5).
+PASSAGES = 6
+
+# (call, criterion) -> the passages to show the model, and whether everything was searched.
+Retriever = Callable[[Call, EligibilityCriterion], Retrieval]
+
+
+def query_for(criterion: EligibilityCriterion) -> str:
+    """The criterion's quoted words; the label only if it somehow has none."""
+    return (criterion.source_quote or criterion.label_mk).strip()
+
+
+def cited_span(criterion: EligibilityCriterion) -> tuple[int, int, int] | None:
+    if criterion.snapshot_id is None or criterion.quote_start is None:
+        return None
+    return criterion.snapshot_id, criterion.quote_start, criterion.quote_end
+
+
+def call_retriever(session: Session, embedder: Embedder, *, k: int = PASSAGES) -> Retriever:
+    """The production retriever: a call's current documents, the cited chunk first."""
+
+    def retrieve(call: Call, criterion: EligibilityCriterion) -> Retrieval:
+        return hybrid_retrieve(
+            session,
+            embedder,
+            call_snapshot_ids(session, call.id),
+            query_for(criterion),
+            k=k,
+            pin=cited_span(criterion),
+        )
+
+    return retrieve
 
 
 @dataclass(frozen=True)
@@ -193,7 +234,7 @@ def verify_criterion(
         # nothing was learnt. A narrative condition stays undecided, with the reason.
         return item if attestation else _undecided(item, reason)
 
-    retrieval = retrieve(call, f"{criterion.label_mk} {criterion.source_quote or ''}".strip())
+    retrieval = retrieve(call, criterion)
     if not retrieval.complete or not retrieval.passages:
         return Verified(failed(INCOMPLETE))
     passages = retrieval.passages
