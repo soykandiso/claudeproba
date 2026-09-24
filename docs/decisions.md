@@ -551,6 +551,26 @@ headcount would have to be a guessed number. They are filled where an answer is 
 the row (`normalise.to_row`), put its id on the order, and call `deep.enqueue` when the payment is
 reconciled.
 
+### The report's model writes explanation only, and every sentence cites (24.09.2026, P2 s32)
+
+The design said "prose via strong-tier model". Taken literally, the model would write the report and
+the checks would have to find the eligibility claims inside free text, which code cannot do. So the
+work is split: **code writes every verdict, condition, reason and quote from the stored run**; the
+model writes a summary and, per call, an explanation and next steps, as statements that each name the
+conditions they rest on by the number the prompt gave them. A statement without a condition is invalid
+output (retried once, then reviewed), and one citing a condition of another call blocks the draft.
+What remains unchecked by code — a sentence stronger than its conditions — is the reviewer's, and
+every draft is reviewed anyway.
+
+**A blocked draft is queued, not dropped**, marked and ahead of clean ones, because the review queue is
+where uncertainty goes. **The lint skips quotes and call titles**: they are the institution's words, a
+reviewer cannot edit them, and an English EU title may well contain "approved". **The calls the rules
+exclude are now stored by `deep`**, up to ten, with their rule outcomes: this settles the s31 open
+question. Reading stage 1 again at composition time would describe that day's registry, not the run's,
+and a report must be reproducible. Open calls ranked below the five are still not stored. Opus 5 writes
+the prose, for the same reason it verifies. The draft is stored in the review item's `payload`
+(`DRAFT_VERSION = 1`); no report table until s35 renders one.
+
 ---
 
 ## Summary — what to decide, and by when

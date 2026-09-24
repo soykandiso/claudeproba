@@ -26,8 +26,15 @@ does, in order:
    finish; running the job again makes a new run, and the gateway's content-hash
    cache means the answers already paid for are not paid for twice.
 
-Only the five verified calls get result rows; `candidates_considered` says how many
-stages 1–2 ranked. The calls the rules exclude are the free shortlist's to list.
+The five verified calls get result rows, and so do **the calls the rules exclude**,
+up to the free shortlist's ten (P2 s32): a report has to say what the company
+cannot apply for and why, and reading stage 1 again when the report is written
+would describe the registry of that day, not of the run. They rank after the five,
+carry only rule outcomes and are never shown to a model. Open calls ranked below
+the five get nothing; `candidates_considered` says how many stages 1–2 ranked.
+
+`job` then composes the report's draft (`app/reports/compose.py`) and queues it
+for review.
 
 **A provider failure fails the job.** An exception from the gateway (the provider
 down, a prompt file changed under a route) propagates: RQ keeps the failed job, and
@@ -84,6 +91,7 @@ class Report:
     match_run_id: uuid.UUID
     ranked: list[stage2.Scored]
     verified: dict[uuid.UUID, list[verify.Verified]]
+    excluded: list[stage2.Scored]
 
 
 # ------------------------------------------------------------------ the evidence check
@@ -243,6 +251,7 @@ def run(
         profile = normalise.from_row(row, now.date())
         scored, _ = shortlist.ranked(session, profile, now)
         top = [s for s in scored if not s.excluded][:DEPTH]
+        excluded = [s for s in scored if s.excluded][: shortlist.FREE_DEPTH]
 
         match_run = MatchRun(
             profile_id=row.id,
@@ -265,11 +274,11 @@ def run(
             verified[outcome.call.id] = results
         ranked = stage2.rank(outcomes, profile, now)
 
-        _write(session, match_run, ranked, verified)
+        _write(session, match_run, ranked + excluded, verified)
         match_run.stage_reached = VERIFIED_STAGE
         match_run.duration_ms = int((time.monotonic() - started) * 1000)
         session.commit()
-        return Report(match_run.id, ranked, verified)
+        return Report(match_run.id, ranked, verified, excluded)
 
 
 # ------------------------------------------------------------------ the worker
@@ -280,18 +289,27 @@ def job(profile_id: str) -> dict:
     from app.ai.gateway import AnthropicProvider, Gateway
     from app.config import load_settings
     from app.db import session_factory
+    from app.reports import compose
     from app.retrieval.embedder import LocalEmbedder
 
     settings = load_settings()
     sessions = session_factory(settings)
     embedder = LocalEmbedder(settings.model_dir)
+    gateway = Gateway(sessions, AnthropicProvider())
     report = run(
         sessions,
-        Gateway(sessions, AnthropicProvider()),
+        gateway,
         lambda session: verify.call_retriever(session, embedder),
         uuid.UUID(str(profile_id)),
     )
-    return {"match_run_id": str(report.match_run_id), "calls": len(report.ranked)}
+    # A failure here leaves a finished run and no draft; running the job again
+    # makes a new run, and the gateway's cache answers what was already paid for.
+    draft = compose.compose(sessions, gateway, report.match_run_id)
+    return {
+        "match_run_id": str(report.match_run_id),
+        "calls": len(report.ranked),
+        "review_item_id": draft,
+    }
 
 
 def enqueue(settings, profile_id: uuid.UUID) -> str:

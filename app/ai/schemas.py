@@ -6,6 +6,7 @@ place to refuse anything that must never be stored -- not a place to repair it.
 """
 
 import datetime as dt
+import re
 from collections.abc import Iterator
 from typing import Literal
 
@@ -212,4 +213,61 @@ class VerificationResult(_Strict):
             raise ValueError(f"a {self.verdict} verdict needs a passage and a quote")
         if (self.passage is None) != (self.quote is None):
             raise ValueError("passage and quote come together or not at all")
+        return self
+
+
+# ------------------------------------------------------------------ the report's prose (P2 s32)
+
+# A condition is named the way the prompt numbers it: call, then condition ("2.3").
+CONDITION_REF = r"^[1-9][0-9]?\.[1-9][0-9]?$"
+
+
+class ReportStatement(_Strict):
+    """One sentence or two of the report's prose, and the conditions it rests on.
+
+    **Every statement cites** (CLAUDE.md invariant 2). The model cannot tell which
+    of its sentences are eligibility claims and neither can code, so the rule is
+    the simple one: a statement with nothing to point at is not accepted at all.
+    The references are the prompt's numbers, never database ids; what they name,
+    and whether that condition's words are still in the stored text, is checked in
+    `app/reports/compose.py`.
+    """
+
+    text_mk: str = Field(min_length=10, max_length=700)
+    cites: list[str] = Field(
+        min_length=1,
+        max_length=8,
+        description='Numbers of the conditions this statement rests on, e.g. ["1.2", "1.4"].',
+    )
+
+    @model_validator(mode="after")
+    def _refs(self) -> "ReportStatement":
+        bad = [ref for ref in self.cites if not re.match(CONDITION_REF, ref)]
+        if bad:
+            raise ValueError(f"not condition numbers: {bad}")
+        return self
+
+
+class ReportCallProse(_Strict):
+    call: int = Field(ge=1, description="Number of the <call> this section is about.")
+    explanation: list[ReportStatement] = Field(min_length=1, max_length=4)
+    next_steps: list[ReportStatement] = Field(default_factory=list, max_length=5)
+
+
+class ReportProse(_Strict):
+    """The paid report's prose over one stage-3 run (docs/matching.md §6).
+
+    The model writes explanation only. The verdicts, the conditions, their
+    reasons and their quotes are written by code from the stored run; the prose
+    is placed beside them and cannot change any of them.
+    """
+
+    summary: list[ReportStatement] = Field(min_length=1, max_length=4)
+    calls: list[ReportCallProse] = Field(min_length=1, max_length=10)
+
+    @model_validator(mode="after")
+    def _one_section_per_call(self) -> "ReportProse":
+        numbers = [c.call for c in self.calls]
+        if len(numbers) != len(set(numbers)):
+            raise ValueError(f"a call has two sections: {numbers}")
         return self

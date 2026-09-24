@@ -5,8 +5,8 @@ funding institution can decide. Matching is case-insensitive on word stems, so
 "Гарантирано", "гарантираме" and "guaranteed" are all caught; that also catches
 some innocent uses, and that is the right way round for this product.
 
-Built for the demo stage (16.09.2026). P2 session 32 wires it into the report
-composer so a draft that fails cannot be sent.
+Built for the demo stage (16.09.2026). Since P2 session 32 the report composer
+(`app/reports/compose.py`) runs it over every draft, and a hit blocks delivery.
 """
 
 import re

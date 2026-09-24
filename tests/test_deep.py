@@ -28,7 +28,7 @@ from app.models import (
     RawSnapshot,
     ReviewQueueItem,
 )
-from app.models.enums import CriterionKind, EntityType, Verdict
+from app.models.enums import CriterionKind, EntityType, ReviewKind, Verdict
 from app.retrieval.embedder import EmbeddingConfig
 from app.retrieval.search import Passage, Retrieval
 from evals import harness, tier_b
@@ -146,12 +146,16 @@ def test_a_run_stores_the_verified_top_five_with_their_evidence(frozen):
         assert run.stage_reached == deep.VERIFIED_STAGE
         assert run.weights_version == "v1" and run.ruleset_version.startswith("ref ")
         assert run.duration_ms is not None and run.candidates_considered >= len(report.ranked)
-        results = s.scalars(
+        stored = s.scalars(
             select(MatchResult).where(MatchResult.match_run_id == run.id).order_by(MatchResult.rank)
         ).all()
+        assert [r.rank for r in stored] == list(range(1, len(stored) + 1))
+        # The verified calls first, then the calls the rules exclude (P2 s32).
+        results = stored[: len(report.ranked)]
         assert 0 < len(results) <= deep.DEPTH
-        assert [r.rank for r in results] == list(range(1, len(results) + 1))
         assert Verdict.NOT_ELIGIBLE not in {r.verdict for r in results}
+        assert [r.call_id for r in stored[len(results) :]] == [x.call.id for x in report.excluded]
+        assert {r.verdict for r in stored[len(results) :]} <= {Verdict.NOT_ELIGIBLE}
         assert [r.verdict for r in results] == [x.outcome.verdict for x in report.ranked]
         for result, scored in zip(results, report.ranked, strict=True):
             assert set(result.score_breakdown) == {p.name for p in scored.parts}
@@ -279,7 +283,8 @@ def test_evidence_not_at_its_offsets_is_not_stored_and_asks(world):
         assert item.match_run_id == report.match_run_id
 
 
-def test_a_call_the_rules_exclude_is_never_verified_or_stored(world):
+def test_a_call_the_rules_exclude_is_stored_but_never_verified(world):
+    """The report says what the company cannot apply for; no model is asked about it."""
     factory, _, snapshot = world
     excluded = hard("entity_type", "not_in", {"values": ["micro"]})
     call_id, profile_id = one_call(world, criteria=[excluded, NARRATIVE])
@@ -291,10 +296,14 @@ def test_a_call_the_rules_exclude_is_never_verified_or_stored(world):
 
     assert provider.requests == []
     assert call_id not in {s.call.id for s in report.ranked}
+    assert [s.call.id for s in report.excluded] == [call_id]
     with factory() as s:
         run = s.get(MatchRun, report.match_run_id)
         assert run.stage_reached == deep.VERIFIED_STAGE
         assert run.candidates_considered == 1
+        [result] = s.scalars(select(MatchResult).where(MatchResult.match_run_id == run.id))
+        assert (result.call_id, result.verdict, result.rank) == (call_id, Verdict.NOT_ELIGIBLE, 1)
+    assert evidence_of(factory, report.match_run_id) == []
 
 
 def test_a_provider_that_fails_leaves_an_unfinished_run_and_no_results(world):
@@ -370,7 +379,25 @@ def test_the_worker_job_wires_the_production_retriever(world, monkeypatch):
     is an incomplete retrieval, which asks and costs no model call (invariant 3)."""
     factory, _, _ = world
     call_id, profile_id = one_call(world)
-    provider = ScriptedProvider()
+    # No verification is asked (see below); the one request is the report's prose.
+    provider = ScriptedProvider(
+        json.dumps(
+            {
+                "summary": [
+                    {"text_mk": "Условот за дејноста треба да се провери.", "cites": ["1.1"]}
+                ],
+                "calls": [
+                    {
+                        "call": 1,
+                        "explanation": [
+                            {"text_mk": "Текстот на повикот не беше пребаран.", "cites": ["1.1"]}
+                        ],
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        )
+    )
 
     class Stub:
         name = "test-embedder"
@@ -388,7 +415,9 @@ def test_the_worker_job_wires_the_production_retriever(world, monkeypatch):
     answer = deep.job(str(profile_id))
 
     assert answer["calls"] == 1
-    assert provider.requests == []
+    # Stage 3 asked nothing: the only request is the composer's.
+    assert len(provider.requests) == 1
+    assert "paid report" in provider.requests[0].system
     with factory() as s:
         [result] = s.scalars(
             select(MatchResult).where(MatchResult.match_run_id == uuid.UUID(answer["match_run_id"]))
@@ -398,3 +427,5 @@ def test_the_worker_job_wires_the_production_retriever(world, monkeypatch):
             select(MatchCriterionOutcome).where(MatchCriterionOutcome.match_result_id == result.id)
         )
         assert outcome.reason_mk == verify.INCOMPLETE
+        item = s.get(ReviewQueueItem, answer["review_item_id"])
+        assert item.kind == ReviewKind.REPORT and item.match_run_id == result.match_run_id

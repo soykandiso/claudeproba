@@ -434,6 +434,25 @@ them). Why a profile id and not a run id: `decisions.md`, 24.09.2026.
 
 ---
 
+### The report's draft, 24.09.2026 (P2 s32) — `app/reports/compose.py`
+
+`compose(session_factory, gateway, match_run_id)` reads a run at `stage_reached = 3` **from its stored
+rows only** — results, outcomes, criteria, evidence, the snapshots' URLs and fetch dates — so a draft
+composed later still says what the run found. Code writes everything that decides: each call's verdict,
+every condition with its outcome, reason and quote. The model (`compose_report`, `ReportProse`) is
+shown the verified calls with their conditions numbered `call.condition` and the applicant as
+`verify.applicant_shape`, and writes a summary and, per call, an explanation and next steps. **Every
+statement carries at least one condition number**; the schema refuses a statement without one.
+
+The draft is queued as a `report` review item, and the two checks below run first. A failure does not
+drop the draft: it is queued blocked, at priority 50, with its problems listed. `blockers(session, item)`
+runs the same checks over `corrected_payload` when there is one, so an edit cannot bring back what the
+lint refused. `deep` stores the calls the rules exclude as well (ranked after the five, rule outcomes
+only, at most ten) so the report can say what the company cannot apply for and why.
+
+**Not checked by code**: whether a statement says more than the conditions it cites. That is the
+human review's job (s33).
+
 ## 6. Stage 4 — the review gate, and the flywheel
 
 Every paid report is approved by a human before delivery (brief §6.4). The admin screen shows, per
@@ -449,7 +468,9 @@ other way to obtain. That reframing is what makes months of manual review worth 
 Before delivery, two automatic checks run on the composed prose:
 
 - **Banned-phrase lint**: `гарантирано` / "guaranteed", "approved", "you will receive" and their
-  Macedonian and Albanian equivalents. A hit blocks delivery (brief §3.4).
+  Macedonian and Albanian equivalents. A hit blocks delivery (brief §3.4). Run over everything the
+  report says in its own voice — the prose, and each condition's label and reason — but not over the
+  quotes and call titles, which are the institution's words (s32).
 - **Citation completeness**: every eligibility statement carries a resolvable
   `(snapshot_id, char_start, char_end)`. No citation, no claim — enforced in code, not in review.
 

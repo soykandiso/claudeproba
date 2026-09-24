@@ -35,6 +35,13 @@ tasks:
     model: claude-opus-5
     prompt_version: "2026-09-22.1"
     max_tokens: 16000
+  # Once per paid report: prose over the five verified calls. Opus, for the same
+  # reason as verification — it is Macedonian a customer reads — and a human
+  # reviews every draft anyway (CLAUDE.md), so this is one call per report.
+  compose_report:
+    model: claude-opus-5
+    prompt_version: "2026-09-24.1"
+    max_tokens: 16000
 
 # Embeddings for retrieval (app/retrieval/embedder.py, P1 s12). Not a task: the
 # model runs locally on CPU, so no text leaves the machine, there is no provider,
