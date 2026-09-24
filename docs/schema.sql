@@ -249,7 +249,8 @@ CREATE TABLE public.applicant_profile (
     timeline_months smallint,
     project_keywords text,
     project_description text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    answers jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 

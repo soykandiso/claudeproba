@@ -193,13 +193,16 @@ def _decided(item: CriterionOutcome, verdict: str, reason: str) -> CriterionOutc
     return replace(item, decision=decision, verdict=criterion_verdict(decision), reason_mk=reason)
 
 
-def _review(session_factory, call: Call, criterion, result, passages, why: str) -> int:
+def _review(
+    session_factory, call: Call, criterion, result, passages, why: str, match_run_id=None
+) -> int:
     # Its own transaction, like extraction's: the record survives a caller that rolls back.
     with session_factory() as session:
         item = ReviewQueueItem(
             kind=ReviewKind.VERIFICATION,
             reason=f"{TASK}: {why}",
             call_id=call.id,
+            match_run_id=match_run_id,
             payload={
                 "stage": "verify",
                 "criterion_id": str(criterion.id),
@@ -224,6 +227,7 @@ def verify_criterion(
     profile: Profile,
     call: Call,
     item: CriterionOutcome,
+    match_run_id=None,
 ) -> Verified:
     """One criterion. An attestation keeps its outcome unless the model contradicts it."""
     criterion: EligibilityCriterion = item.criterion
@@ -251,6 +255,7 @@ def verify_criterion(
             response_model=VerificationResult,
             on_invalid=ReviewKind.VERIFICATION,
             call_id=call.id,
+            match_run_id=match_run_id,
         )
     except InvalidModelOutput as exc:
         return Verified(failed(INVALID), review_item_id=exc.review_item_id)
@@ -264,7 +269,9 @@ def verify_criterion(
                 if answer.passage > len(passages)
                 else f"the quote is not in passage {answer.passage}"
             )
-            review_id = _review(session_factory, call, criterion, result, passages, why)
+            review_id = _review(
+                session_factory, call, criterion, result, passages, why, match_run_id
+            )
             return Verified(failed(UNVERIFIABLE), review_item_id=review_id)
         passage = passages[answer.passage - 1]
         start = passage.char_start + passage.text.index(answer.quote)
@@ -297,11 +304,13 @@ def verify_call(
     retrieve: Retriever,
     profile: Profile,
     outcome: CallOutcome,
+    match_run_id=None,
 ) -> tuple[CallOutcome, list[Verified]]:
     """Verify one call's narrative criteria and attestations, and settle it again.
 
     A call the rules already exclude is left alone: nothing a model says can
-    change `not_eligible`, and the tokens would buy nothing.
+    change `not_eligible`, and the tokens would buy nothing. `match_run_id` links
+    the model calls and review items to the report they were made for (P2 s31).
     """
     if outcome.verdict == Verdict.NOT_ELIGIBLE:
         return outcome, []
@@ -312,7 +321,9 @@ def verify_call(
             and item.decision.outcome == Outcome.UNCLEAR
         )
         if narrative or item.criterion.kind == CriterionKind.APPLICANT_ATTEST:
-            v = verify_criterion(gateway, session_factory, retrieve, profile, outcome.call, item)
+            v = verify_criterion(
+                gateway, session_factory, retrieve, profile, outcome.call, item, match_run_id
+            )
             verified.append(v)
             item = v.outcome
         items.append(item)

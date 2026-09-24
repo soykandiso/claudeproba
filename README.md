@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 30** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **P2 session 31** — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -43,6 +43,9 @@ decide — admitted only when its quote is found verbatim in the passage it name
 exclude anyone — and is measured by tier B of the evaluation against recorded answers. The
 passages it reads always start with the chunk the condition cites, and the rest are searched for
 with the condition's own words; `evals/run.py --retrieval` measures that with the real embedder.
+A paid report's verification runs on the worker (`app/matching/deep.py`, queue `analysis`): one job
+per stored profile verifies its top five calls and stores the results, each condition's outcome and
+the evidence it rests on, every quote found again in the stored text first.
 See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no

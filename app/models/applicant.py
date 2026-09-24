@@ -20,7 +20,7 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import CITEXT, INET
+from sqlalchemy.dialects.postgresql import CITEXT, INET, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, now_column, pg_enum, timestamptz, uuid_pk
@@ -73,6 +73,12 @@ class ApplicantProfile(Base):
     version: Mapped[int] = mapped_column(Integer, server_default=text("1"))
     superseded_at: Mapped[dt.datetime | None] = timestamptz()
     label: Mapped[str | None] = mapped_column(Text)
+
+    # The intake answers exactly as stage 0 read them: the one input a match run
+    # re-normalises from (app/matching/normalise.py). The typed columns below are
+    # filled from it where an answer is exact, for queries; a band is not a number,
+    # so headcount and investment size stay empty when only a band was given.
+    answers: Mapped[dict] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
 
     entity_type: Mapped[EntityType] = mapped_column(pg_enum(EntityType, "entity_type"))
     nace_code: Mapped[str | None] = mapped_column(String(10))

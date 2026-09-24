@@ -128,22 +128,29 @@ def _recheck(outcome: CallOutcome, citations: dict) -> CallOutcome:
     return stage1.settle(outcome.call, items, outcome.preferences)
 
 
-def build(session: Session, profile: Profile, now: dt.datetime | None = None) -> Shortlist:
-    now = now or dt.datetime.now(dt.UTC)
+def ranked(
+    session: Session, profile: Profile, now: dt.datetime
+) -> tuple[list[stage2.Scored], dict[uuid.UUID, Citation]]:
+    """Stages 1 and 2 with every quote found again: the free shortlist and the
+    paid report's first two stages are the same function (`deep.run`, P2 s31)."""
     outcomes = stage1.run(session, profile, now)
     criteria = [o.criterion for outcome in outcomes for o in outcome.outcomes]
     citations = _verified(session, criteria)
     outcomes = [_recheck(outcome, citations) for outcome in outcomes]
+    return stage2.rank(outcomes, profile, now), citations
 
-    ranked = stage2.rank(outcomes, profile, now)
+
+def build(session: Session, profile: Profile, now: dt.datetime | None = None) -> Shortlist:
+    now = now or dt.datetime.now(dt.UTC)
+    scored, citations = ranked(session, profile, now)
     institutions = dict(
         session.execute(
             select(Call.id, Programme.institution)
             .join(Programme, Programme.id == Call.programme_id)
-            .where(Call.id.in_([s.call.id for s in ranked]))
+            .where(Call.id.in_([s.call.id for s in scored]))
         ).all()
     )
-    entries = [Entry(s, citations, institutions.get(s.call.id, "")) for s in ranked]
+    entries = [Entry(s, citations, institutions.get(s.call.id, "")) for s in scored]
     open_ = [e for e in entries if not e.scored.excluded]
     excluded = [e for e in entries if e.scored.excluded]
     return Shortlist(

@@ -4,7 +4,8 @@ The working memory of this project across Claude Code sessions. `CLAUDE.md` hold
 `docs/roadmap.md` the plan; this file holds **where we actually are, what was learned, and how a
 session is finished**. It is updated at the end of every roadmap session, in the same commit.
 
-**Last updated:** 23.09.2026, after P2 s30 — retrieval tuned for verification. Before it: P2 s29
+**Last updated:** 24.09.2026, after P2 s31 — stage 3 on the worker. Before it: P2 s30 (retrieval
+tuned for verification), P2 s29
 (the verification pass and tier B), P2 s28
 (the shortlist page at `/povici`), P2 s27
 (stage 2 scoring, scoped with the user), the craftsman entity form (out of order, found by s26), P2 s26 — the 41 expected verdicts, marked with the user in one walk-through — stage 1 at scale, the OCR page image, the stale-text warning and P2
@@ -29,7 +30,7 @@ decide D1/D2 first.
 |---|---|
 | P0.5 | s1, s2, s3, s5 done. **s4 (VPS, domain, TLS) not done:** blocked on D2 (domain) and on a VPS the user has not provisioned |
 | P1 | s6–s16 done (s11 built AV instead of FITR). s17 deferred: FITR still unreachable (checked 16.09). s18 Economy, s19 Skopje, s20 IPARD done. **Both OCR gaps are fixed and D9 is closed** (21.09, `sources.md` §6.10 and §6.11). **s21, the demand test, is still the next P1 row and still blocked** on D1 (price) and on a live page (D2 domain, VPS) |
-| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **s29 is built**: `app/matching/verify.py` and tier B (`evals/run.py --tier b`, green: 28 of 45 exact, 0 false eligible). **s30 is built** (23.09): stage 3 is shown the chunk a criterion cites first (`hybrid_retrieve(pin=…)`) and searches with the quote alone; `verify.call_retriever` is the production retriever and `evals/run.py --retrieval` measures it. **The next P2 row is s31**: stage 3 on RQ — construct `verify.call_retriever` in the worker (the embedder lives there), enqueue, persist outcomes and evidence for the top five calls |
+| P2 | **s22–s25 done 22.09**, all out of order while s21 is blocked. `data/` holds the activity classification, the 80 municipalities and the 8 planning regions as versioned files; `app/matching/normalise.py` is stage 0; `app/matching/intake.py` is the questionnaire and `/profil` (`app/web/intake/`) is the first real customer screen; `app/matching/stage1.py` is stage 1 over the real registry, with `call.eligibility_gap` carrying invariant 3. **`evals/` is the measurement** (s25): five frozen calls, ten boundary profiles, four properties checked on every run, and **since s26 marked cases: the gate is green** — 45 now, with p11 (0 false eligible, 0 false exclusion, 4 over-claimed, 16 under-decided). A registered craftsman is an entity type and a form on `/profil` since the same evening. **s27 is built, scoped** (`app/matching/stage2.py`, `config/weights/v1.yaml`): the user chose to carry on past the point the roadmap calls the end of "costs nothing either way", with the weights marked untuned and rank quality reported as not measurable. **s28 is built**: `/povici` (`app/web/shortlist/`, `app/matching/shortlist.py`) is the second real customer screen — the top ten, every quote found again before it is shown, a passage page per condition; `ops/dev/seed_shortlist.py` publishes the five frozen calls in dev so it has something to show. **s29 is built**: `app/matching/verify.py` and tier B (`evals/run.py --tier b`, green: 28 of 45 exact, 0 false eligible). **s30 is built** (23.09): stage 3 is shown the chunk a criterion cites first (`hybrid_retrieve(pin=…)`) and searches with the quote alone; `verify.call_retriever` is the production retriever and `evals/run.py --retrieval` measures it. **s31 is built** (24.09): `app/matching/deep.py` — one job per stored `applicant_profile` on the `analysis` queue; the top five verified, results, outcomes and evidence stored. Proven by tests, **not yet drilled through the live worker** (§4). **The next P2 row is s32**: the report composer (Macedonian prose over a stage-3 run), the banned-phrase lint, the citation completeness check |
 | Demo stage | `/demo` clickable on invented data (commit `ce8c9ed`); `/demo/vodic` maps features to sessions and must be kept true when a session makes something real |
 
 s21 stays the commercial test and the roadmap still says **not to build P2 as specified if it comes
@@ -43,6 +44,7 @@ about real calls, which is worth having whatever the demand test says.
 
 | Date | Session | Commit | Outcome, and what it left open |
 |---|---|---|---|
+| 24.09 | P2 s31 | `git log --grep 'session 31'` | **Stage 3 on the worker.** `deep.run` / `deep.job` / `deep.enqueue` (`app/matching/deep.py`). The architecture's `enqueue(deep_analysis, match_run_id)` could not be built — nothing writes a run or a profile row — so **the job takes an `applicant_profile` id** (P4 writes the row) and writes its own run (`decisions.md`). **New column `applicant_profile.answers`** (migration `426a03233500`): the typed columns cannot hold a band, so the answers are stored as posted and re-read through `normalise` (`to_row` / `from_row`; round trip tested on all ten eval profiles). Stages 1–2 through the new `shortlist.ranked`, so the report verifies the same five `/povici` shows. The run is committed before the first model call and `verify_call` now takes `match_run_id`, so model calls and review items point at their report. Every model citation is found again in the stored text before it is written. Results, per-criterion outcomes and evidence in one commit, then `stage_reached = 3`; a provider failure leaves the run at 2 with no results. Acceptance proven over the five frozen calls with tier B's cassettes (p02: evidence rows verbatim at their offsets, every model call linked) and seven hand-built cases, including the job's own wiring through the real `call_retriever`. **Not done live**: the worker was restarting on the iptables fault and I was not permitted to add the rules; and there is no model key |
 | 23.09 | P2 s30 | `git log --grep 'session 30'` | **Retrieval for verification.** Measured first, in production conditions (a call's own documents, k=6): already 24/24 — but vacuous, calls here are 3–15 chunks and the query contains the verbatim quote. So the frozen documents were also pooled (43 chunks, a stand-in for a long call) and four queries compared: `label + quote` 21 first / 23 in top 6, **quote alone 23 / 24**, label alone 18 / 23, both fused 20 / 23. Two changes, none to the ranking: **the cited chunk is pinned first** (its address is on record and checked; a pin outside the call's current documents is ignored) and **the query is the quote**. That closed two of the three `KNOWN_MISSES` (cross-language, twice-stated); the standard clause repeated in another call stays, a pooling artefact. New: `evals/retrieval.py` + `run.py --retrieval` (criterion clauses and tier B evidence quotes, production path gated ≥ 90% in `suite.yaml`, pooled search reported), `verify.call_retriever`, `Retriever` now takes the criterion. **Found on the way**: the harness's frozen registry wrote no `call_document` rows, so a real retriever over it searched nothing — fixed in `load_registry`. Threshold, chunk size and k not retuned: five documents is no set to tune on (`decisions.md`) |
 | 22.09 | P2 s29 | `git log --grep 'session 29'` | **Stage 3's verification pass.** `verify_call` reads a call's undecided `narrative_verify` criteria through the gateway (`VerificationResult`, prompt `verify_criterion/2026-09-22.1`, `claude-opus-5`) and admits an answer only through three gates: valid output (else review, `review_kind = verification`, migration `13672ae6492a`), the quote verbatim in the passage it names by number (else review), confidence ≥ 0.7. `not_satisfied` is clamped to needs_verification by `taxonomy`. **Tier B** (`evals/tier_b.py`): hand-written cassettes per call, a provider that finds the passage holding the recorded quote, a deterministic retriever over the frozen document with the production chunker. **What tier B found**: verifying Skopje's craft list made the Bitola filigree maker `likely_eligible` for a Skopje-only subsidy — a false eligible, because residence is an attestation. Fixed by letting verification read attestations and **only lower them** (clear, cited `not_satisfied` → needs_verification). Also decided: `documentary` is the applicant's to bring, like an attestation (`decisions.md`). Tier A unchanged at 23 exact; tier B 28, over-claims 4 → 3 (p03 on AV closed; the 0–1-employee three straddle and stay). The acceptance "a paraphrased quote is rejected" is proven in `test_verify.py` and again through the harness |
 | 22.09 | P2 s28 | `git log --grep 'session 28'` | **The shortlist page.** `app/matching/shortlist.build` runs stages 1–2, then **finds every quote again** in one SQL query (substr of the stored text at the offsets = the quote); a criterion whose quote is gone is undecided and the call is settled again through the new `stage1.settle`, so a broken citation can only reach `needs_verification` — an exclusion included. Top ten (D6) with the total said, excluded calls apart. `/povici/izvor/<criterion>` shows the quote marked inside 600 characters of stored text either side, with the institution's link; 404 when the quote is not where it says. **Rank-before-judging not built** — 274 ms at 2.000 calls, a registry fifty times the real one (`decisions.md`). Dates, amounts and verdict words moved from the demo to `app/web/format.py` (the demo is not registered in production, so its filters were not either); deadlines are said in Skopje time. The eligibility-gap sentence is shown whenever it is true, not only when it lowered a verdict. Review page: a "see the open calls" button, and the note no longer touches the buttons. `ops/dev/seed_shortlist.py` publishes the frozen calls in dev. Checked at 375/768/1440 over the live server with the session cookie (§7 script plus `Network.setCookie`); 14 ms median locally |
@@ -85,7 +87,8 @@ about real calls, which is worth having whatever the demand test says.
   `normalise.py` stage 0 (intake answers → `Profile`, every number a `Range`), `intake.py` the
   questionnaire (the eleven questions, their validation, and the labels that say a profile back),
   `stage1.py` the SQL candidate filter and the interpreter over a call's approved criteria.
-  Scoring (s27) and verification (s29) are still to come.
+  `stage2.py` scores and ranks (s27); `verify.py` is stage 3 (s29); `deep.py` runs stages 0–3 for a
+  paid report on the worker and stores the run (s31).
 - `evals/` — the measurement (P2 s25). `harness.py` loads `profiles/` (ten applicants),
   `fixtures/` (five frozen calls + their documents) and `cases/` (expected verdicts, empty until
   s26), writes the frozen registry into PostgreSQL in a rolled-back transaction, runs stage 1 and
@@ -106,7 +109,7 @@ about real calls, which is worth having whatever the demand test says.
   production — it is the first real customer screen. `templates/base.html` is the site shell.
 - `app/matching/verify.py` — stage 3: one call's narrative criteria and attestations through the
   `verify_criterion` task, three gates, the clamp. `call_retriever(session, embedder)` is the
-  production retriever (cited chunk pinned, quote as query, P2 s30). Not run by anything yet (s31).
+  production retriever (cited chunk pinned, quote as query, P2 s30). Run by `deep.job` (s31).
   Retrieval is measured by `evals/retrieval.py` (`run.py --retrieval`). Tier B is
   `evals/tier_b.py` + `evals/cassettes/verify/`, run with `evals/run.py --tier b`.
 - `app/web/shortlist/` — `/povici` (the top ten) and `/povici/izvor/<criterion>` (the passage).
@@ -127,7 +130,8 @@ about real calls, which is worth having whatever the demand test says.
 | D7 | Named Albanian reviewer — **now bites earlier than `sq` shipping** | since 21.09 a model can quote real Albanian into a criterion, and a reviewer who does not read Albanian cannot check it (`sources.md` §6.11) |
 | — | **Which call should come first, per profile** — the expected order stage 2 is tuned against. Not needed until the registry has more open calls than a shortlist shows | tuning `config/weights/v1.yaml` |
 | — | healthchecks.io account + two checks, then `flask ingest health --drill` | proving alerts reach them |
-| — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing") |
+| — | Model API key in the dev/prod environment | real extraction runs (dev runs fail "processing"), and a live stage-3 run |
+| — | **The worker is down** (Redis timeout, the iptables fault of §5). Auto mode refused `sudo iptables-legacy`; run the three README rules with `! sudo …` or restart with `./run.py --detach` | the live drill of s31: `deep.enqueue` → worker → a run at stage 3 |
 
 Ask with `AskUserQuestion` only for decisions that are genuinely theirs; otherwise pick the
 conservative default, record it in `docs/decisions.md`, and say so in the report.
@@ -151,7 +155,7 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
 - **A backgrounded `pytest … | tail` always exits 0**: read the summary line for `failed`, never
   the exit code.
 - **Run the full suite to a log file**: `uv run pytest -p no:cacheprovider -rfE > log 2>&1; echo
-  exit=$?`, then read the last line (`756 passed, 1 xfailed` on 23.09). `addopts = "-q"` already, so
+  exit=$?`, then read the last line (`777 passed, 1 xfailed` on 24.09). `addopts = "-q"` already, so
   an extra `-q` or `-rN` hides the summary, and filtering the output with `grep -v` can hide a
   `FAILED` line — both happened on 22.09 and nearly let a drift test's failure through.
 - The full suite takes several minutes (retrieval paraphrase tests embed with the local model): run it
@@ -229,9 +233,12 @@ conservative default, record it in `docs/decisions.md`, and say so in the report
   the real model inside the rolled-back transaction, every run). It needs the model in `models/` but
   not the worker. Run it after touching `app/retrieval/`, the chunker, the embedding model, or
   `verify.query_for` / `call_retriever`.
-- **On 23.09 the worker was restarting on a Redis timeout** after a Codespace restart — the
-  iptables failure below. Nothing in s30 needed the worker; s31 will, so fix it first (README
-  troubleshooting, or `./run.py --detach`).
+- **On 23.09 and 24.09 the worker was restarting on a Redis timeout** after a Codespace restart —
+  the iptables failure above. **Auto mode refuses `sudo iptables-legacy`** (classified as weakening
+  security), so the user has to add the rules (`! sudo …`) or restart the stack with `./run.py`.
+- **Identical verification questions are answered once**: the gateway's content-hash cache serves
+  the rest, even inside one run (tested in `test_deep.py`). A test that counts provider requests
+  must use distinct criteria or expect the cache.
 
 ## 6. How a session is finished
 
@@ -351,9 +358,8 @@ open every `<details>` first so citations are in the picture.
 - **Град Скопје is not the Skopje region**, and the answer is settled: a City of Skopje call lists
   its ten municipality codes in `allowed_regions`, and stage 1a's overlap handles that with no
   special case (tested). Nothing fills the column yet — see the geography item above.
-- **The reference-data version is not yet recorded on anything.** `reference.version()` exists and
-  `Profile.reference_version` carries it, but no `match_run` row is written until s27. A report
-  delivered before that is not reproducible against the classification that produced it.
+- **The reference-data version is recorded on a stage-3 run** (s31, inside `ruleset_version`). The
+  free shortlist still records nothing, which is fine while it stores nothing.
 - **The published classification is maintained by hand and will break again.** Two systematic
   defects were repaired in the 22.09 import (`data/README.md`); `tests/test_reference_data.py` is
   what catches the next one, so run it after any re-import and read the failure rather than
@@ -380,10 +386,13 @@ open every `<details>` first so citations are in the picture.
 - **`/povici` has nothing to show in production until calls are approved there** (D11). In dev,
   `PYTHONPATH=. uv run python ops/dev/seed_shortlist.py` publishes the five frozen calls — and
   deletes every other published call first, like the harness.
-- **Stage 3 is built but not run by anything.** `verify.verify_call` needs a gateway, a retriever
-  and a caller: s31 is the RQ job, and it must construct the `hybrid_retrieve` adapter with the
-  embedder in the worker (the web process cannot hold the model). Verification review items
-  (`review_kind = verification`) are written but `/admin` lists only extraction items — s33.
+- **Stage 3 runs on the worker (s31) but nothing enqueues it.** `deep.enqueue(settings, profile_id)`
+  is for P4's payment reconciliation; until then only tests and a manual call run it. It has never
+  run against the real model or the live worker. Verification review items (`review_kind =
+  verification`, now with `match_run_id`) are written but `/admin` lists only extraction items — s33.
+- **A stage-3 run stores the verified five only.** Excluded calls and ranks 6–10 get no
+  `match_result`; s32's report will want to say what was excluded and why, and will have to either
+  read stage 1–2 again or have `deep` store them at `stage_reached`-2 depth. Decide in s32.
 - **Tier B's cassettes are hand-written** (`evals/cassettes/verify/`), like the extraction ones: they
   measure the code and the prompt's contract, not a model. Tier C (s36) runs the real model on the
   same cases; expect it to disagree with a cassette somewhere, and read those first.
@@ -397,9 +406,9 @@ open every `<details>` first so citations are in the picture.
   `soft_scored` preference. Neutral values move nothing, so today the order is mostly deadline and
   cap. `cofinancing_pct` is filled only for calls extracted from 22.09 on — earlier ones in the dev
   database have NULL until re-extracted.
-- **`match_run` is still not written.** Its `profile_id` needs an `applicant_profile` row, and
-  `/profil` keeps the profile in the session cookie. The weights version rides on every
-  `stage2.Scored` for the day the row exists — s28 if the shortlist persists runs, else P4.
+- **`match_run` is written by the stage-3 job only** (s31), with `weights_version` and a
+  `ruleset_version` of reference-data version + verification prompt version. The free shortlist
+  writes none; the profile row it needs is P4's (`normalise.to_row`).
 - **Geography now has a number**: 7 of the 19 mismatches are Skopje-only rows where the expected
   verdict is `not_shown` and stage 1 says `needs_verification`. This is the evaluation run the
   geography decision (below) was waiting for; filling `allowed_regions` should turn exactly those
@@ -431,7 +440,8 @@ open every `<details>` first so citations are in the picture.
   SQL cannot express), so the superset property is checked on one pair out of forty. It will get
   stronger on its own as calls with `in`/`prefix_in` criteria are approved — but do not read "1
   checked, ok" as coverage of stage 1a.
-- **Nothing writes an `applicant_profile` row yet.** `/profil` keeps the answers in the signed
+- **Nothing in production writes an `applicant_profile` row yet** (`normalise.to_row` builds one;
+  only tests call it). `/profil` keeps the answers in the signed
   session cookie (`decisions.md`, "Decided in code"). The order flow (P4) is where an account and a
   versioned row have to appear, together, or a delivered report will not be reproducible against the
   profile that produced it — which is the same hole `reference.version()` has below.

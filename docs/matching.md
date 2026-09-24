@@ -412,6 +412,26 @@ the search, and it rests on five documents. The trigram threshold and the chunk 
 retuned: there is no larger set to tune them on yet.
 - **Not on the free shortlist.** Stage 3 is the paid report's (§1); `/povici` still shows stage 1–2.
 
+### On the worker, 24.09.2026 (P2 s31) — `app/matching/deep.py`
+
+`deep.run(session_factory, gateway, retriever_for, profile_id)` is the paid report's stages 0–3:
+stage 0 over `applicant_profile.answers`, stages 1–2 through `shortlist.ranked` (the same function
+`/povici` uses, citation re-check included), a `match_run` committed before the first model call,
+`verify_call` on the top five open calls, then `match_result`, `match_criterion_outcome` and
+`evidence` in one commit and `stage_reached = 3`. `deep.job(profile_id)` is what the worker runs; it
+builds `verify.call_retriever` with the local embedder, which is why this is not in the web process.
+Two things beyond the design above:
+
+- **Every model citation is found again in the stored text** before it is written — the chunk is a
+  span of the snapshot by construction, so this should never fire; if it does, the condition is
+  undecided and a `verification` review item says why.
+- **Every row a run causes points at it**: model calls (`model_call.match_run_id`) and review items.
+  The cost of one report is a sum over those (s36).
+
+Model citations are stored as `evidence`; a rule's citation is its criterion's own, which cannot be
+removed once an outcome references it. Excluded calls get no result rows (the free shortlist lists
+them). Why a profile id and not a run id: `decisions.md`, 24.09.2026.
+
 ---
 
 ## 6. Stage 4 — the review gate, and the flywheel

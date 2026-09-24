@@ -24,6 +24,7 @@ from app.matching import reference
 from app.matching.hard_filter import Range
 from app.matching.operators import ProfileField
 from app.matching.reference import Municipality, Nace
+from app.models import ApplicantProfile
 from app.models.enums import EntityType
 
 # --------------------------------------------------------------- the vocabulary
@@ -288,3 +289,40 @@ def normalise(answers: dict, today: dt.date | None = None) -> Profile:
         project_description=str(answers.get("description") or "").strip(),
         reference_version=reference.version(),
     )
+
+
+# ------------------------------------------------------------------ the stored row
+
+
+def to_row(profile: Profile, account_id) -> ApplicantProfile:
+    """The `applicant_profile` row for a profile: its answers, and what is exact in them.
+
+    The answers are what a match run reads back (`from_row`), so a run can be
+    repeated from the row alone. The typed columns are for queries and hold only
+    what the answers state exactly: a headcount or investment *band* is not a
+    number, so those columns stay empty rather than holding a guessed one.
+    """
+    declared = profile.entity_types - SIZE_TYPES
+    entity = next(iter(declared), None) or profile.size_band or EntityType.OTHER.value
+    try:
+        founded = int(str(profile.answers.get("founded")).strip())
+    except (TypeError, ValueError):
+        founded = None
+    return ApplicantProfile(
+        account_id=account_id,
+        answers=dict(profile.answers),
+        entity_type=EntityType(entity),
+        nace_code=profile.nace_code,
+        municipality_code=profile.municipality_code,
+        region_code=profile.region_code,
+        founded_year=founded if profile.age_months else None,
+        turnover_band_mkd=profile.answers.get("turnover") if profile.turnover_mkd else None,
+        cofinancing_capable_pct=profile.cofinancing_pct,
+        timeline_months=profile.timeline_months,
+        project_description=profile.project_description or None,
+    )
+
+
+def from_row(row: ApplicantProfile, today: dt.date | None = None) -> Profile:
+    """Stage 0 again over the stored answers: the same function the form ran."""
+    return normalise(dict(row.answers or {}), today)

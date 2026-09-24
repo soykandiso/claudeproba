@@ -532,6 +532,25 @@ and it rests on five documents. **Not changed:** the trigram threshold, the chun
 day a call with a long guideline is approved, add it to the frozen set and re-run
 `evals/run.py --retrieval` before touching any of the three.
 
+### A paid report is one job per stored profile, and the profile row keeps its answers (24.09.2026, P2 s31)
+
+`architecture.md` §6 sketched `enqueue(deep_analysis, match_run_id)`, a run the free shortlist had
+already written. Nothing writes one: `/profil` keeps the answers in the session cookie (above). So the
+job takes an **`applicant_profile` id** — the row P4's order flow will write when someone pays — and
+writes its own `match_run`, committed before any model is asked so every model call and review item
+points at it (s36 sums cost per run from those). It is marked `stage_reached = 3` only when results,
+per-criterion outcomes and evidence are written, in one commit; a run left at 2 is a job that failed,
+and running it again makes a new run, with the gateway's cache answering what was already paid for.
+
+**`applicant_profile.answers`** (migration `426a03233500`) holds the intake answers exactly as
+posted, and the run reads them back through the same `normalise()` the form ran. The typed columns
+could not carry a profile: the form asks for *bands* (2–9 employees, 1–3 million МКД), and an integer
+headcount would have to be a guessed number. They are filled where an answer is exact
+(`normalise.to_row`) and left empty otherwise. **Only the five verified calls get result rows**;
+`candidates_considered` records how many were ranked. **What P4 has to do:** create the account and
+the row (`normalise.to_row`), put its id on the order, and call `deep.enqueue` when the payment is
+reconciled.
+
 ---
 
 ## Summary — what to decide, and by when
