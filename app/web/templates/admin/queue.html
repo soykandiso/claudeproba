@@ -8,7 +8,7 @@
   </div>
 
   <section class="stack-lg" aria-labelledby="pending-h">
-    <h2 id="pending-h">Чека одлука{% if pending %}, {{ pending|length }}{% endif %}</h2>
+    <h2 id="pending-h">Повици што чекаат{% if pending %}, {{ pending|length }}{% endif %}</h2>
     {% if pending %}
     <ul class="rows">
       {% for item in pending %}
@@ -28,6 +28,51 @@
     </ul>
     {% else %}
     <p>Нема ништо за преглед. Новите повици стигнуваат по секое преземање од изворите (<span class="id id--14">flask ingest due</span>).</p>
+    {% endif %}
+  </section>
+
+  <section class="stack-lg" aria-labelledby="reports-h">
+    <div class="stack">
+      <h2 id="reports-h">Извештаи што чекаат{% if report_pending %}, {{ report_pending|length }}{% endif %}</h2>
+      <p class="soft">Ниту еден извештај не стига до корисник додека не го прифатите тука. Прифаќањето повторно ги проверува забранетите изрази и секој цитат.</p>
+    </div>
+    {% if report_pending %}
+    <ul class="rows">
+      {% for item in report_pending %}
+      <li>
+        <div class="stack">
+          <span class="small soft">{% if item.priority < 100 %}<strong>Блокиран</strong>, прочитајте ги проблемите{% else %}Нацрт за преглед{% endif %}</span>
+          <a class="break" href="{{ url_for('admin.report', item_id=item.id) }}"><strong>{{ report_titles[item.id] }}</strong></a>
+        </div>
+        <div class="rows__meta small">
+          <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
+          <span class="soft">{{ item.created_at|datetime_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нема извештаи за преглед. Нацрт се појавува кога ќе заврши длабоката анализа на платена нарачка.</p>
+    {% endif %}
+    {% if report_decided %}
+    <details class="why">
+      <summary>Последни одлуки за извештаи, {{ report_decided|length }}</summary>
+      <ul class="rows">
+        {% for item in report_decided %}
+        <li class="rows--closed">
+          <div class="stack">
+            <span class="small">{{ report_state_labels[item.state] }}</span>
+            <a class="break" href="{{ url_for('admin.report', item_id=item.id) }}">{{ report_titles[item.id] }}</a>
+            {% if item.reviewer_note %}<span class="small break">{{ item.reviewer_note }}</span>{% endif %}
+          </div>
+          <div class="rows__meta small">
+            <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
+            <span>{{ item.resolved_at|datetime_mk }}</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
     {% endif %}
   </section>
 

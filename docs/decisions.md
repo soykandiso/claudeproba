@@ -571,6 +571,24 @@ and a report must be reproducible. Open calls ranked below the five are still no
 the prose, for the same reason it verifies. The draft is stored in the review item's `payload`
 (`DRAFT_VERSION = 1`); no report table until s35 renders one.
 
+### A report reviewer edits the model's prose, not the verdicts (29.09.2026, P2 s33)
+
+The review screen lets the reviewer rewrite any statement of the model's prose and the condition
+numbers it cites, remove one (never a call's last explanation), approve or close. **It does not let
+them change a verdict, a condition, a reason or a quote.** Those were written by code from the stored
+run; a wrong one is a wrong criterion or a wrong verification, and fixing it in one report would leave
+the next report wrong in the same way. The reviewer closes the report with the reason instead, and the
+reason becomes an evaluation case (s34). If real drafts show this is too strict — a verification reason
+in poor Macedonian, say — the next step is an edit path for reasons with the same lint, not for verdicts.
+
+**An edit is refused whole** if it would fail the schema the model had to meet or add a problem at that
+statement, rather than saved and shown as blocking: a reviewer should never be able to store a draft
+worse than the one they were given. The approval check runs regardless. **The edited draft is kept
+complete in `corrected_payload`** (that is what `blockers()` reads), with an `edits` log of each before
+and after; `payload` stays what the model wrote. **The time a review took** is measured from the first
+view of the item in the operator's session to the decision, and said back in the confirmation and the
+log; nothing stores it, since there is one reviewer and the number is for them.
+
 ---
 
 ## Summary — what to decide, and by when

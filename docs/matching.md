@@ -373,8 +373,8 @@ Three defences worth naming explicitly:
   find an attestation contradicted, never confirm one, never exclude on one.
 - **A failure keeps what was there.** Invalid output (after the gateway's retry) and a quote not in
   its passage both go to the review queue as `review_kind = verification`; the narrative criterion
-  stays `unclear`, the attestation stays outstanding. `/admin` does not list these yet (it shows
-  extraction items); the report review UI of s33 is where they surface.
+  stays `unclear`, the attestation stays outstanding. Since s33 they are listed on the report
+  page of the run they belong to (`/admin/izveshtaj/<id>`), not in the queue on their own.
 - **The shape the model sees** is form and size band, activity code and name, region, whether the
   seat is in Град Скопје, age in months, headcount, turnover and investment bands. Not the
   municipality, not the founding year, not the project description.

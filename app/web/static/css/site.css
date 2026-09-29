@@ -282,6 +282,16 @@ fieldset.field legend + * { clear: both; }
   font-size: var(--text-14);
 }
 
+/* The report under review (admin, P2 s33): the model's statements, one per row,
+   each with the conditions it cites. */
+.statements { list-style: none; padding: 0; max-width: var(--measure); }
+.statements > .statement { padding-block: var(--s-16); border-top: 1px solid var(--rule); scroll-margin-top: var(--s-96); }
+.statements > .statement:first-child { border-top: 0; padding-top: 0; }
+.statement__text { font-family: var(--font-display); line-height: 1.65; }
+.report-call { padding-top: var(--s-32); }
+.report-call .call { margin-top: 0; }
+.criterion[id] { scroll-margin-top: var(--s-96); }
+
 .back { font-size: var(--text-14); display: inline-flex; min-height: 44px; align-items: center; }
 
 /* ------------------------------------------------------------------ demo platform */

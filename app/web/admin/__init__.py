@@ -1,7 +1,7 @@
-"""The operator's review queue for extraction items (roadmap P1 s15).
+"""The operator's review queue: extraction items (roadmap P1 s15) and reports (P2 s33).
 
-Screens over app/review/extraction.py, which holds every decision; nothing here
-decides. Forms post and redirect; no JavaScript.
+Screens over app/review/extraction.py and app/review/report.py, which hold every
+decision; nothing here decides. Forms post and redirect; no JavaScript.
 
 **Not registered in production** (app/__init__.py) until the operator can sign in:
 publishing a call is the most consequential action in the system, and there is no
@@ -25,6 +25,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from markupsafe import Markup
@@ -36,9 +37,11 @@ from app.ingestion.snapshots import CorruptSnapshot, SnapshotStore
 from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
-from app.models.enums import CriterionKind, ReviewState, TextSource
+from app.models.enums import CriterionKind, ReviewState, TextSource, Verdict
 from app.review import extraction as review
+from app.review import report as reports
 from app.web import csrf
+from app.web.format import mkdate
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -147,6 +150,12 @@ def datetime_mk(value: dt.datetime | None) -> str:
     return value.astimezone(_tz()).strftime("%d.%m.%Y %H:%M") if value else ""
 
 
+@bp.app_template_filter("iso_mkdate")
+def iso_mkdate(value: str | None) -> str:
+    """A stored ISO timestamp (a draft is JSON) as the Skopje day it fell on."""
+    return mkdate(dt.datetime.fromisoformat(value)) if value else ""
+
+
 @bp.app_template_filter("amount")
 def amount(value) -> str:
     """12.000,00 as Macedonian writes it."""
@@ -201,10 +210,15 @@ def queue():
     with _sessions()() as db:
         pending, decided = review.queue(db)
         titles = _titles(db, pending + decided)
+        report_pending, report_decided = reports.queue(db)
         return render_template(
             "admin/queue.html",
             pending=pending,
             decided=decided,
+            report_pending=report_pending,
+            report_decided=report_decided,
+            report_titles={i.id: _report_title(i) for i in report_pending + report_decided},
+            report_state_labels=REPORT_STATE_LABELS,
             titles=titles,
             stage_of=review.stage_of,
             stage_labels={item.id: _stage_label(db, item) for item in pending + decided},
@@ -506,3 +520,202 @@ def _manual_form_error(message: str, status: int):
         "admin/manual.html", typed=request.form.to_dict(), error=message, max_urls=manual.MAX_URLS
     )
     return page, status
+
+
+# -- reports (P2 s33) ---------------------------------------------------------------------
+
+DECIDED_BY_LABELS = {
+    "rule": "Правило над профилот",
+    "model": "Проверка според текстот",
+    "applicant": "Го потврдува барателот",
+}
+
+REPORT_STATE_LABELS = {
+    ReviewState.PENDING: "Чека одлука",
+    ReviewState.APPROVED: "Прифатен за испраќање",
+    ReviewState.EDITED: "Изменет и прифатен за испраќање",
+    ReviewState.REJECTED: "Затворен, не се испраќа",
+}
+
+
+def _report_title(item) -> str:
+    """What a report item is, in words: how many calls, or why there is no draft."""
+    if not reports.is_draft(item):
+        return "Одговорот на моделот не ја помина шемата, нема нацрт"
+    draft = reports.draft_of(item)
+    count = len(draft["calls"])
+    return (
+        f"Извештај од {mkdate(dt.date.fromisoformat(draft['run_date']))}, "
+        f"{count} {'повик' if count == 1 else 'повици'} за проверка"
+    )
+
+
+def _report_or_404(db, item_id: int):
+    item = reports.get_item(db, item_id)
+    if item is None:
+        abort(404)
+    return item
+
+
+def _opened_key(item_id: int) -> str:
+    return f"report-opened-{item_id}"
+
+
+def _passage(snapshots: dict, citation: dict | None) -> dict | None:
+    """A citation shown where it stands in the stored text, with the page when OCR'd."""
+    if not citation:
+        return None
+    snapshot = snapshots.get(citation.get("snapshot_id"))
+    return {
+        "c": citation,
+        "context": _in_context(
+            snapshot.normalised_text if snapshot else None,
+            citation.get("char_start"),
+            citation.get("char_end"),
+        ),
+        "page_image": _page_image_url(snapshot, citation.get("char_start")),
+        "ocr": snapshot is not None and snapshot.text_source in (TextSource.OCR, TextSource.MIXED),
+    }
+
+
+@bp.get("/izveshtaj/<int:item_id>")
+def report(item_id: int):
+    with _sessions()() as db:
+        return _render_report(db, _report_or_404(db, item_id))
+
+
+def _render_report(db, item, *, error=None, open_form=None, typed=None):
+    pending = item.state == ReviewState.PENDING
+    if pending:
+        # The row's acceptance is a time: say it back at the decision (see _decide_report).
+        session.setdefault(_opened_key(item.id), _now().isoformat())
+    context = {
+        "item": item,
+        "pending": pending,
+        "state_label": REPORT_STATE_LABELS[item.state],
+        "error": error,
+        "open_form": open_form,
+        "typed": typed or {},
+        "failures": reports.verification_failures(db, item),
+        "decided_by_labels": DECIDED_BY_LABELS,
+        "verdicts": Verdict,
+    }
+    if not reports.is_draft(item):
+        context.update(invalid=item.payload or {}, draft=None, problems=[])
+        return render_template("admin/report.html", **context), 422 if error else 200
+
+    draft = reports.draft_of(item)
+    problems = reports.approval_problems(db, item) if pending else []
+    shown, at = [], {}
+    for p in problems:
+        words, anchor = reports.place(p["where"])
+        shown.append({"where": words, "anchor": anchor, "detail": reports.describe(p["detail"])})
+        if anchor:
+            at.setdefault(anchor, []).append(shown[-1]["detail"])
+
+    ids = {
+        cit["snapshot_id"]
+        for entry in draft["calls"] + draft["excluded"]
+        for c in entry["conditions"]
+        for cit in (c.get("citation"), c.get("evidence"))
+        if cit and cit.get("snapshot_id") is not None
+    }
+    snapshots = {s.id: s for s in db.query(RawSnapshot).filter(RawSnapshot.id.in_(ids))}
+    passages = {}
+    for entry in draft["calls"] + draft["excluded"]:
+        for c in entry["conditions"]:
+            key = c.get("ref") or c["criterion_id"]
+            passages[key] = {
+                "citation": _passage(snapshots, c.get("citation")),
+                "evidence": _passage(snapshots, c.get("evidence")),
+            }
+    context.update(
+        draft=draft,
+        problems=shown,
+        problems_at=at,
+        passages=passages,
+        edits=(item.corrected_payload or {}).get("edits", []),
+    )
+    return render_template("admin/report.html", **context), 422 if error else 200
+
+
+def _decide_report(item_id: int, action, *, open_form=None, typed=None):
+    with _sessions()() as db:
+        item = _report_or_404(db, item_id)
+        try:
+            message = action(db, item)
+        except review.ReviewError as exc:
+            db.rollback()
+            return _render_report(
+                db, _report_or_404(db, item_id), error=str(exc), open_form=open_form, typed=typed
+            )
+        db.commit()
+    flash(message)
+    return None
+
+
+def _minutes_spent(item_id: int) -> str:
+    opened = session.pop(_opened_key(item_id), None)
+    if opened is None:
+        return ""
+    minutes = max(1, round((_now() - dt.datetime.fromisoformat(opened)).total_seconds() / 60))
+    current_app.logger.info("report item %s decided after %s min", item_id, minutes)
+    return f" Прегледот траеше околу {minutes} мин."
+
+
+def _statement_address(form) -> dict:
+    try:
+        call = int(form["call"]) if form.get("call") else None
+        return {"part": form.get("part", ""), "call": call, "n": int(form.get("n", ""))}
+    except ValueError:
+        abort(400)
+
+
+@bp.post("/izveshtaj/<int:item_id>/izjava")
+def edit_statement(item_id: int):
+    form = request.form
+    address = _statement_address(form)
+    anchor = reports.place(reports.where(address["part"], address["call"], address["n"]))[1]
+
+    def act(db, item):
+        reports.edit_statement(
+            db, item, **address, text_mk=form.get("text_mk", ""), cites=form.get("cites", ""),
+            now=_now(),
+        )  # fmt: skip
+        return "Изјавата е зачувана и повторно проверена."
+
+    response = _decide_report(item_id, act, open_form=anchor, typed=form.to_dict())
+    return response or redirect(url_for("admin.report", item_id=item_id, _anchor=anchor))
+
+
+@bp.post("/izveshtaj/<int:item_id>/izjava/otstrani")
+def remove_statement(item_id: int):
+    address = _statement_address(request.form)
+
+    def act(db, item):
+        reports.remove_statement(db, item, **address, now=_now())
+        return "Изјавата е отстранета."
+
+    return _decide_report(item_id, act) or redirect(url_for("admin.report", item_id=item_id))
+
+
+@bp.post("/izveshtaj/<int:item_id>/odobri")
+def approve_report(item_id: int):
+    note = request.form.get("note", "")
+
+    def act(db, item):
+        reports.approve(db, item, note=note, now=_now())
+        return f"Извештајот {item.id} е прифатен за испраќање." + _minutes_spent(item.id)
+
+    return _decide_report(item_id, act) or redirect(url_for("admin.queue"))
+
+
+@bp.post("/izveshtaj/<int:item_id>/zatvori")
+def reject_report(item_id: int):
+    note = request.form.get("note", "")
+
+    def act(db, item):
+        reports.close(db, item, note=note, now=_now())
+        return f"Извештајот {item.id} е затворен и нема да се испрати." + _minutes_spent(item.id)
+
+    return _decide_report(item_id, act, open_form="reject") or redirect(url_for("admin.queue"))
