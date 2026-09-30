@@ -37,6 +37,12 @@ opportunity. The thresholds in `evals/suite.yaml` treat them accordingly, and
 "the system is less certain than the truth" is not a failure at all — it is the
 distance s27 (scoring) and s29 (verification) have to close, so it is reported as
 a number rather than gated.
+
+**Cases from review** (`evals/cases/from_review/`, P2 s34) are written by
+`app/review/cases.py` from every item a reviewer rejected or edited. They are loaded
+and their shape is checked — a malformed one blocks like any case file — but none
+is scored here: an extraction case needs the model (tier C, s36), and a report case
+says a verdict was wrong without saying what the right one was.
 """
 
 import datetime as dt
@@ -68,6 +74,7 @@ ROOT = Path(__file__).resolve().parent
 PROFILES = ROOT / "profiles"
 FIXTURES = ROOT / "fixtures"
 CASES = ROOT / "cases"
+FROM_REVIEW = CASES / "from_review"
 SUITE = ROOT / "suite.yaml"
 
 # A call that stage 1a never returned. Not a verdict: the shortlist simply does not
@@ -169,6 +176,8 @@ def load_cases(profiles: dict, fixtures: dict) -> tuple[list[Case], list[str], i
     """
     cases, problems, unanswered = [], [], 0
     for path in sorted(CASES.rglob("*.yaml")):
+        if path.is_relative_to(FROM_REVIEW):
+            continue  # another shape, written by a job: load_review_cases
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         where = f"cases/{path.relative_to(CASES)}"
         call = data.get("call")
@@ -192,6 +201,44 @@ def load_cases(profiles: dict, fixtures: dict) -> tuple[list[Case], list[str], i
                 continue
             cases.append(Case(row["profile"], call, expected, reason))
     return cases, problems, unanswered
+
+
+REVIEW_KINDS = {"extraction": "documents", "report": "draft"}  # kind → the part it must hold
+
+
+def load_review_cases(directory: Path = FROM_REVIEW) -> tuple[Counter, list[str]]:
+    """How many cases reviewer decisions have become, by (kind, decision), and the complaints.
+
+    The files are generated (`app/review/cases.py`), so a malformed one means the
+    exporter or a hand edit broke it — either way the case is measuring nothing,
+    which is the same reason a bad row in `evals/cases/` blocks.
+    """
+    counts, problems = Counter(), []
+    for path in sorted(directory.glob("*.yaml")):
+        where = f"cases/from_review/{path.name}"
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError as exc:
+            problems.append(f"{where}: not YAML ({exc.__class__.__name__})")
+            continue
+        kind, decision = data.get("kind"), data.get("decision")
+        if data.get("source") != "review" or data.get("version") != 1:
+            problems.append(f"{where}: not a version-1 case from review")
+        elif kind not in REVIEW_KINDS:
+            problems.append(f"{where}: {kind!r} is not a kind of review case")
+        elif path.name != f"{kind}-{data.get('item')}.yaml":
+            problems.append(f"{where}: names item {data.get('item')!r} of kind {kind!r}")
+        elif decision == "rejected" and not (data.get("reviewer_note") or "").strip():
+            problems.append(f"{where}: a rejection without its reason teaches nothing")
+        elif decision == "edited" and not data.get("edits"):
+            problems.append(f"{where}: an edit without its before and after")
+        elif decision not in ("rejected", "edited"):
+            problems.append(f"{where}: {decision!r} is not a decision a case is written for")
+        elif REVIEW_KINDS[kind] not in data:
+            problems.append(f"{where}: a {kind} case without its {REVIEW_KINDS[kind]}")
+        else:
+            counts[(kind, decision)] += 1
+    return counts, problems
 
 
 # --------------------------------------------------------- the registry, frozen
@@ -382,6 +429,7 @@ class Report:
     weights_version: str = stage2.WEIGHTS_VERSION
     open_calls: int = 0
     tier: str = "A"
+    from_review: Counter = field(default_factory=Counter)
 
     @property
     def median_latency_ms(self) -> float:
@@ -469,6 +517,16 @@ class Report:
                     lines.append(f"      {row.case.profile} × {row.case.call}: {row.case.reason}")
         for problem in self.problems:
             lines.append(f"  {problem}")
+        lines += ["", "cases from review"]
+        if not self.from_review:
+            lines.append("  none yet — written nightly from rejected and edited items (P2 s34)")
+        else:
+            lines.append(
+                f"  {sum(self.from_review.values())} loaded, none scored: an extraction case "
+                "waits for tier C (s36), a report case for a person to write the verdict"
+            )
+            for (kind, decision), count in sorted(self.from_review.items()):
+                lines.append(f"      {kind:<11} {decision:<9} ×{count}")
         lines.append("")
         blocked, warned = self.blocking(), self.warnings()
         for warning in warned:
@@ -581,6 +639,8 @@ def run(
     now = dt.datetime.combine(as_of, dt.time(12, 0), tzinfo=dt.UTC)
     profiles, fixtures = load_profiles(), load_fixtures()
     cases, problems, unanswered = load_cases(profiles, fixtures)
+    from_review, review_problems = load_review_cases()
+    problems += review_problems
 
     calls = load_registry(session, fixtures)
     by_id = {call.id: slug for slug, call in calls.items()}
@@ -668,4 +728,5 @@ def run(
         weights_version=stage2.WEIGHTS_VERSION,
         open_calls=sum(1 for f in fixtures.values() if f.shortlistable),
         tier=tier.upper(),
+        from_review=from_review,
     )

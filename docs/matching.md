@@ -461,7 +461,10 @@ stored snapshot**, and Approve / Edit / Reject.
 
 The part that matters more than the quality control: **every rejection or edit is written back as an
 evaluation case automatically.** `review_queue_item.corrected_payload` holds the diff, and a nightly
-job turns resolved items into fixtures under `evals/cases/from_review/`. The review gate is therefore
+job turns resolved items into fixtures under `evals/cases/from_review/` (built in s34 as
+`app/review/cases.py`, `flask review export-cases`: every rejected or edited extraction or report
+item, one file each, written once, nothing identifying; loaded and shape-checked by the harness,
+scored by nothing until tier C or a person writes the verdict — `decisions.md`, 30.09.2026). The review gate is therefore
 not a cost you are trying to eliminate — it is the mechanism that builds the test suite you have no
 other way to obtain. That reframing is what makes months of manual review worth doing.
 

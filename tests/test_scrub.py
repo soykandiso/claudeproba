@@ -78,6 +78,25 @@ def test_the_tripwire_fails_closed_and_does_not_log_the_value():
     assert "marija" not in str(raised.value)
 
 
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Јавете се на 070 123 456.",
+        "Тел.: 02/3123-456, после 16 часот.",
+        "Контакт 075123456; е-пошта подоцна.",
+    ],
+)
+def test_a_phone_number_is_scrubbed_where_punctuation_ends_it(sentence):
+    """Found in P2 s34: a mobile number ending a sentence passed, because the full
+    stop after it was read as the decimal point of an amount."""
+    text = Scrubber().scrub(sentence)
+    assert "[PHONE_1]" in text and find_identity_data(text) == []
+
+
+def test_a_decimal_amount_is_not_a_phone_number():
+    assert Scrubber().scrub("Износ: 070 123 456.00 денари") == "Износ: 070 123 456.00 денари"
+
+
 def test_bare_seven_digit_amounts_are_not_mistaken_for_embs():
     text = Scrubber().scrub(
         "Вкупен буџет од 5000000 денари, или 1 000 000 000 во петгодишен период."

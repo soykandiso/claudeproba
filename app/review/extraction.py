@@ -296,6 +296,8 @@ def approve_call(
         )
     ):
         _resolve(older, ReviewState.REJECTED, f"заменета со ставка {item.id}", now)
+        # Bookkeeping, not a judgement: no evaluation case is written for it (P2 s34).
+        older.corrected_payload = {**(older.corrected_payload or {}), "superseded_by": item.id}
     session.flush()
     return call
 
@@ -368,7 +370,7 @@ def edit_criterion(
         )
     snapshot, start, end = located
 
-    before = _criterion_state(criterion)
+    before = criterion_state(criterion)
     criterion.kind = parsed.kind
     criterion.label_mk = parsed.label_mk
     criterion.field = parsed.field
@@ -377,7 +379,7 @@ def edit_criterion(
     criterion.snapshot_id = snapshot.id
     criterion.quote_start, criterion.quote_end = start, end
     criterion.source_quote = snapshot.normalised_text[start:end]
-    after = _criterion_state(criterion)
+    after = criterion_state(criterion)
     if after != before:
         _record_edit(item, f"criterion:{criterion.id}", before, after, now)
     session.flush()
@@ -398,7 +400,7 @@ def remove_criterion(
         raise ReviewError(
             f"Условот е дел од {used} резултати на совпаѓање и не може да се избрише."
         )
-    _record_edit(item, f"criterion:{criterion.id}", _criterion_state(criterion), None, now)
+    _record_edit(item, f"criterion:{criterion.id}", criterion_state(criterion), None, now)
     session.delete(criterion)
     session.flush()
 
@@ -500,7 +502,8 @@ def _iso(value: dt.datetime | None) -> str | None:
     return value.isoformat() if value else None
 
 
-def _criterion_state(c: EligibilityCriterion) -> dict:
+def criterion_state(c: EligibilityCriterion) -> dict:
+    """A criterion as the edit log and the evaluation cases record it (app/review/cases.py)."""
     return {
         "kind": str(c.kind),
         "label_mk": c.label_mk,

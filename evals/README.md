@@ -23,7 +23,7 @@ third adjustment cannot be told from the first.
 | `profiles/` | ten applicants, as intake answers, each sitting on a boundary | a session, by hand |
 | `fixtures/` | five real calls, frozen: the document, the columns, the approved criteria | `ops/dev/freeze_eval_fixtures.py` |
 | `cases/` | the expected verdict and a one-line reason per (profile × call) | **the user** |
-| `cases/from_review/` | cases generated from reviewer corrections (P2 s34) | a nightly job |
+| `cases/from_review/` | one file per rejected or edited review item (P2 s34): loaded and shape-checked, not scored | `flask review export-cases`, nightly; committed by a person |
 | `cassettes/` | recorded model replies for tier B (P2 s29) | a session |
 | `suite.yaml` | the clock and the deploy gate's thresholds | a session |
 | `harness.py`, `run.py` | the machinery | a session |
@@ -92,7 +92,11 @@ No row is `eligible`: every frozen call but the IPARD notice has an `applicant_a
 and an unconfirmed attestation caps a verdict at `likely_eligible`.
 
 The suite grows from real review corrections after that (P2 s34). Synthetic cases are the seed,
-not the crop.
+not the crop. **Cases from review** arrive in `cases/from_review/` (`docs/runbook.md` §5 says how
+they get from the server to here). The gate counts them and blocks on a malformed one, but scores
+none: a rejected report says what was wrong, not what was right. To turn one into a scored case,
+write a profile like its `applicant` into `profiles/` and the verdict it should have had into the
+call's file here — under the same two conventions.
 
 ## Changing a fixture
 

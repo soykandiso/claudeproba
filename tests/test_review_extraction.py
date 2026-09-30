@@ -257,12 +257,12 @@ def test_an_edit_that_would_break_the_contract_is_refused_and_changes_nothing(
 ):
     s, item, call = load(sessions, written)
     target = next(c for c in criteria(s, call) if c.kind == CriterionKind.APPLICANT_ATTEST)
-    before = review._criterion_state(target)
+    before = review.criterion_state(target)
 
     with pytest.raises(review.ReviewError, match=message):
         review.edit_criterion(s, item, target.id, form_from(target, **changes), now=NOW)
 
-    assert review._criterion_state(target) == before
+    assert review.criterion_state(target) == before
     assert not (item.corrected_payload or {}).get("edits")
     s.close()
 

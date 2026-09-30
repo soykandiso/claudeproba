@@ -21,3 +21,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # and reports to healthchecks.io, which emails (docs/runbook.md §4). After the
 # 04:00 ingestion run, so a morning alert describes last night.
 30 6 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest health >> /var/log/grants-health.log 2>&1
+
+# Reviewer decisions become evaluation cases (docs/matching.md §6, app/review/cases.py).
+# Each rejected or edited item is written once to /srv/review-cases; pulling them to
+# a laptop and committing them is a person's job (docs/runbook.md §5).
+45 2 * * *  root  cd /srv/grants && docker compose exec -T web flask review export-cases >> /var/log/grants-review-cases.log 2>&1

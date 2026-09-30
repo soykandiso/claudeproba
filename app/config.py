@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # Becomes https://<domain>/crawler once the domain exists (decisions.md D2).
     crawler_contact_url: str = "https://github.com/soykandiso/claudeproba"
 
+    # Where `flask review export-cases` writes the evaluation cases reviewer
+    # decisions become (app/review/cases.py). On the VPS a bind mount of the
+    # checkout's evals/cases/from_review, pulled and committed by hand (runbook §7).
+    review_cases_dir: str = "evals/cases/from_review"
+
     # Locale. Macedonian Cyrillic is the launch language (brief 3.1).
     default_language: str = "mk"
     timezone: str = "Europe/Skopje"

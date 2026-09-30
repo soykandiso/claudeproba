@@ -589,6 +589,37 @@ and after; `payload` stays what the model wrote. **The time a review took** is m
 view of the item in the operator's session to the decision, and said back in the confirmation and the
 log; nothing stores it, since there is one reviewer and the number is for them.
 
+### A reviewer's decision becomes a case file that is pulled and committed by hand (30.09.2026, P2 s34)
+
+**What is a case**: every extraction or report item a person **rejected or edited**. An approval
+without an edit is agreement and holds nothing a case could test; an approval item closed because a
+newer one for the same call was approved is bookkeeping (now marked `superseded_by`) and writes
+nothing. **Verification items get no decision of their own** — s33 left that to s34 — because nobody
+reads them except on their report's page: a run's failed verifications are written inside that
+report's case, and the items stay pending. If they ever need closing, close them with the report.
+
+**What a case is not, yet: a scored verdict.** A rejected report says a verdict or a sentence was
+wrong, not what the right one was, and its applicant is a shape, not a profile the harness can run.
+So the harness loads and shape-checks every case from review (a malformed file blocks, like any bad
+case file) and scores none. An extraction case is the model's output, the documents by URL and hash,
+and the reviewer's correction — tier C (s36) is what can re-ask the model. Turning a report case into
+a tier A case is a person writing a verdict and a profile, which is the s26 convention and stays one.
+
+**Nothing identifying in a file**, because the files leave the server for a laptop and GitHub: the
+applicant only as `verify.applicant_shape` wrote it into the draft (never answers, municipality,
+profile id or account), documents by URL and hash (public anyway), and everything a person typed —
+the note and every edited statement — through the scrubber with the account's e-mail and the
+profile's label as known identifiers. The scrubber is the second line; the runbook tells the
+reviewer not to write a company name into a note.
+
+**Written on the VPS, committed on a laptop.** Cron writes into `/srv/review-cases`, **outside the
+checkout** (a bind mount, `GRANTS_REVIEW_CASES_HOST_DIR`): files written inside it would make the next
+deploy's `git pull` refuse. Pulling them with `rsync --ignore-existing` and committing is a weekly
+human step — a case enters the suite when a person has read it, which is the point of the loop. The
+alternative, a job that commits and pushes from the VPS, would put a deploy key with write access on
+the box for the sake of saving one command a week. Each file is written once (atomically, a
+temporary file then a rename) and never rewritten, so the job is safe to run at any time.
+
 ---
 
 ## Summary — what to decide, and by when

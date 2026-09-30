@@ -21,6 +21,7 @@ x-app: &app
     GRANTS_MODEL_DIR: /srv/models
     GRANTS_HEARTBEAT_INGEST_URL: ${GRANTS_HEARTBEAT_INGEST_URL:-}
     GRANTS_HEARTBEAT_HEALTH_URL: ${GRANTS_HEARTBEAT_HEALTH_URL:-}
+    GRANTS_REVIEW_CASES_DIR: /srv/review-cases
   volumes:
     # Raw fetched bytes, content-addressed and write-once. Public documents, no
     # personal data; copied off-site by ops/backup.sh.
@@ -28,6 +29,12 @@ x-app: &app
     # The local embedding model (~2.2 GB), fetched once with `flask ingest
     # fetch-model`. Not backed up: a public download, fetched again if lost.
     - models:/srv/models
+    # Evaluation cases written from reviewer decisions (`flask review export-cases`,
+    # app/review/cases.py). In development the working tree's own directory, so a
+    # case appears where it is committed. On the VPS a directory OUTSIDE the
+    # checkout (GRANTS_REVIEW_CASES_HOST_DIR=/srv/review-cases in .env, owned by uid
+    # 10001): untracked files inside it would make the next `git pull` refuse.
+    - ${GRANTS_REVIEW_CASES_HOST_DIR:-./evals/cases/from_review}:/srv/review-cases
 
 services:
   postgres:

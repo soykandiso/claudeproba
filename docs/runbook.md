@@ -252,8 +252,37 @@ first. The fix is to delete the snapshot and let the next run fetch and read it 
 every offset citing it, so it is its own deliberate job, not something to do on a weeknight between
 approvals.
 
-Every edit and every reason is kept on the item (`corrected_payload`, `reviewer_note`); P2 s34 turns
-them into evaluation cases.
+### What a rejection or an edit becomes
+
+Every edit and every reason is kept on the item (`corrected_payload`, `reviewer_note`), and **the
+night after, every rejected or edited item becomes one evaluation case** — `extraction-<id>.yaml` or
+`report-<id>.yaml` (P2 s34, `app/review/cases.py`). Cron runs `flask review export-cases` at 02:45
+UTC; it writes each case once and never again, so running it by hand any time is safe. An approval
+without an edit writes nothing, and neither does an item rejected only because a newer one for the
+same call was approved. **Write the reason as if for the evaluation, because that is where it goes**:
+"вест, не повик" is a case; "не" is not.
+
+What leaves the server is only what may: public documents by URL and hash, the applicant as the
+bands and codes a model is shown (never the answers, the name or the profile id), and the note and
+edited statements after the identity scrubber — with the customer's e-mail and profile label as
+known names. Do not rely on the scrubber: **do not write a company's name into a note**.
+
+**Once, on the VPS**: `sudo mkdir -p /srv/review-cases && sudo chown 10001 /srv/review-cases`, and
+`GRANTS_REVIEW_CASES_HOST_DIR=/srv/review-cases` in `.env`. Outside the checkout on purpose: files
+the VPS writes inside it would make the next `git pull` refuse to overwrite them.
+
+**Weekly, on the laptop**, pull the new ones, read them, commit them:
+
+```
+rsync -a --ignore-existing <vps>:/srv/review-cases/ evals/cases/from_review/
+git status evals/cases/from_review/     # read each new file before committing it
+PYTHONPATH=. uv run python evals/run.py # the gate loads and checks them
+```
+
+The gate counts them and checks their shape; it scores none yet. An extraction case is re-asked of
+the model by tier C (s36). A report case becomes a scored tier A case when you write the expected
+verdict for a profile like it into `evals/cases/` — the report case says which verdict was wrong and
+why, it does not say what the right one was.
 
 ---
 

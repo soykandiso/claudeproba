@@ -30,9 +30,12 @@ _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _PHONE_INTL = re.compile(r"(?:\+|00)389[\s\-/()]*0?[\s\-/()]*\d(?:[\s\-/]*\d){6,8}")
 # 070 123 456 · 02/3123-456 · (02) 3 123 456
 # Area codes only (07x mobile, 02 Skopje, 03x/04x regions), so grouped amounts
-# like "1 000 000 000" are not mistaken for numbers.
+# like "1 000 000 000" are not mistaken for numbers. A number may end a sentence:
+# only a separator followed by another digit ("070 123 456.00") makes it an amount,
+# not the full stop after it (P2 s34 found "…на 070 123 456." passing unscrubbed).
 _PHONE_DOMESTIC = re.compile(
-    r"(?<![\d.,])\(?0(?:7\d|2|3[1-4]|4[2-8])\)?[\s\-/]*\d(?:[\s\-]?\d){5,6}(?![\d.,])"
+    r"(?<!\d)(?<!\d[.,])\(?0(?:7\d|2|3[1-4]|4[2-8])\)?[\s\-/]*\d(?:[\s\-]?\d){5,6}"
+    r"(?!\d|[.,]\d)"
 )
 
 # ЕДБ is 13 digits, sometimes written with the MK prefix of the VAT number.

@@ -2,6 +2,7 @@
 
 import datetime as dt
 import sys
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import click
@@ -24,10 +25,12 @@ from app.ingestion.sources import fetchers, manual
 from app.models import Call, EligibilityCriterion, RawSnapshot, SourceFeed
 from app.retrieval.embedder import LocalEmbedder
 from app.retrieval.index import index_pending
+from app.review import cases
 
 
 def register_cli(app: Flask) -> None:
     app.cli.add_command(ingest)
+    app.cli.add_command(review)
 
 
 @click.group(help="Fetch sources and store snapshots.")
@@ -422,3 +425,32 @@ def _run(fetcher: Fetcher, allow_inactive: bool = False) -> None:
     if not result.ok:
         click.echo(result.error, err=True)
         sys.exit(1)
+
+
+@click.group(help="What the review queue has decided.")
+def review():
+    pass
+
+
+@review.command(
+    "export-cases",
+    help="Write an evaluation case for every rejected or edited item that has none yet.",
+)
+@click.option(
+    "--out",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=None,
+    help="Directory to write into (default: GRANTS_REVIEW_CASES_DIR).",
+)
+def export_cases_command(out):
+    """The nightly half of the review gate (docs/matching.md §6, roadmap P2 s34).
+
+    Writes each case once and never again, so it is safe to run as often as cron
+    likes. The files are pulled and committed by a person (docs/runbook.md §7).
+    """
+    out = out or Path(_settings().review_cases_dir)
+    with session_factory(_settings())() as session:
+        written = cases.export(session, out)
+    for path in written:
+        click.echo(f"wrote {path}")
+    click.echo(f"{len(written)} new case(s) in {out}")
