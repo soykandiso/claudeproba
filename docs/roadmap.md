@@ -100,11 +100,44 @@ each feature to its session. The demo was tried and approved on 16.09.2026; P1 c
 | 32 | Report composer (MK prose) + banned-phrase lint + citation completeness check — *built 24.09.2026: `app/reports/compose.py` reads a finished stage-3 run from its stored rows only; code writes every verdict, condition, reason and citation, and the model (`compose_report`, prompt `2026-09-24.1`, `ReportProse`) writes a summary and per-call explanation and next steps in which **every statement cites condition numbers**. Two checks over the whole draft, either one blocking: the lint over everything said in the report's own voice (prose, condition labels, verification's reasons), and citation completeness against the stored text (every condition's quote at its offsets with URL and date, every model decision's evidence, every cited number a condition of the call it is about). The draft is a `report` review item, blocked ones first; `blockers()` re-runs both over a reviewer's edit. `deep` now also stores the calls the rules exclude (up to ten) so the report can say why. Not run against the real model — no key* | Lint blocks a deliberately bad draft containing "гарантирано" |
 | 33 | Report review UI with the quote highlighted in the stored snapshot — *built 29.09.2026: `/admin/izveshtaj/<id>` over `app/review/report.py`. Every condition's quote and every model evidence shown marked inside the stored text, with URL, retrieval date, span, and the scanned page when OCR'd; problems listed first, each linked to where it is. **Approval calls `compose.blockers()` and is refused while it returns anything** (service and screen, tested). The reviewer edits the model's statements only — words and cited condition numbers — each edit checked by `ReportStatement` and the same checks, refused whole if it fails; verdicts and quotes have no edit path. Edits kept in `corrected_payload` with a log. The 45 minutes is a person's measure: the screen reports the minutes at the decision; `ops/dev/seed_report.py` puts a draft over the frozen calls in dev to time it on* | You can approve or edit a full report in under 45 minutes |
 | 34 | Nightly review → eval case job — *built 30.09.2026: `app/review/cases.py`, `flask review export-cases`, cron 02:45 UTC. Every extraction or report item a person rejected or edited becomes `evals/cases/from_review/<kind>-<id>.yaml`, written once; an approval without an edit and a supersession write nothing, a run's failed verifications travel inside its report's case. Nothing identifying: the applicant as the bands a model sees, the note and edits through the scrubber with the customer's e-mail and label as known names (which found a scrubber gap — a phone number ending a sentence — fixed). On the VPS the files are written outside the checkout and pulled to be committed (`runbook.md` §5). The harness loads and shape-checks them but scores none: extraction cases wait for tier C, report cases for a person to write the verdict* | A rejected item appears in `evals/cases/from_review/` on the next run |
-| 35 | PDF rendering (WeasyPrint) with correct Cyrillic typography | MK renders correctly using fonts actually installed on the VPS |
+| 35 | PDF rendering (WeasyPrint) with correct Cyrillic typography — *built 30.09.2026: `app/reports/render.py` + `templates/report.html`/`report.css`; `/admin/izveshtaj/<id>/pdf` and `flask review render-report`. Only an approved or edited report; `compose.blockers()`, the lint over the whole printed text and a glyph-coverage check run again first, and a PDF embedding any font but ours is refused. **The first render had perfect extracted text and wrong digits and Latin**: WeasyPrint mixes the site's Latin and Cyrillic subsets, which share one font name — so the PDF merges each pair into one file at runtime, and a test reads the pixels back with Tesseract. Rendered inside the image, which has 6 system fonts: only Source Serif 4 and Fira Sans embedded. On the VPS itself once it exists* | MK renders correctly using fonts actually installed on the VPS |
 | 36 | Tier C live eval + cost-per-report dashboard | Weekly job runs; you know the marginal model cost of one report |
 | 37 | Mobile and performance pass | Shortlist usable on a mid-range Android over throttled mobile data (brief §12) |
 
 **Phase acceptance (brief P2):** ten test profiles produce correct shortlists, every criterion cited.
+
+---
+
+## Design phase · 9 sessions (DS1–DS9) · after P2, before P3 · → ~2 weeks
+
+> **Added 30.09.2026 at the user's request:** "after this phase implement design phase to be the
+> best designed platform." It sits between P2 and P3 because every screen a customer will see
+> now exists in a first form (`/profil`, `/povici`, the passage page, the report and its PDF, the
+> admin), and P3's landing, pricing and archive pages should be built *on* the finished system, not
+> retrofitted to it. The direction is fixed and does not change here: **the dossier, not the
+> dashboard** (`.claude/skills/design-system`). "Best designed" is therefore measured, not claimed:
+> a native reader finds no wrong letterform, a first-time user finishes the tasks unaided, the
+> audits find nothing, and the budget holds on a cheap phone. Numbered DS so P3's session numbers
+> (referenced elsewhere, e.g. "magic link at s44") stay what they are.
+>
+> **Moving parts:** none new. Jinja macros, `tokens.css`, `site.css`, Tailwind via the standalone
+> binary, HTMX. No Node, no component framework, no JavaScript that has not earned its place.
+
+| # | Task | Acceptance |
+|---|------|-----------|
+| DS1 | **Design audit** of every real screen at 375/768/1440 against the skill's rules — tokens, verdict marks, `last_verified_at`, deadlines, focus, all five interaction states, copy, Cyrillic forms. Written up in `docs/design.md` with a screenshot and a fix per finding | Every screen audited; every finding has an owner session below |
+| DS2 | **Foundation**: `tokens.css` complete and the only source of values (a check that fails on a hex outside it); font subsets re-cut and verified for Ѓѓ Ќќ Љљ Њњ Џџ Ѕѕ Јј and the Macedonian `locl` italic бгдпт; type scale and measure; a dev-only `/stil` page rendering every token | No hardcoded colour or size left in templates; each font ≤ 40 KB; a native reader signs off the italic |
+| DS3 | **Component set** as Jinja macros: verdict mark (four treatments), cited excerpt with its source line, deadline with days in words, date/amount, buttons and form controls with hover/focus-visible/active/disabled/loading, hairline lists, empty and error states. All on `/stil` | Every component in every state on `/stil`; verdicts tell apart in greyscale; every contrast pair re-measured |
+| DS4 | **Intake** (`/profil`, `/profil/pregled`) rebuilt on the components; the activity picker's HTMX loading state | Timed run by a real person under 3 minutes (the s23 acceptance, finally proven) |
+| DS5 | **Shortlist and passage** (`/povici`, `/povici/izvor/…`) — the cited passage as the memorable element; the reason for each verdict readable in one glance | A first-time user says, unaided, why a call is "needs verification" and where that comes from |
+| DS6 | **The report, on screen and on paper**: s35's PDF and a web view sharing one set of components — numbered clauses, marginal citations, print typography | PDF and web say the same thing in the same order; a printed page reads as a document, not a web page |
+| DS7 | **Operator screens** (`/admin`, `/admin/izveshtaj/…`): density for a person reviewing every evening — keyboard paths, problems first, quotes in place | A full report reviewed in under 45 minutes (the s33 acceptance, finally proven) |
+| DS8 | **Your session: usability test** with five people from the target market (owners or consultants), on a mid-range Android, tasks scripted in Macedonian; findings fixed in the same session or listed | Five sessions run, notes committed, every task completed unaided by ≥ 4 of 5 |
+| DS9 | **Accessibility and performance**: WCAG 2.1 AA (axe and a keyboard-only pass and a screen reader), Lighthouse on throttled mobile, the font and HTMX budget. Takes in P2 s37 if it has not been done | Zero AA violations; shortlist usable over throttled 3G; Lighthouse performance and accessibility ≥ 95 |
+
+**Phase acceptance:** every customer screen passes DS1's checklist with no open findings, and five
+real users complete the core tasks unaided. P3 then builds the landing, pricing and archive pages
+from the same components without adding new ones.
 
 ---
 

@@ -38,10 +38,11 @@ from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
 from app.models.enums import CriterionKind, ReviewState, TextSource, Verdict
+from app.reports import render
 from app.review import extraction as review
 from app.review import report as reports
 from app.web import csrf
-from app.web.format import mkdate
+from app.web.format import SKOPJE, mkdate
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -582,6 +583,28 @@ def _passage(snapshots: dict, citation: dict | None) -> dict | None:
 def report(item_id: int):
     with _sessions()() as db:
         return _render_report(db, _report_or_404(db, item_id))
+
+
+@bp.get("/izveshtaj/<int:item_id>/pdf")
+def report_pdf(item_id: int):
+    """The approved report as the customer will receive it (P2 s35).
+
+    Rendered on demand and never stored, like a document page: the draft is stored
+    and the template is versioned, so the same bytes can be made again. Every check
+    runs again first (`render.render`); a refusal is said on the report's page.
+    """
+    with _sessions()() as db:
+        item = _report_or_404(db, item_id)
+        try:
+            rendered = render.render(db, item, issued=_now().astimezone(SKOPJE).date())
+        except render.RenderRefused as refused:
+            page, _ = _render_report(db, item, error=f"PDF не е направен: {refused}")
+            return page, 409
+    return Response(
+        rendered.pdf,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="izveshtaj-{item_id}.pdf"'},
+    )
 
 
 def _render_report(db, item, *, error=None, open_form=None, typed=None):

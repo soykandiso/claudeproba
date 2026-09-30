@@ -22,7 +22,8 @@ from app.ingestion.pipeline import ERROR, UNCHANGED, due_sources, run_source
 from app.ingestion.snapshots import SnapshotStore, without_aspnet_state
 from app.ingestion.source_config import load_sources, sync_sources
 from app.ingestion.sources import fetchers, manual
-from app.models import Call, EligibilityCriterion, RawSnapshot, SourceFeed
+from app.models import Call, EligibilityCriterion, RawSnapshot, ReviewQueueItem, SourceFeed
+from app.reports import render
 from app.retrieval.embedder import LocalEmbedder
 from app.retrieval.index import index_pending
 from app.review import cases
@@ -454,3 +455,22 @@ def export_cases_command(out):
     for path in written:
         click.echo(f"wrote {path}")
     click.echo(f"{len(written)} new case(s) in {out}")
+
+
+@review.command(
+    "render-report",
+    help="Write an approved report as the PDF the customer receives. Every check runs again.",
+)
+@click.argument("item_id", type=int)
+@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), required=True)
+def render_report_command(item_id, out):
+    with session_factory(_settings())() as session:
+        item = session.get(ReviewQueueItem, item_id)
+        if item is None:
+            raise click.ClickException(f"no review item {item_id}")
+        try:
+            rendered = render.render(session, item)
+        except render.RenderRefused as refused:
+            raise click.ClickException(str(refused)) from refused
+    out.write_bytes(rendered.pdf)
+    click.echo(f"{out}: {rendered.pages} page(s), fonts {', '.join(rendered.fonts)}")

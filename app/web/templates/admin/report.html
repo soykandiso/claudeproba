@@ -99,6 +99,9 @@
     {% endif %}
     {% if not pending %}
     <p class="review-stamp">{{ state_label }}, {{ item.resolved_at|datetime_mk }}{% if item.reviewer_note %}: {{ item.reviewer_note }}{% endif %}</p>
+    {% if item.state in ('approved', 'edited') %}
+    <p><a class="btn btn--quiet" href="{{ url_for('admin.report_pdf', item_id=item.id) }}">Отвори го извештајот како PDF</a></p>
+    {% endif %}
     {% endif %}
   </div>
 

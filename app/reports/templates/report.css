@@ -1,0 +1,104 @@
+/* The paid report on paper (P2 s35). Values come from tokens.css; this file only
+   says how a page of it is laid out. Print, not screen: A4, no colour but the two
+   single-purpose ones (--seal for deadlines, --verified for the citation mark). */
+
+@page {
+  size: A4;
+  margin: 22mm 20mm 24mm;
+  @bottom-left { font-family: var(--font-body); font-size: 8pt; color: var(--ink-soft); }
+  @bottom-right {
+    content: "Страница " counter(page) " од " counter(pages);
+    font-family: "Fira Sans"; font-size: 8pt; color: var(--ink-soft);
+  }
+}
+
+html { font-feature-settings: "locl"; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 10.5pt;
+  line-height: 1.5;
+  color: var(--ink);
+  background: white;
+}
+
+h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.25; margin: 0; }
+h1 { font-size: 22pt; max-width: 16em; }
+h2 { font-size: 14pt; margin-top: 6mm; }
+h3 { font-size: 10.5pt; font-weight: 500; margin: 5mm 0 2mm; }
+p { margin: 1.5mm 0; }
+.soft, .outcome, .source, dt { color: var(--ink-soft); }
+.id { font-variant-numeric: tabular-nums; }
+
+section { margin-top: 8mm; }
+.cover { padding-bottom: 6mm; border-bottom: 1px solid var(--rule); }
+
+.facts { display: block; margin: 4mm 0 0; }
+.facts div { display: inline-block; vertical-align: top; width: 48%; margin: 0 0 3mm; }
+.facts dt { font-size: 8.5pt; }
+.facts dd { margin: 0; }
+.url { font-size: 8.5pt; word-break: break-all; }
+
+.profile div { display: block; padding: 1mm 0; border-top: 1px solid var(--rule); }
+.profile div:first-child { border-top: 0; }
+.profile dt { display: inline-block; width: 42%; vertical-align: top; }
+.profile dd { display: inline-block; width: 56%; margin: 0; }
+
+.legend { list-style: none; padding: 0; margin: 3mm 0 0; }
+.legend li { margin: 1.5mm 0; }
+.legend .verdict { display: inline-block; width: 78mm; }
+
+/* Verdicts: mark and rule weight, as on the site (design system, "The verdict system") */
+.verdict { font-weight: 500; }
+.verdict::before {
+  content: ""; display: inline-block; width: 8pt; height: 8pt; margin-right: 2mm;
+  border: 1.5pt solid currentColor; border-radius: 50%; vertical-align: -1pt;
+}
+.verdict--eligible::before { background: currentColor; }
+.verdict--needs_verification, .verdict--not_eligible { color: var(--ink-soft); }
+.verdict--not_eligible::before { border: 0; border-radius: 0; height: 1.5pt; width: 10pt; background: currentColor; vertical-align: 2pt; }
+
+.call { border-left: 2.5pt solid var(--ink); padding-left: 5mm; }
+.call--likely_eligible { border-left-width: 0.75pt; padding-left: calc(5mm + 1.75pt); }
+.call--needs_verification { border-left: 2.5pt dashed var(--rule-strong); }
+.call--not_eligible { border-left: 2.5pt double var(--rule); color: var(--ink-soft); margin-top: 5mm; }
+section.call { break-before: page; margin-top: 0; }
+.call-number { font-size: 8.5pt; color: var(--ink-soft); margin: 0; }
+.deadline { color: var(--seal); font-weight: 500; }
+
+.statements { padding-left: 5mm; margin: 0; }
+.statements li { margin: 1.5mm 0; max-width: 42em; }
+.cites { color: var(--ink-soft); font-size: 8.5pt; white-space: nowrap; }
+
+/* Numbered clauses, the way an official document reads */
+.clauses { list-style: none; padding: 0; margin: 0; }
+.clauses > li { border-top: 1px solid var(--rule); padding: 3mm 0; break-inside: avoid; }
+.clauses > li:first-child { border-top: 0; }
+.ref {
+  float: left; width: 11mm;
+  font-family: var(--font-display); font-size: 12pt; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.clause { margin-left: 11mm; }
+.clause-label { font-weight: 500; margin-top: 0; }
+.outcome, .reason { margin: 0.5mm 0; }
+
+/* The cited passage: the one bold element */
+.excerpt {
+  margin: 2mm 0 0; padding: 3mm 4mm 2mm;
+  background: var(--paper-sunk); border-left: 2pt solid var(--verified);
+  break-inside: avoid;
+}
+.excerpt-label { font-size: 8.5pt; color: var(--ink-soft); }
+.excerpt blockquote {
+  margin: 1mm 0 0; font-family: var(--font-display); font-size: 10.5pt; line-height: 1.6;
+  quotes: "„" "“";
+}
+.excerpt blockquote::before { content: open-quote; }
+.excerpt blockquote::after { content: close-quote; }
+.source { font-size: 8pt; margin: 2mm 0 0; padding-top: 1.5mm; border-top: 1px solid var(--rule); }
+.source span { margin-right: 4mm; }
+.cite-mark { color: var(--verified); font-weight: 500; }
+
+.excluded { break-before: page; }
+.closing { border-top: 1px solid var(--rule); padding-top: 3mm; }

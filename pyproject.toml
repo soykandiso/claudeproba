@@ -20,6 +20,7 @@ dependencies = [
     "rq>=2.0",
     "selectolax>=0.4.11",
     "sqlalchemy>=2.0",
+    "weasyprint>=70.0",
 ]
 
 [dependency-groups]

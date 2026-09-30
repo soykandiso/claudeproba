@@ -18,9 +18,14 @@ WORKDIR /srv/app
 # the Albanian half of a bilingual call that mkd turns into nonsense. Neither ever
 # reads a page on its own. A missing model is skipped rather than fatal, so an older
 # image degrades to the Macedonian pass instead of failing.
+# libharfbuzz-subset0 is for WeasyPrint (the report PDF, P2 s35), which already gets
+# Pango from the packages above; it subsets the report's fonts and later WeasyPrint
+# versions require it. The PDF's fonts are the repository's own woff2 files, never
+# the system's, so no font package is installed here (app/reports/render.py).
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         tesseract-ocr tesseract-ocr-mkd tesseract-ocr-eng tesseract-ocr-sqi poppler-utils \
+        libharfbuzz-subset0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Dependencies first: they change far less often than application code, so this
@@ -44,6 +49,10 @@ RUN useradd --system --uid 10001 grants \
     && mkdir -p /srv/snapshots /srv/models \
     && chown -R grants:grants /srv/app /srv/snapshots /srv/models
 USER grants
+# Fontconfig (under WeasyPrint) wants a writable cache and the app user's home does
+# not exist: without this every report render logs "No writable cache directories".
+# Set after USER, so the build steps above (uv, as root) do not write their cache there.
+ENV XDG_CACHE_HOME=/tmp/grants-cache
 
 EXPOSE 8000
 

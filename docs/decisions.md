@@ -620,6 +620,31 @@ alternative, a job that commits and pushes from the VPS, would put a deploy key 
 the box for the sake of saving one command a week. Each file is written once (atomically, a
 temporary file then a rename) and never rewritten, so the job is safe to run at any time.
 
+### The report PDF is set in fonts we ship, merged per weight, and checked by its pixels (30.09.2026, P2 s35)
+
+**Fonts.** "Fonts actually installed on the VPS" is read as: the PDF must not depend on what any
+machine has installed. The image has six system fonts, this Codespace fifty-eight, so a render
+that looks right here proves nothing there. The PDF uses only the woff2 files the site already
+serves, and `render` refuses (a) any character outside their character maps, before rendering,
+and (b) any embedded font that is not ours, after. Identifiers are set in Fira Sans with tabular
+figures, because the site's monospace is a system font.
+
+**Merged at runtime, not committed.** WeasyPrint 70 embeds the Latin and Cyrillic subsets of one
+face under one name and mixes their glyphs (the first render: right Cyrillic, wrong digits and
+Latin, and a perfect text layer). Each pair is merged with fontTools once per process from the
+shipped files. Committing merged files would work too, but DS2 will re-cut the subsets and a
+second copy would drift silently; merging costs about a second per worker start.
+
+**Checks again before printing.** Only `approved` or `edited` items, `compose.blockers()` once
+more (the stored text can move after approval), and the lint over the whole printed text,
+including the template's own words; the institution's words (quotes, titles) are marked
+`data-theirs` and printed but not linted, as in compose.
+
+**On paper a deadline is a date only.** The design system says days in words under 14 on screen;
+a PDF is read days later, and "уште три дена" printed on the 30th is wrong on the 2nd. The date
+keeps `--seal`. **Not stored**: rendered on demand, reproducible from the stored draft and
+`RENDERER_VERSION`; which bytes were delivered is P4 s53's to record.
+
 ---
 
 ## Summary — what to decide, and by when
