@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 from flask import Flask
 
 from app.models.enums import Verdict
+from app.wording import days_in_words
 
 VERDICT_LABELS = {
     Verdict.ELIGIBLE: "Можете да аплицирате",
@@ -26,23 +27,6 @@ CRITERION_LABELS = {
     Verdict.LIKELY_ELIGIBLE: "Го потврдувате вие",
     Verdict.NEEDS_VERIFICATION: "Треба да се провери",
     Verdict.NOT_ELIGIBLE: "Не е исполнето",
-}
-
-# Design system: a deadline under 14 days also says how many days remain, in words.
-DAYS_IN_WORDS = {
-    1: "еден ден",
-    2: "два дена",
-    3: "три дена",
-    4: "четири дена",
-    5: "пет дена",
-    6: "шест дена",
-    7: "седум дена",
-    8: "осум дена",
-    9: "девет дена",
-    10: "десет дена",
-    11: "единаесет дена",
-    12: "дванаесет дена",
-    13: "тринаесет дена",
 }
 
 # Deadlines are said in Skopje's calendar: 23:59 on the 30th is still the 30th.
@@ -69,14 +53,8 @@ def thousands(value) -> str:
 
 def days_left(deadline, today: dt.date | None = None) -> str | None:
     """Words for a deadline under 14 days away, or None when the date alone will do."""
-    days = (_as_date(deadline) - (today or dt.date.today())).days
-    if days < 0:
-        return "рокот помина"
-    if days == 0:
-        return "рокот истекува денес"
-    if days in DAYS_IN_WORDS:
-        return f"уште {DAYS_IN_WORDS[days]}"
-    return None
+    # The words are app/wording.py's, shared with stage 2's reasons (F17).
+    return days_in_words((_as_date(deadline) - (today or dt.date.today())).days)
 
 
 def deadline_passed(deadline, today: dt.date | None = None) -> bool:
@@ -84,9 +62,59 @@ def deadline_passed(deadline, today: dt.date | None = None) -> bool:
     return _as_date(deadline) < (today or dt.date.today())
 
 
+# (one, many) for each condition verdict, most consequential first.
+_COUNTED = (
+    (Verdict.NOT_ELIGIBLE, "не е исполнет", "не се исполнети"),
+    (Verdict.NEEDS_VERIFICATION, "треба да се провери", "треба да се проверат"),
+    (Verdict.LIKELY_ELIGIBLE, "го потврдувате вие", "ги потврдувате вие"),
+    (Verdict.ELIGIBLE, "е исполнет", "се исполнети"),
+)
+
+
+def condition_counts(verdicts) -> str | None:
+    """Why a call has its verdict, in one line (DS5): how its conditions came out.
+
+    «Од 5 услови: 1 треба да се провери, 4 ги потврдувате вие.» Counts only, of the
+    conditions listed under it, each of which carries its quote; it adds no claim of
+    its own. Most consequential first, so the reason for the verdict leads.
+    """
+    verdicts = list(verdicts)
+    if not verdicts:
+        return None
+    parts = []
+    for verdict, one, many in _COUNTED:
+        n = sum(1 for v in verdicts if v == verdict)
+        if n:
+            parts.append(f"{n} {one if n == 1 else many}")
+    noun = "услов" if len(verdicts) == 1 else "услови"
+    return f"Од {len(verdicts)} {noun}: {', '.join(parts)}."
+
+
+def lang_of(text: str | None) -> str:
+    """The language of an institution's words, for `lang` on a quote or a title (F18).
+
+    Nothing stores it: a snapshot has no language column, and an EU call is English
+    while an Economy call can quote its Albanian half. So it is read off the letters,
+    which is enough for the three languages a call here is written in: mostly
+    Cyrillic is Macedonian; Latin with ë or ç is Albanian (standard Albanian can hardly
+    write a sentence without ë); other Latin is English. It only chooses a voice and
+    quotation marks, never what anything means, so a wrong guess costs a mispronounced
+    passage, not a verdict.
+    """
+    if not text:
+        return "mk"
+    cyrillic = sum("Ѐ" <= ch <= "ӿ" for ch in text)
+    latin = sum(ch.isascii() and ch.isalpha() for ch in text)
+    if cyrillic >= latin:
+        return "mk"
+    return "sq" if any(ch in "ëËçÇ" for ch in text) else "en"
+
+
 def register(app: Flask) -> None:
     app.add_template_filter(mkdate, "mkdate")
     app.add_template_filter(thousands, "thousands")
+    app.add_template_filter(lang_of, "lang_of")
+    app.add_template_global(condition_counts, "condition_counts")
     app.add_template_global(days_left, "days_left")
     app.add_template_global(deadline_passed, "deadline_passed")
     app.add_template_global(VERDICT_LABELS, "verdict_labels")

@@ -206,3 +206,91 @@ def test_a_deadline_is_said_in_skopje_time():
 def test_a_deadline_under_two_weeks_says_the_days_in_words(days, words):
     today = dt.date(2026, 9, 22)
     assert format.days_left(today + dt.timedelta(days=days), today) == words
+
+
+# ------------------------------------------------------------- DS5: the design pass
+
+
+@db
+def test_the_shortlist_links_into_the_passage_and_back(client, served):
+    """F14: to the marked quote, and back to the call the reader came from. F16: the
+    shortlist's caption is source and date; the span lives on the passage page."""
+    factory, source, snapshot = served
+    with factory() as s:
+        call = make_call(s, source, snapshot, title="Повик за софтвер", criteria=[FITS])
+        s.commit()
+        call_id = call.id
+        criterion_id = s.query(EligibilityCriterion.id).filter_by(call_id=call.id).scalar()
+    with_profile(client)
+
+    body = client.get("/povici/").get_data(as_text=True)
+    assert f'id="call-{call_id}"' in body
+    assert f"/povici/izvor/{criterion_id}#quote" in body
+    assert f"{snapshot.id} 0–5" not in body
+
+    passage = client.get(f"/povici/izvor/{criterion_id}").get_data(as_text=True)
+    assert f'href="/povici/#call-{call_id}"' in passage
+
+
+@db
+def test_the_passage_names_the_condition_and_dates_the_call(client, served):
+    """F13 (severity A): every screen showing a call states last_verified_at and its
+    deadline. F15: the condition is the heading, the call the context above it."""
+    factory, source, snapshot = served
+    with factory() as s:
+        call = make_call(s, source, snapshot, title="Повик за софтвер", criteria=[FITS])
+        call.deadline_at = dt.datetime(2026, 12, 1, 12, tzinfo=dt.UTC)
+        call.last_verified_at = dt.datetime(2026, 9, 28, 8, tzinfo=dt.UTC)
+        s.commit()
+        criterion = s.query(EligibilityCriterion).filter_by(call_id=call.id).one()
+        criterion_id, label = criterion.id, criterion.label_mk
+
+    body = client.get(f"/povici/izvor/{criterion_id}").get_data(as_text=True)
+
+    assert "Последна проверка" in body and "28.09.2026" in body
+    assert "Рок за пријава" in body and "01.12.2026" in body
+    assert f"<h1>{label}</h1>" in body
+    assert 'class="passage__call"' in body and "Повик за софтвер" in body
+    assert 'aria-current="true"' in body  # «Повици» in the nav (F19)
+
+
+@db
+def test_each_call_says_how_its_conditions_came_out(client, served):
+    factory, source, snapshot = served
+    with factory() as s:
+        make_call(s, source, snapshot, criteria=[FITS])
+        s.commit()
+    with_profile(client)
+
+    assert "Од 1 услов: 1 е исполнет." in client.get("/povici/").get_data(as_text=True)
+
+
+@pytest.mark.parametrize(
+    ("verdicts", "line"),
+    [
+        ([], None),
+        (["needs_verification"], "Од 1 услов: 1 треба да се провери."),
+        (
+            ["likely_eligible", "needs_verification", "likely_eligible", "not_eligible"],
+            "Од 4 услови: 1 не е исполнет, 1 треба да се провери, 2 ги потврдувате вие.",
+        ),
+        (["eligible", "eligible"], "Од 2 услови: 2 се исполнети."),
+    ],
+)
+def test_condition_counts_lead_with_what_decides(verdicts, line):
+    assert format.condition_counts([Verdict(v) for v in verdicts]) == line
+
+
+@pytest.mark.parametrize(
+    ("text", "lang"),
+    [
+        ("Право на учество имаат микро претпријатија", "mk"),
+        ("Applicants must demonstrate financial and operational capacity.", "en"),
+        ("Aplikuesit duhet të jenë të regjistruar në Republikën e Maqedonisë", "sq"),
+        ("Програма IPARD III", "mk"),
+        ("", "mk"),
+    ],
+)
+def test_a_quote_is_marked_with_its_language(text, lang):
+    """F18: a screen reader reads an English quote with an English voice."""
+    assert format.lang_of(text) == lang

@@ -11,7 +11,7 @@
 {%- macro excerpt(c, label="Зборовите на повикот") -%}
 <figure class="excerpt">
   <figcaption class="excerpt-label">{{ label }}</figcaption>
-  <blockquote data-theirs>{{ c.quote }}</blockquote>
+  <blockquote data-theirs lang="{{ c.quote|lang_of }}">{{ c.quote }}</blockquote>
   <p class="source">
     <span><span class="cite-mark">Извор:</span> {{ c.source_url|host }}</span>
     <span>Преземено на {{ c.retrieved_at|instant }}</span>
@@ -78,7 +78,7 @@
 {% for call in draft.calls %}
 <section class="call call--{{ call.verdict }}">
   <p class="call-number">Повик {{ call.number }}</p>
-  <h2 data-theirs>{{ call.title }}</h2>
+  <h2 data-theirs lang="{{ call.title|lang_of }}">{{ call.title }}</h2>
   <p class="soft">{{ call.institution }}</p>
   <p>{{ verdict(call.verdict) }}</p>
   <dl class="facts">
@@ -123,7 +123,7 @@
   <p>Ги наведуваме за да знаете зошто ги нема погоре. Секој е исклучен од правило што се применува на податоците што ги внесовте.</p>
   {% for call in draft.excluded %}
   <div class="call call--{{ not_eligible }}">
-    <h3 data-theirs>{{ call.title }}</h3>
+    <h3 data-theirs lang="{{ call.title|lang_of }}">{{ call.title }}</h3>
     <p class="soft">{{ call.institution }}</p>
     {% for c in call.conditions %}
     <div class="clause">

@@ -126,6 +126,39 @@ will be «пекар». Common trade words that are not in the classification's 
 way to make the timed run pass; they belong in `data/` as a versioned synonym file, not in code.
 Not built: it is reference data and wants your list (handoff §4).
 
+Closed in **DS5, 01.10.2026**, held by `tests/test_shortlist.py` (the DS5 block) and
+`tests/test_stage2.py`:
+
+- **F13 (A)**: the passage page states «Последна проверка» and «Рок за пријава» (`c.deadline`).
+- **F15**: the condition is the passage page's `h1`; the call's title is the context line above.
+- **F14**: every excerpt links to `…#quote` (the mark lands at the top of a phone screen), each
+  call is `li#call-<id>`, and «Назад кон повиците» returns to it.
+- **F16**: the shortlist's caption is source, date and the link; the snapshot and span are on
+  the passage page only.
+- **F17**: stage 2 counts calendar days in Skopje and says under 14 days in the screen's words
+  (`app/wording.py`, shared by `format.days_left` and `stage2.timeline_fit`): «Рокот истекува
+  денес, кратко за подготовка.» Only the reason changed; the score and weights version did not.
+  The gate ran: unchanged (23 exact, 0 false eligible, 0 false exclusion).
+- **F18**: `format.lang_of` reads the language off the letters (Cyrillic `mk`, Latin with ë/ç
+  `sq`, other Latin `en`), because nothing stores it; `lang` on every quote and call title, on the
+  shortlist, the passage and in the PDF, with English quotation marks for `en`.
+- **F11, live**: the excluded section seen with a real exclusion (an АД with 250+ employees
+  against the Economy call, whose deadline was moved in the dev database and then re-seeded):
+  struck mark, double rule, struck title, «Не е исполнето» with its quote.
+- **New, for the roadmap's "reason in one glance"**: under each verdict, one line of how the
+  call's conditions came out, most consequential first: «Од 5 услови: 1 треба да се провери,
+  4 ги потврдувате вие.» (`format.condition_counts`; counts of the cited conditions below it, so
+  it adds no claim).
+
+**F38, found in DS5, not fixed (matching, not design)**: a call that stage **1a** discards (the
+SQL prefilter, e.g. the Economy call's 12-month minimum for a company founded this year) never
+reaches the excluded section; only calls stage **1b** excludes are listed there. The page says
+«Ги прикажуваме за да знаете дека се проверени», which is then not true of every excluded call.
+The gate counts both as exclusions (`not_shown`), so nothing is wrong for the gate; it is wrong
+for the sentence. Either the sentence says "some", or 1a's discards are judged by 1b for the
+excluded list (cheap at today's sizes, `matching.md` §3). **The user decides**; until then the
+sentence stays.
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -213,7 +246,7 @@ issue.
 | DS2 | ~~F01, F02, F03, F05, F06, F27~~ closed 01.10.2026 (§2); the italic sign-off is open |
 | DS3 | ~~F04, F10, F11 (`/stil`), F12, F25, F26, F31~~ closed 01.10.2026 (§2) |
 | DS4 | ~~F19, F21, F22, F23 (review page), F24~~ closed 01.10.2026 (§2); the timed run is open |
-| DS5 | F11 (live check), F13, F14, F15, F16, F17, F18 |
+| DS5 | ~~F11 (live check), F13, F14, F15, F16, F17, F18~~ closed 01.10.2026 (§2); F38 waits for the user; the first-time-user test is open |
 | DS6 | F07, F23 (report and PDF half: `verify.applicant_shape` says months), F28, F29, F30 |
 | DS7 | F06b (admin sentences at 14px), F08, F09, F32, F33, F34, F35, F36 |
 | DS9 | F37 |

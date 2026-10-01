@@ -7,22 +7,29 @@
 
 {% macro deadline(d) %}{{ c.deadline(d) }}{% endmacro %}
 
-{# Invariant 2 on the page: the words, the source, the date we read it, and where
-   exactly in the stored text they are. #}
+{# Invariant 2 on the page: the words, the source and the date we read it, with a link
+   to the passage, which lands on the marked quote (#quote). The snapshot and character
+   span are on that page, where they explain the mark; here they were an identifier no
+   customer compares, four lines long on a phone (docs/design.md F14, F16). #}
 {% macro excerpt(cite) %}
-{% call c.excerpt(cite.quote, source=cite.source_url.split('/')[2], retrieved=cite.retrieved_at,
-                  href=url_for('shortlist.passage', criterion_id=cite.criterion_id)) %}
-<span class="id" title="Снимка и позиција на цитатот во зачуваниот текст">{{ cite.snapshot_id }} {{ cite.char_start }}–{{ cite.char_end }}</span>
-{% endcall %}
+{{ c.excerpt(cite.quote, source=cite.source_url.split('/')[2], retrieved=cite.retrieved_at,
+             href=url_for('shortlist.passage', criterion_id=cite.criterion_id, _anchor='quote'),
+             lang=cite.quote|lang_of) }}
 {% endmacro %}
 
 {% macro call_item(e) %}
 {% set call = e.call %}
 {% set outcome = e.outcome %}
-<li class="call call--{{ outcome.verdict }} stack">
-  {{ verdict(outcome.verdict) }}
+{# The id is where «Назад кон повиците» returns to from a passage (F14). #}
+<li class="call call--{{ outcome.verdict }} stack" id="call-{{ call.id }}">
+  {# The verdict and, in one glance, why: how the conditions below came out (DS5). #}
   <div class="stack--tight">
-    <h3>{{ call.title_mk }}</h3>
+    {{ verdict(outcome.verdict) }}
+    {% set counts = condition_counts(outcome.outcomes|map(attribute='verdict')) %}
+    {% if counts %}<p class="verdict-why">{{ counts }}</p>{% endif %}
+  </div>
+  <div class="stack--tight">
+    <h3 lang="{{ call.title_mk|lang_of }}">{{ call.title_mk }}</h3>
     {% if e.institution %}<p class="soft small">{{ e.institution }}</p>{% endif %}
   </div>
   {# Said whenever it is true, not only when it lowered a verdict: the customer is

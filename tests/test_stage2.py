@@ -117,9 +117,11 @@ def test_size_fit_is_neutral_when_either_side_is_silent(columns, answers, word):
     [
         (60, 1.0, "остануваат 60 дена"),
         (21, 1.0, "останува 21 ден"),
-        (13, 0.2, "остануваат 13 дена, кратко"),
-        (1, 0.2, "останува 1 ден"),
-        (11, 0.2, "остануваат 11 дена"),
+        # Under 14 days the reason says what the deadline above it says (F17).
+        (13, 0.2, "Уште тринаесет дена, кратко"),
+        (1, 0.2, "Уште еден ден"),
+        (11, 0.2, "Уште единаесет дена"),
+        (0, 0.2, "Рокот истекува денес, кратко"),
     ],
 )
 def test_timeline_fit_penalises_under_two_weeks_and_says_the_days(days, expected, phrase):

@@ -26,6 +26,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
 
@@ -33,6 +34,7 @@ from app.matching.normalise import Profile
 from app.matching.stage1 import CallOutcome
 from app.models import Call, EligibilityCriterion
 from app.models.enums import Verdict
+from app.wording import days_in_words
 
 WEIGHTS_DIR = Path(__file__).resolve().parents[2] / "config" / "weights"
 WEIGHTS_VERSION = "v1"
@@ -159,9 +161,15 @@ def timeline_fit(call: Call, profile: Profile, *, now: dt.datetime, **_) -> tupl
     """
     if call.deadline_at is None:
         return NEUTRAL, "Повикот нема краен рок; трае до исцрпување на средствата."
-    days = max((call.deadline_at - now).days, 0)
+    # Calendar days in Skopje, as the deadline above it is said: a call closing at
+    # 23:59 today is «рокот истекува денес», not «0 дена» (docs/design.md F17).
+    skopje = ZoneInfo("Europe/Skopje")
+    days = max((call.deadline_at.astimezone(skopje).date() - now.astimezone(skopje).date()).days, 0)
     if days < SHORT_NOTICE_DAYS:
-        return 0.2, f"До рокот {_days_left(days)}, кратко за подготовка."
+        # The screen's own words (app/wording.py). Only the reason changes, not the
+        # score, so no weights version moves.
+        words = days_in_words(days)
+        return 0.2, f"{words[:1].upper()}{words[1:]}, кратко за подготовка."
     return 1.0, f"До рокот {_days_left(days)}."
 
 

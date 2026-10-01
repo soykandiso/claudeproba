@@ -69,7 +69,7 @@ from app.models import ReviewQueueItem
 from app.models.enums import ReviewKind, ReviewState, Verdict
 from app.reports import compose
 from app.reports.lint import find_banned
-from app.web.format import CRITERION_LABELS, VERDICT_LABELS, mkdate
+from app.web.format import CRITERION_LABELS, VERDICT_LABELS, lang_of, mkdate
 
 RENDERER_VERSION = "2026-09-30.1"
 
@@ -201,6 +201,7 @@ def _environment() -> jinja2.Environment:
         lstrip_blocks=True,
     )
     env.filters["mkdate"] = mkdate
+    env.filters["lang_of"] = lang_of
     env.filters["instant"] = _instant
     env.filters["host"] = _host
     env.globals["verdict_labels"] = {v.value: label for v, label in VERDICT_LABELS.items()}
