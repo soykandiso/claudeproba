@@ -8,7 +8,7 @@
   <li>
     <button type="button" class="picker__row"
             hx-get="{{ url_for('intake.activities', pick=n.code) }}"
-            hx-target="#nace-field" hx-swap="outerHTML">
+            hx-target="#nace-field" hx-swap="outerHTML" hx-disabled-elt="this">
       <span class="id">{{ n.code }}</span> {{ n.name_mk }}
     </button>
   </li>

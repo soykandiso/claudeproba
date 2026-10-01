@@ -86,7 +86,7 @@ section:first-of-type { border-top: 0; }
 }
 .site-nav { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-24); }
 .site-nav a { text-decoration: none; color: var(--ink-soft); padding-block: var(--s-8); }
-.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; }
+.site-nav a:hover, .site-nav a[aria-current] { color: var(--ink); text-decoration: underline; }
 
 .site-footer { border-top: var(--rule-w) solid var(--rule); padding-block: var(--s-32) var(--s-48); font-size: var(--text-14); color: var(--ink-soft); }
 
@@ -571,7 +571,7 @@ details.cite[open] > summary::before, details.why[open] > summary::before {
   padding: var(--s-12); cursor: pointer;
 }
 .picker__list > li:first-child .picker__row { border-top: 0; }
-.picker__row:hover { background: var(--paper-sunk); }
+.picker__row:hover, .picker__row.is-hover { background: var(--paper-sunk); }
 .picker__row:focus-visible { outline: var(--mark-w) solid var(--ink); outline-offset: calc(-1 * var(--mark-w)); }
 .picker__row .id { color: var(--ink-soft); margin-right: var(--s-8); }
 /* What a typed activity was read as. Ink, not the citation colour: it is our reading,
@@ -581,3 +581,10 @@ details.cite[open] > summary::before, details.why[open] > summary::before {
 /* HTMX loading state, on the element that was actioned (design system: Interaction) */
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: block; }
+/* Typing a search: the field is the indicator (hx-indicator="#nace-field"), so the
+   input itself recedes while «Се пребарува…» shows under it. */
+.field.htmx-request .input, .field.is-busy .input { background: var(--paper-sunk); cursor: progress; }
+/* Picking a result: the row that was pressed says so, and is disabled until the
+   field comes back (hx-disabled-elt), so a second tap cannot pick twice. */
+.picker__row.htmx-request, .picker__row.is-busy { background: var(--paper-sunk); cursor: progress; font-weight: 500; }
+.picker__row:disabled { color: var(--ink); }

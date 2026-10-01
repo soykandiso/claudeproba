@@ -12,13 +12,13 @@
          hx-get="{{ url_for('intake.activities') }}"
          hx-trigger="input changed delay:300ms"
          hx-target="#nace-results"
-         hx-indicator="#nace-busy"
+         hx-indicator="#nace-field"
          {% if errors.get('nace') %}aria-invalid="true"{% endif %}
          aria-describedby="{{ 'nace-error ' if errors.get('nace') }}nace-hint"
          aria-controls="nace-results">
 
-  <span class="hint" id="nace-hint">{{ q.hint_mk }}</span>
   {% if errors.get('nace') %}<span class="field-error" id="nace-error">{{ errors['nace'] }}</span>{% endif %}
+  <span class="hint" id="nace-hint">{{ q.hint_mk }}</span>
   {% if chosen_nace %}
   <span class="chosen">Прочитано како <span class="id">{{ chosen_nace.code }}</span> {{ chosen_nace.name_mk }}</span>
   {% endif %}

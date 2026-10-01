@@ -274,3 +274,86 @@ def test_the_city_of_skopje_is_not_the_skopje_region():
     assert "во Град Скопје" in dict(inside)["Седиште"]
     assert "Скопски регион" in dict(outside)["Седиште"]
     assert "во Град Скопје" not in dict(outside)["Седиште"]
+
+
+# ------------------------------------------------------------- DS4: the design pass
+
+
+@pytest.mark.parametrize(
+    ("lo", "hi", "words"),
+    [
+        (0, 9, "помалку од една година"),
+        (3, 15, "помалку од 2 години"),
+        (12, 23, "1 година"),
+        (93, 105, "7–8 години"),
+        (252, 263, "21 година"),
+        (132, 143, "11 години"),
+    ],
+)
+def test_a_company_age_is_said_in_years(lo, hi, words):
+    """F23: «7–8 години», never «93–105 месеци»; whole years, rounded down."""
+    from app.matching.hard_filter import Range
+
+    assert intake.age_words(Range(lo, hi)) == words
+
+
+def test_the_review_rows_say_years_and_start_with_a_capital():
+    rows = dict(intake.describe(normalise({**FULL, "inv": ["jobs", "equipment"]})))
+    assert "месеци" not in rows["Старост"]
+    assert rows["Старост"].endswith("основана 2022")
+    assert rows["Намена"] == "Опрема и машини, нови вработувања"  # F24
+
+
+def test_a_refused_form_links_every_field_and_agrees_in_number(client):
+    """F21: «5 полиња треба да се поправат», each one a link to its control."""
+    body = submit(client, entity="", municipality="", founded="18", employees="").get_data(
+        as_text=True
+    )
+    assert "4 полиња треба да се поправат" in body
+    assert "да се поправи." not in body
+    links = re.findall(r'<a href="#(\w+)">', body)
+    assert links == ["entity", "municipality", "founded", "employees"]
+    for field_id in links:
+        assert f'id="{field_id}"' in body
+    assert 'id="form-errors" autofocus' in body
+
+
+def test_one_wrong_field_is_said_in_the_singular(client):
+    body = submit(client, founded="18").get_data(as_text=True)
+    assert "Едно поле треба да се поправи" in body
+
+
+def test_the_error_sits_between_the_control_and_the_hint(client):
+    """F22: at 375 a three-line hint must not separate a control from what is wrong."""
+    body = submit(client, founded="18").get_data(as_text=True)
+    field = body[body.index('id="founded"') :]
+    assert field.index('id="founded-error"') < field.index('id="founded-hint"')
+
+
+def test_the_review_page_belongs_to_the_profile_in_the_nav(client):
+    """F19: by blueprint. The form is the page; the review is under it."""
+    submit(client)
+    body = client.get("/profil/pregled").get_data(as_text=True)
+    assert re.search(r'aria-current="true"[^>]*>Профил<', body)
+
+
+def test_the_picker_shows_its_loading_state_where_it_was_actioned(client):
+    form_page = client.get("/profil/").get_data(as_text=True)
+    assert 'hx-indicator="#nace-field"' in form_page
+    rows = client.get("/profil/dejnosti?nace=леб").get_data(as_text=True)
+    assert 'hx-disabled-elt="this"' in rows
+
+
+@pytest.mark.parametrize(
+    ("seconds", "words"),
+    [
+        (14, "14 секунди"),
+        (60, "1 минута"),
+        (134, "2 минути и 14 секунди"),
+        (61, "1 минута и 1 секунда"),
+    ],
+)
+def test_the_timed_run_is_said_in_minutes(seconds, words):
+    from app.web.intake import _duration_words
+
+    assert _duration_words(seconds) == words

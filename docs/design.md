@@ -102,6 +102,30 @@ error summary); `/stil` shows each in each state, hover/focus/active held by `.i
   English quote gets `lang="en"` and English marks (the component half of F18; DS5 passes the
   snapshot's language).
 
+Closed in **DS4, 01.10.2026**, held by `tests/test_intake_form.py` (the DS4 block):
+
+- **F21**: the refused form uses `c.error_summary`: «Едно поле треба да се поправи» / «N полиња
+  треба да се поправат», one link per field in the form's order (label: what to fix), and the
+  summary takes focus on arrival (`autofocus`, no script).
+- **F22**: label, control, error, hint, in that order, on every field and the activity picker.
+- **F23, the review page's half**: «7–8 години, основана 2018» (`intake.age_words`, whole years
+  rounded down, singular after 1/21/31). **Not changed**: `verify.applicant_shape` still says
+  months, because it is what the model reads and calls state limits in months; the report's
+  applicant line comes from there, so the report/PDF half stays with **DS6**.
+- **F24**: «Опрема и машини, нови вработувања»: a row's value in sentence case.
+- **F19**: the nav marks its section by blueprint: `aria-current="page"` on the page itself,
+  `"true"` on the review page and on a passage.
+- **The picker's loading state** (the roadmap row): while a search is out the field recedes
+  (`--paper-sunk`) and «Се пребарува…» shows under it (`hx-indicator="#nace-field"`); a picked row
+  is busy and disabled until the field returns (`hx-disabled-elt`). Both seen live, both on `/stil`.
+- `/profil/pregled` says the timed run in minutes and seconds, at 16px.
+
+**Found while checking**: typing **«пекар»** finds nothing, because НКД says «Производство на
+леб». The empty state tells the person to try another word or the code, but a baker's first word
+will be «пекар». Common trade words that are not in the classification's text are the cheapest
+way to make the timed run pass; they belong in `data/` as a versioned synonym file, not in code.
+Not built: it is reference data and wants your list (handoff §4).
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -188,9 +212,9 @@ issue.
 |---|---|
 | DS2 | ~~F01, F02, F03, F05, F06, F27~~ closed 01.10.2026 (§2); the italic sign-off is open |
 | DS3 | ~~F04, F10, F11 (`/stil`), F12, F25, F26, F31~~ closed 01.10.2026 (§2) |
-| DS4 | F19, F21, F22, F23, F24 |
+| DS4 | ~~F19, F21, F22, F23 (review page), F24~~ closed 01.10.2026 (§2); the timed run is open |
 | DS5 | F11 (live check), F13, F14, F15, F16, F17, F18 |
-| DS6 | F07, F23 (report and PDF half), F28, F29, F30 |
+| DS6 | F07, F23 (report and PDF half: `verify.applicant_shape` says months), F28, F29, F30 |
 | DS7 | F06b (admin sentences at 14px), F08, F09, F32, F33, F34, F35, F36 |
 | DS9 | F37 |
 

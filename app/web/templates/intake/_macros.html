@@ -73,8 +73,9 @@
   {% else %}
   <textarea class="textarea" id="{{ q.key }}" name="{{ q.key }}" maxlength="300" {{ described(q, errors) }}>{{ a.get(q.key, '') }}</textarea>
   {% endif %}
-  {{ hint(q) }}
+  {# What is wrong sits under the control, before the hint (docs/design.md F22). #}
   {{ error(errors, q.key) }}
+  {{ hint(q) }}
 </div>
 {% endif %}
 {% endmacro %}

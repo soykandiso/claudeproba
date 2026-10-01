@@ -290,12 +290,39 @@ def purpose_words(p) -> str | None:
     return ", ".join(PURPOSES[k] for k in sorted(purposes(p))) or None
 
 
+def _years(n: int) -> str:
+    # Macedonian agrees with the last word: 1, 21, 31 година; 11 and the rest години.
+    return f"{n} година" if n % 10 == 1 and n % 100 != 11 else f"{n} години"
+
+
+def age_words(age) -> str | None:
+    """A company's age in years, as its owner thinks of it (docs/design.md F23).
+
+    The profile holds months because calls state their limits in months (stage 1
+    compares those, and the model reads months in `verify.applicant_shape`); a person
+    reads «7–8 години», not «93–105 месеци». Whole years, rounded down at both ends,
+    so the words never claim more than the range does.
+    """
+    if age is None:
+        return None
+    lo, hi = int(age.lo) // 12, int(age.hi) // 12
+    if hi == 0:
+        return "помалку од една година"
+    if lo == 0:
+        return f"помалку од {_years(hi + 1)}"
+    if lo == hi:
+        return _years(lo)
+    return f"{lo}–{_years(hi)}"
+
+
 def describe(p) -> list[tuple[str, str | None]]:
     """Every answer as a label and a value, with None for what was not answered."""
     age = None
     if p.age_months:
-        founded = p.answers.get("founded")
-        age = f"{int(p.age_months.lo)}–{int(p.age_months.hi)} месеци, основана {founded}"
+        age = f"{age_words(p.age_months)}, основана {p.answers.get('founded')}"
+    # A row's value starts a sentence; the words inside it stay as they are (F24).
+    purpose = purpose_words(p)
+    purpose = purpose[:1].upper() + purpose[1:] if purpose else None
     return [
         ("Вид на субјект", entity_label(p)),
         ("Дејност", f"{p.nace.code} {p.nace.name_mk}" if p.nace else None),
@@ -303,7 +330,7 @@ def describe(p) -> list[tuple[str, str | None]]:
         ("Старост", age),
         ("Вработени", employees_label(p)),
         ("Годишен промет", band_label(TURNOVER_BANDS, p, "turnover")),
-        ("Намена", purpose_words(p)),
+        ("Намена", purpose),
         ("Износ на инвестицијата", amount_label(p)),
         ("Сопствено учество", f"{p.cofinancing_pct:g}%" if p.cofinancing_pct is not None else None),
         ("Рок на проектот", f"{p.timeline_months} месеци" if p.timeline_months else None),

@@ -111,6 +111,21 @@
   </fieldset>
 </section>
 
+<section class="stack" aria-labelledby="picker-h">
+  <h2 id="picker-h">Избор на дејност (HTMX)</h2>
+  <p class="soft">Додека се пребарува, полето се повлекува и под него пишува што се случува. Притиснатиот ред е оневозможен додека не се врати полето.</p>
+  <div class="field is-busy">
+    <label for="stil-nace">Дејност, се пребарува</label>
+    <input class="input" id="stil-nace" value="пекар">
+    <span class="small soft" role="status">Се пребарува…</span>
+  </div>
+  <ul class="picker__list">
+    <li><button type="button" class="picker__row"><span class="id">10.71</span> Производство на леб, свежи колачи и пециво</button></li>
+    <li><button type="button" class="picker__row is-hover"><span class="id">10.72</span> Производство на двопек и бисквити</button></li>
+    <li><button type="button" class="picker__row is-busy" disabled><span class="id">47.24</span> Трговија на мало со леб, колачи и слатки</button></li>
+  </ul>
+</section>
+
 <section class="stack" aria-labelledby="list-h">
   <h2 id="list-h">Листи со тенки линии</h2>
   <ul class="reasons">
@@ -143,5 +158,5 @@
 <section class="stack" aria-labelledby="state-h">
   <h2 id="state-h">Празно и грешка</h2>
   {{ c.empty('Нема отворен повик на кој можете да аплицирате', 'Ниту еден отворен повик не одговара на овој профил. Проверете дали дејноста и видот на субјект се точни.', '#state-h', 'Измени го профилот') }}
-  {{ c.error_summary('Профилот не е зачуван.', 'Две полиња треба да се поправат:', [('stil-sel-bad', 'Изберете вид на субјект.'), ('stil-in-5', 'Годината треба да има четири бројки.')]) }}
+  {{ c.error_summary('Профилот не е зачуван.', 'Две полиња треба да се поправат:', [('stil-sel-bad', 'Изберете вид на субјект.'), ('stil-in-5', 'Годината треба да има четири бројки.')], focus=false) }}
 </section>

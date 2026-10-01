@@ -26,8 +26,10 @@
     <div class="wrap">
       <a class="wordmark" href="{{ url_for('intake.form') }}">Грантови и субвенции</a>
       <nav class="site-nav" aria-label="Главна навигација">
-        <a href="{{ url_for('intake.form') }}" {% if request.endpoint in ('intake.form', 'intake.save') %}aria-current="page"{% endif %}>Профил</a>
-        <a href="{{ url_for('shortlist.index') }}" {% if request.endpoint == 'shortlist.index' %}aria-current="page"{% endif %}>Повици</a>
+        {# By blueprint, not endpoint: the review page belongs to «Профил», a passage to
+           «Повици» (docs/design.md F19). "page" only on the page itself, "true" below it. #}
+        <a href="{{ url_for('intake.form') }}" {% if request.blueprint == 'intake' %}aria-current="{{ 'page' if request.endpoint in ('intake.form', 'intake.save') else 'true' }}"{% endif %}>Профил</a>
+        <a href="{{ url_for('shortlist.index') }}" {% if request.blueprint == 'shortlist' %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>Повици</a>
       </nav>
     </div>
   </header>

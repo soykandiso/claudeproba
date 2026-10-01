@@ -68,10 +68,11 @@
 {%- endmacro %}
 
 {# Something went wrong: what happened and how to fix it, never an apology. Takes
-   focus on arrival (tabindex) so a screen reader starts here. `items` are
+   focus on arrival (autofocus works on any focusable element, tabindex makes this one
+   focusable), so a screen reader and the keyboard start here. `items` are
    (field id, message) pairs, each a link to its field. #}
-{% macro error_summary(title, text=none, items=()) -%}
-<div class="notice" role="alert" tabindex="-1" id="form-errors">
+{% macro error_summary(title, text=none, items=(), focus=true) -%}
+<div class="notice" role="alert" tabindex="-1" id="form-errors"{% if focus %} autofocus{% endif %}>
   <p><strong>{{ title }}</strong>{% if text %} {{ text }}{% endif %}</p>
   {% if items %}
   <ul class="notice__list">

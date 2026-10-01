@@ -48,11 +48,39 @@ def profile() -> Profile | None:
 # ------------------------------------------------------------------- the form
 
 
+def _duration_words(seconds: int | None) -> str | None:
+    """«2 минути и 14 секунди»: the s23/DS4 acceptance is under three minutes, and a
+    person reading the page should not have to divide by sixty to know."""
+    if not seconds:
+        return None
+    minutes, rest = divmod(int(seconds), 60)
+    parts = []
+    if minutes:
+        parts.append("1 минута" if minutes == 1 else f"{minutes} минути")
+    if rest or not minutes:
+        parts.append("1 секунда" if rest == 1 else f"{rest} секунди")
+    return " и ".join(parts)
+
+
+def _error_items(errors: dict[str, str]) -> list[tuple[str, str]]:
+    """(field id, what to fix) in the order the form asks, for the summary's links.
+
+    Each question's key is its control's id, so a link lands on the control itself.
+    """
+    return [
+        (q.key, f"{q.label_mk}: {errors[q.key]}")
+        for _title, rows in intake.sections()
+        for q in rows
+        if q.key in errors
+    ]
+
+
 def _context(posted: dict, errors: dict[str, str]) -> dict:
     return {
         "sections": intake.sections(),
         "a": posted,
         "errors": errors,
+        "error_items": _error_items(errors),
         "chosen_nace": reference.resolve_nace(posted.get("nace")),
     }
 
@@ -114,5 +142,5 @@ def review():
         rows=intake.describe(p),
         unknown=UNKNOWN,
         scrubbed=Scrubber().scrub(p.project_description),
-        seconds=session.get("profile_seconds"),
+        took=_duration_words(session.get("profile_seconds")),
     )

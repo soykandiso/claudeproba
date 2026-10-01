@@ -35,9 +35,9 @@
     <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">Измени го профилот</a>
   </div>
 
-  {% if seconds %}
-  {# Roadmap P2 s23 acceptance is a timed run, so the page says what it measured. #}
-  <p class="small soft">Пополнувањето траеше {{ seconds }} секунди.</p>
+  {% if took %}
+  {# The DS4 acceptance (P2 s23's) is a timed run, so the page says what it measured. #}
+  <p class="soft">Пополнувањето траеше {{ took }}.</p>
   {% endif %}
 </div>
 {% endblock %}
