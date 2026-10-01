@@ -1,0 +1,63 @@
+{% extends "demo/base.html" %}
+{% block title %}Админ: преглед{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <p class="small soft">Админ, само за операторот</p>
+    <h1>Преглед пред објава</h1>
+    <p class="soft">Ништо не стигнува до корисник без човек: повик извлечен од извор се објавува дури кога ќе го прифатите, а платен извештај се испраќа дури по вашиот преглед.</p>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="queue-h">
+    <h2 id="queue-h">Ред за преглед</h2>
+    {% if items %}
+    <ul class="rows">
+      {% for i in items %}
+      {% set r = reviews[i.id] %}
+      <li{% if not i.open %} class="rows--closed"{% endif %}>
+        <div class="stack" style="--gap: 4px">
+          <span class="small soft">{{ i.kind }}</span>
+          <a href="{{ i.url }}"><strong>{{ i.title }}</strong></a>
+          {% if i.flag and i.open %}<span class="small">{{ i.flag }}</span>{% endif %}
+        </div>
+        <div class="rows__meta">
+          {% if i.open %}
+          <span>{% if r and r.outcome == 'rejected' %}Вратено, чека повторен преглед{% else %}Чека преглед{% endif %}</span>
+          {% else %}
+          <span>{{ 'Прифатено' if r.outcome == 'accepted' else 'Отфрлено' }}</span>
+          <span class="small soft">{{ r.at }}</span>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Редот е празен.</p>
+    {% endif %}
+    <p class="small soft">Извештаите се појавуваат тука кога нарачката е платена. Во демото: нарачајте извештај од страницата на повикот и означете ја уплатата.</p>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="sources-h">
+    <div class="stack">
+      <h2 id="sources-h">Состојба на изворите</h2>
+      <p class="soft">Извор што не е успешно преземен во рокот се означува, а известувањето оди надвор од апликацијата (P1 s14).</p>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr><th scope="col">Извор</th><th scope="col">Пристап</th><th scope="col">Последно успешно</th><th scope="col">Рок</th><th scope="col">Состојба</th></tr></thead>
+        <tbody>
+          {% for s in sources %}
+          <tr>
+            <td>{{ s.name }}{% if s.note %}<br><span class="small soft">{{ s.note }}</span>{% endif %}</td>
+            <td>{{ s.access }}</td>
+            <td>{% if s.last_success_days_ago == 0 %}денес{% elif s.last_success_days_ago == 1 %}пред 1 ден{% else %}пред {{ s.last_success_days_ago }} дена{% endif %}</td>
+            <td>{{ s.sla_days }} {{ 'ден' if s.sla_days == 1 else 'дена' }}</td>
+            <td>{% if s.stale %}<strong class="stale">Застарено</strong>{% else %}Во рок{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

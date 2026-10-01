@@ -1,0 +1,50 @@
+# Frozen by ops/dev/freeze_eval_fixtures.py from tests/fixtures and
+# tests/cassettes/extract_call. Do not hand-edit: re-run the script.
+slug: eu-digital-2026-skills-10-edtech
+shape: 'ЕУ тема: условите се во документ што не е прочитан'
+title_mk: EdTech Accelerator
+institution: European Commission (DIGITAL Europe)
+canonical_url: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/digital-2026-skills-10-edtech
+reference_code: DIGITAL-2026-SKILLS-10-EDTECH
+status: open
+published_at: 2026-04-01
+deadline_at: 2026-10-01 23:59:59+02:00
+eligibility_gap: Дел од условите на овој повик се во документот на повикот или во работната програма,
+  кои сè уште не се прочитани.
+grant_min_mkd: null
+grant_max_mkd: null
+cofinancing_pct: null
+document:
+  path: document.txt
+  sha256: 39f3e50a757ee91a3615dd3b8155fac130ae07c03f9d8166bddbe2ee3a1422f4
+  characters: 5965
+  text_source: native
+criteria:
+- kind: narrative_verify
+  label_mk: Земјата на апликантот треба да е меѓу прифатливите земји наведени во документот за повикот
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.8
+  quote: 2. Eligible countries
+  quote_start: 4663
+  quote_end: 4684
+- kind: applicant_attest
+  label_mk: Финансиски и оперативен капацитет и отсуство на основи за исклучување
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.7
+  quote: 4. Financial and operational capacity and exclusion
+  quote_start: 4811
+  quote_end: 4862
+- kind: documentary
+  label_mk: Стандарден образец за апликација (DEP) од системот за поднесување
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.85
+  quote: Standard application form (DEP) — the application form specific to this call is available in
+    the Submission System
+  quote_start: 5441
+  quote_end: 5555

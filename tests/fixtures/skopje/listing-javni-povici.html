@@ -1,0 +1,1188 @@
+
+<!doctype html>
+<html lang="mk">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Град Скопје - Официјален портал</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="/assets/style.css" />
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    
+</head>
+<body class="layout-reduced" style="background-color:#f1f1f1;">
+
+    
+<ul class="nav language-bar text-shadow">
+
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/">mk</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/sq/">sq</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/en_us/">en</a>
+            </li>
+</ul>
+
+
+<link href="https://allfont.net/allfont.css?fonts=open-sans-light" rel="stylesheet" type="text/css" />
+
+<header class="sticky-top">
+    <div class="container">
+        &nbsp;
+        <loggedOut>
+            <a class="float-right" style="font-family: 'Open Sans Light', arial; font-size: small; text-decoration: none;" href="/" onclick="login(); return false;">Регистрирај се</a>
+            <a class="float-right" style="font-family: 'Open Sans Light', arial; font-size: small;text-decoration: none;" href="/">|</a>
+            <a class="float-right" style="font-family: 'Open Sans Light', arial; font-size: small;text-decoration: none;" id="login" href="/" onclick="login(); return false;">Најави се</a>
+        </loggedOut>
+        <loggedIn style="display: none">
+            <a class="float-right" style="font-family: 'Open Sans Light', arial; font-size: small;text-decoration: none;" id="logout" href="/" onclick="logout(); return false;">&nbsp;Најави се</a>
+            <userName class="float-right"></userName>
+        </loggedIn>
+    </div>
+</header>
+<header class="bg-primary sticky-top" style="font-family:'Open Sans Light',sans-serif; font-size: 1.1em; font-weight: 300;">
+    <div class="container">
+        <nav class="navbar navbar-expand-md navbar-dark">
+            <a class="navbar-brand logo-small" href="/">
+                <img src="/media/1002/logo.png" alt="">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="w-100 navbar-nav justify-content-end">
+                                    <li class=nav-item>
+
+                        <a href="/mk/vesti/" class="nav-link">Вести</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/mk/skopje/" class="nav-link dropdown-toggle"  target="">Град Скопје</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                                <a href="/mk/skopje/gradonacalnik/" class="dropdown-item">Градоначалник</a>
+                                <a href="/mk/skopje/sovet/" class="dropdown-item">Совет</a>
+                                <a href="/mk/skopje/administracija/" class="dropdown-item">Администрација</a>
+                                <a href="/mk/skopje/javni-pretprijatija/" class="dropdown-item">Јавни претпријатија</a>
+                                <a href="/mk/skopje/kulturni-ustanovi/" class="dropdown-item">Јавни и културни установи</a>
+                                <a href="/mk/skopje/sredni-ucilista/" class="dropdown-item">Средни училишта</a>
+                                <a href="/mk/skopje/protiv-pozarna-brigada/" class="dropdown-item">Противпожарна Бригада</a>
+                                <a href="https://www.skopjelab.mk/" class="dropdown-item" target="_blank">Центар за иновации</a>
+                                <a href="https://starportal.skopje.gov.mk/" class="dropdown-item" target="_blank">Стар портал</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/mk/budzet/" class="nav-link dropdown-toggle"  target="">Буџет</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                                <a href="/mk/budzet/budzet/" class="dropdown-item">Буџет на град Скопје</a>
+                                <a href="/mk/budzet/godisni-smetki/" class="dropdown-item">Годишни сметки</a>
+                                <a href="/mk/budzet/izvestai/" class="dropdown-item">Извештаи за извршување на буџет</a>
+                                <a href="/mk/budzet/zavrsni-smetki/" class="dropdown-item">Завршни сметки</a>
+                    </div>
+                </li>
+                <li class=nav-item>
+
+                        <a href="https://danoci.skopje.gov.mk/gskopje/root/public/login.xhtml" class="nav-link" target="_blank">Даноци</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/mk/apliciraj/" class="nav-link dropdown-toggle"  target="">Аплицирај</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                                <a href="/mk/apliciraj/javni-povici/" class="dropdown-item">Јавни повици</a>
+                                <a href="/mk/apliciraj/konkursi/" class="dropdown-item">Јавни конкурси</a>
+                                <a href="/mk/apliciraj/vrabotuvanja/" class="dropdown-item">Вработувања</a>
+                                <a href="/mk/apliciraj/subvencii/" class="dropdown-item">Субвенции</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/mk/objavi/" class="nav-link dropdown-toggle"  target="">Објави</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                                <a href="/mk/objavi/strategii/" class="dropdown-item">Стратегии</a>
+                                <a href="/mk/objavi/b-dozvoli/" class="dropdown-item">Б - Дозволи</a>
+                                <a href="/mk/objavi/studii/" class="dropdown-item">Студии</a>
+                                <a href="/mk/objavi/pravilnici/" class="dropdown-item">Правилници</a>
+                                <a href="/mk/objavi/programi/" class="dropdown-item">Програми</a>
+                                <a href="/mk/objavi/glasilo/" class="dropdown-item">Информативно гласило</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/mk/city-uslugi/" class="nav-link dropdown-toggle"  target="">Услуги</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                                <a href="/mk/city-uslugi/uslugi-danoci/" class="dropdown-item">Даноци</a>
+                                <a href="/mk/city-uslugi/uslugi-dozvoli/" class="dropdown-item">Дозволи</a>
+                                <a href="/mk/city-uslugi/uslugi-licenci/" class="dropdown-item">Лиценци</a>
+                                <a href="/mk/city-uslugi/uslugi-odobrenija/" class="dropdown-item">Одобренија</a>
+                                <a href="/mk/city-uslugi/uslugi-pravilnici/" class="dropdown-item">Правилници</a>
+                                <a href="/mk/city-uslugi/uslugi-resenija/" class="dropdown-item">Решенија</a>
+                                <a href="/mk/city-uslugi/uslugi-uverenija/" class="dropdown-item">Уверенија</a>
+                    </div>
+                </li>
+                <li class=nav-item>
+
+                        <a href="/mk/kontakt/" class="nav-link">Контакт</a>
+                </li>
+
+                    <li class="nav-item"><a href="/#section-search" class="nav-link"><i class="fas fa-search"></i></a></li>
+                </ul>
+
+<ul class="nav-fill navbar-nav">
+
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/">mk</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/sq/">sq</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="padding-left: 0.5rem;padding-right: 0.5rem;" href="/en_us/">en</a>
+            </li>
+</ul>
+
+            </div>
+        </nav>
+    </div>
+</header>
+
+
+    <main class="main-content" style="min-height:85vh;">
+        
+
+<style>
+    .et_pb_with_border_title {
+        border-width: 0;
+        border-style: solid;
+        border-color: #333;
+        border-bottom-width: 1px;
+        border-bottom-color: #e0e0e0;
+        padding-bottom: 30px;
+        color: #666 !important;
+    }
+
+    .section-image {
+        padding-top: 15px;
+        padding-bottom: 10px;
+        border-top: 1px solid #e0e0e0;
+    }
+    .arhive-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        border-top: 1px solid #e0e0e0;
+        border-bottom: 1px solid #e0e0e0;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div style="padding-top: 25px;">
+                <h1 style="text-transform: uppercase;font-size: 30px;">Јавни повици</h1>
+                <div class="et_pb_with_border_title">
+                    Јавни повици на градот Скопје
+                </div>
+                    <div class="section-image"> <img style="width:100%;" src="/media/3512/konkursi_image.jpg" /></div>
+
+                <div class="row">
+                    <div class="col-md-12">
+
+<style>
+
+    .app-box {
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .app-box-left {
+        border-left: red solid 3px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding-left: 20px;
+    }
+
+    .app-title {
+        color: #333;
+        font-size: 1rem;
+        font-weight: 400;
+    }
+
+    .app-text {
+        margin-top: 15px;
+    }
+</style>
+
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12191/javen-povik-za-uchestvo-na-sobranie-na-mladi-na-grad-skopje-mkd.pdf" target="_blank">
+                    Јавен повик за учество на конституирање Собрание на млади на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 14.09.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12192/пријава-за-номинација-за-собрание-на-млади-на-град-скопје-2026.docx" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12164/td2-rc-ipa-2026-f.rar" target="_blank">
+                    Јавен повик за набавка, испорака, монтажа, пуштање во употреба и обука за еден (1) хидрауличен багер гасеничар со хидрауличен чекан за управување и повторна употреба на градежен отпад и отпад од рушење
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 22.09.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12165/td2-rc-c3_summarycn_en-f.docx" target="_blank">
+                            <div>TD2 RC c3_summarycn_en f</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12140/tendr-dossier-re_construct_ipa_2026_sup_t01.zip" target="_blank">
+                    Јавен повик за Набавка, испорака, инсталација, пуштање во работа и обука за една (1) мобилна челустна дробилка со интегрирана станица за селекција, наменета за повторна употреба и управување со градежен отпад и отпад од уривање
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 30.09.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12141/td1-rc-c3_summarycn_en-f.pdf" target="_blank">
+                            <div>TD1 RC c3_summarycn_en f</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12149/јавен-повик-субвенции-на-занаети.pdf" target="_blank">
+                                      Јавен повик за субвенционирање на дефицитарни занаетчии и занаети во изумирање во градот Скопје за 2026 година  
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 30.11.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12150/барање.doc" target="_blank">
+                            <div>Барање</div>
+                        </a>
+                        <a href="/media/12151/изјава.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+                        <div class="arhive-title" style="padding-bottom: 25px;">
+                            <a href="~" style="color: #e4002b" onclick="toggleByClass(this, 'archived'); return false;" hidden-name="Сокриј архивирани">Прикажи архивирани</a>
+                        </div>
+
+
+                        <div class="archived" style="display: none">
+<style>
+
+    .app-box {
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .app-box-left {
+        border-left: red solid 3px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding-left: 20px;
+    }
+
+    .app-title {
+        color: #333;
+        font-size: 1rem;
+        font-weight: 400;
+    }
+
+    .app-text {
+        margin-top: 15px;
+    }
+</style>
+
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12180/javen-povik-pivolend.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на манифестацијата „Фестивал на пиво - Пиволенд“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 05.09.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12181/kriteriumi.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/12182/pravilnik-2026.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/12183/пријава-за-реализација-на-манифестација-фестивал-на-пиво-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12184/изјава-за-подмирени-обврски-2026.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12168/javen-povik-den-na-filigranstvo-2026.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на манифестацијата „Ден на филигранство“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 31.08.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12169/kriteriumi.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/12170/пријава-за-реализација-на-манифестација-den-filigranstvo-25082026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12171/изјава-за-подмирени-обврски-1-25082026.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+                        <a href="/media/12176/nov-pravilnik-za-javni-povici-vo-sektor-ler-2026.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12134/јавен-повик-за-млади-за-2026-мкд.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за спроведување програми, проекти, програмски активности и манифестации на младите од интерес за Град Скопје  за 2026 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 05.08.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12144/pravilnik-za-mladi.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/12145/prijava-za-javen-povik-za-mladi-za-2026-godina.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12100/јавен-повик-управни-надзорниplusобразец_1.pdf" target="_blank">
+                    ЈАВЕН ПОВИК бр.01 за пријавување на заинтересирани лица за избор на членови на органот на управување и членови на  органот за надзор на јавните установи основани од Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 28.07.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12157/соопштение-јавни-установи.doc" target="_blank">
+                            <div>Соопштение</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12094/javen-povik.pdf" target="_blank">
+                    Jавен повик за доделување на финансиски средства во 2026 година  за најуспешните спортисти – средношколци на подрачјето на градот Скопје, жители на Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 27.07.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12147/pravilnik-za-finansiranje-na-sportisti-srednoshkolci.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/12096/prijava.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12106/јавен-повик-за-модерно-скопје.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на манифестацијата „Фестивал Модерно Скопје“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 24.07.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12107/пријава-за-реализација-на-манифестација.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12108/прилог-кон-пријавата-за-модерно-скопје.pdf" target="_blank">
+                            <div>Прилог кон пријавата за Модерно Скопје</div>
+                        </a>
+                        <a href="/media/12110/решение-за-објава-на-јавен-повик-за-модерно-скопје.pdf" target="_blank">
+                            <div>Решение за објава на Јавен повик за Модерно Скопје</div>
+                        </a>
+                        <a href="/media/12111/изјава-за-подмирени-обврски.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12087/javen-povik-gradski-duvacki-orkestar.pdf" target="_blank">
+                    Јавен повик за избор и формирање на Градски дувачки оркестар
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 20.07.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12101/јавен-повик-управни-надзорниplusобразец.pdf" target="_blank">
+                    ЈАВЕН ПОВИК бр. 01/2026 за пројавување на интерес за пријавување на кандидати за избор на членови на управен одбор и членови на надзорен одбор за контрола на материјално – финансиското работење на јавните претпријатија основани од Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 18.07.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12156/соопштение-јавни-претпријатија.doc" target="_blank">
+                            <div>Соопштение</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12092/javen-povik-09072026.pdf" target="_blank">
+                    Јавен повик за избор на дополнителни членови во Советот за превенција на детско престапништво на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 15.07.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12081/javen-povik-za-avto-taksi-prevoz-juli.pdf" target="_blank">
+                    Јавен повик за распределба на слободни изводи од лиценци за авто-такси превоз на патници на подрачјето на градот Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 10.07.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12082/javen-povik-koordinator.pdf" target="_blank">
+                    Јавен повик за избор на Координатор на Проект во рамки на проектот „RE-Construct (Повторна употреба и управување со градежен отпад и шут од рушење)“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 09.07.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12047/javen-povik-urbana-oprema-lokacii-dopolnitelen.pdf" target="_blank">
+                    Дополнителен Јавен повик за доделување на  локации за поставување на урбана опрема 
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 24.06.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12048/барање.docx" target="_blank">
+                            <div>Барање</div>
+                        </a>
+                        <a href="/media/12049/кеј-вардар.pdf" target="_blank">
+                            <div>Кеј на река Вардар - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/12050/парк.pdf" target="_blank">
+                            <div>Градски парк - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/12051/парк-на-природата-гази-баба.pdf" target="_blank">
+                            <div>Парк на природата Гази Баба - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/12052/рајски-парк-ново-лисиче.pdf" target="_blank">
+                            <div>Рајски парк - Ново Лисиче - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/12053/срц-сарај.pdf" target="_blank">
+                            <div>СРЦ Сарај - локации за урбана опрема</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12061/javen-povik-za-zensko-pretpriemnistvo-2026-godina.pdf" target="_blank">
+                    Јавен повик за финансирање на проектни активности за поддршка на женско претприемништво на Град Скопје за 2026 година, на тема „Користење на дигитални алатки за поголема промоција на бизнисот на жените претприемачки“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 19.06.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12063/pravilnik-za-javni-povici-2026-godina.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/12064/kriteriumi-za-izbori-na-aplikantite-so-boduvanje-к.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/12065/пријава-за-јавен-повик-за-жп-2026-година.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12066/образец-предлог-проект-за-пријавување-на-јавен-повик-за-жп-2026-г_.doc" target="_blank">
+                            <div>Образец</div>
+                        </a>
+                        <a href="/media/12067/изјава-за-подмирени-обврски-жп-2026.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12041/javen-povik-skopje-kreativa.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства на проект за реализација на Фестивал на креативни индустрии „Скопје креатива“ 
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 10.06.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12042/pravilnik-2026.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/12043/пријава-за-конкурс-2026-година.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12022/javen-povik-organiziranje-na-turisticki-razgled-na-skopje.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на проектот “Организирање на туристички разглед на Скопје”
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 23.05.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12023/kriiteriumi.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/12024/пријава-за-реализација-на-манифестација-туристички-разглед-13052026.docx" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12025/изјава-за-подмирени-обврски-13052026.docx" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/12014/javen-povik-mkd.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на манифестацијата “Стрит фуд фестивал (Street food Festival)”
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 22.05.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/12015/kriteriumi-mkd.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/12016/пријава-за-реализација-на-манифестација-strit-fud.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/12017/изјава-за-подмирени-обврски.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11990/javen-povik-za-sport-za-2026-godina-mkd.pdf" target="_blank">
+                    Jавен повик за доделување на финансиски средства за програми, проекти, програмски активности и манифестации во областа на спортот од интерес за Град Скопје за 2026 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 22.04.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11991/pravilnik-za-sport-vo-2026-arhiviran.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/11992/prijava-za-javen-povik-za-sport-za-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11996/javen-povik-festival-na-vino-vinoskop.pdf" target="_blank">
+                    Јавен повик за доделување на финансиски средства за реализација на манифестацијата „Фестивал на вино - Виноскоп“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 12.04.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11997/pravilnik.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/11998/kriteriumi.pdf" target="_blank">
+                            <div>Критериуми</div>
+                        </a>
+                        <a href="/media/11999/изјава-за-подмирени-обврски-2026.doc" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+                        <a href="/media/12000/пријава-за-реализација-на-манифестација-фестивал-на-вино-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11963/javen-povik-nvo-2026.pdf" target="_blank">
+                    Jавен повик за доделување на финансиски средства за поддршка на проекти и програмски активности на здруженија и фондации кои извршуваат јавен интерес и се одржуваат на територијата на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 07.04.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11967/pravilnik-nvo-2026.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/11968/пријава-за-финансиска-поддршка-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/11969/образец-за-предлог-проект-2026.doc" target="_blank">
+                            <div>Oбразец</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11957/javen-povik-na-sektor-za-obrazovanie-na-grad-skopje-2026-godina.pdf" target="_blank">
+                    Јавен повик за кофинансирање на проекти на здруженија на граѓани и фондации од областа на средното образование за 2026 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 01.04.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11954/pravilnik-obrazovanie-2026.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+                        <a href="/media/11955/образец-за-јавен-повик-2026.doc" target="_blank">
+                            <div>Образец</div>
+                        </a>
+                        <a href="/media/11956/пријава-за-јавен-повик-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11962/javen-povik_prag-expert_reconstruct-dea.pdf" target="_blank">
+                    Jавен повик  за избор на експерт за ПРАГ ревидирање, подготовка и евалуација на три (3) тендерски досиеја за набавка на машинерија и опрема во рамки на проектот „RE-Construct“
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 29.03.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11847/javen-povik-za-finansiranje-na-nevladini-organizacii-od-oblasta-na-kulturata-za-2026-godina.pdf" target="_blank">
+                    Jавен повик  за доделување финансиски средства  за спроведување на програми, проекти и активности од областа на културата од интерес на Град Скопје за 2026 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 14.03.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11848/пријава-за-конкурс-2026-година.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/11853/celi-i-kriteriumi-boduvanje-2026.pdf" target="_blank">
+                            <div>Цели и критериуми</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11891/javen-povik-pravo-na-vremeno-koristenje-nedvizna-stvar-1.pdf" target="_blank">
+                    Jавен повик за давање право на времено користење на недвижна ствар, сопственост на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 07.03.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11889/образец-за-предлог-проект-2026.doc" target="_blank">
+                            <div>Образец за предлог проект</div>
+                        </a>
+                        <a href="/media/11890/образец-за-пријава-за-проект-2026.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11877/javen-povik-za-izbor-na-chlenovi-na-inicijativen-odbor-za-konstituiranje-sobranie-na-mladi-na-grad-skopje.pdf" target="_blank">
+                    Jавен повик за избор на членови на Иницијативен одбор за конституирање Собрание на млади на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 06.03.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11882/пријава-за-номинација-на-кандидат-за-избор-на-членови-во-иницијативен-одбор-за-конституирање-собрание-на-млади-на-град-скопје.doc" target="_blank">
+                            <div>Пријава за номинација на кандидат </div>
+                        </a>
+                        <a href="/media/11887/изјава-за-согласност-за-обработка-на-лични-податоци-на-членови-во-иницијативен-одбор-за-конституирање-собрание-на-млади-на-град-скопје.doc" target="_blank">
+                            <div>Изјава за обработка на лични податоци</div>
+                        </a>
+                        <a href="/media/11881/изјава-за-согласност-за-прифаќање-на-номинацијата-за-член-во-иницијативен-одбор-за-конституирање-собрание-на-млади.doc" target="_blank">
+                            <div>Изјава за прифаќање на номинација за избор на член </div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11832/jp-urbana-oprema-2026-mk.pdf" target="_blank">
+                    Јавен повик за доделување на локации за поставување на урбана опрема
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 25.02.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11833/барање.docx" target="_blank">
+                            <div>Барање</div>
+                        </a>
+                        <a href="/media/11834/kej-vardar.pdf" target="_blank">
+                            <div>Кеј на река Вардар - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/11835/park.pdf" target="_blank">
+                            <div>Градски парк - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/11836/park-na-prirodata-gazi-baba.pdf" target="_blank">
+                            <div>Парк на природата Гази Баба - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/11837/rajski-park-novo-lisice.pdf" target="_blank">
+                            <div>Рајски парк - Ново Лисиче - локации за урбана опрема</div>
+                        </a>
+                        <a href="/media/11838/src-saraj.pdf" target="_blank">
+                            <div>СРЦ Сарај - локации за урбана опрема</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11825/javen-povik-za-sport-za-2026-godina-za-izbor-na-najdobri-sportisti-na-grad-skopje-za-2025-mkd.pdf" target="_blank">
+                    Jавен повик за доделување на финансиски средства за организација и реализација на манифестација „Избор на најдобрите спортистки и спортисти, тренер и екипа на Град Скопје за 2025 година“                                                           
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 14.02.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11826/пријава-за-јавен-повик.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+                        <a href="/media/11827/pravilnik-za-sport-vo-2026-arhiviran.pdf" target="_blank">
+                            <div>Правилник</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11810/javen-povik-socijala-2026.pdf" target="_blank">
+                    Jавен повик за поддршка на проекти и програмски активности  на организации кои работат во областа на социјалната, детска и здравствена заштита
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 12.02.2026
+            </div>
+            <div class="app-text">
+                        <a href="/media/11811/образец-за-пријава-за-проект-2026.doc" target="_blank">
+                            <div>Пријава за финансиска поддршка</div>
+                        </a>
+                        <a href="/media/11812/образец-за-предлог-проект-2026.doc" target="_blank">
+                            <div>Образец за предлог проект</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11817/javen-povik-za-avto-taksi-prevoz-fevruari-2026.pdf" target="_blank">
+                    Јавен повик за распределба на слободни изводи од лиценци за авто-такси превоз на патници на подрачјето на градот Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 11.02.2026
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11785/javen-povik-za-taksi-dekemvri.pdf" target="_blank">
+                    Јавен повик за распределба на слободни изводи од лиценци за авто-такси превоз на патници на подрачјето на градот Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 24.12.2025
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11772/javen-povik-povlasteno-koristenje-javen-gradski-prevoz.pdf" target="_blank">
+                    Јавен повик за реализација на Програмата за повластено користење на јавниот градски превоз од страна на лица со попреченост, во 2026 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 22.12.2025
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11774/javen-povik-shleter-centar.pdf" target="_blank">
+                    Јавен повик за давање право на времено користење на недвижна ствар-стан, сопственост на Град Скопје
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 17.12.2025
+            </div>
+            <div class="app-text">
+                        <a href="/media/11775/образец-за-предлог-проект-2025.doc" target="_blank">
+                            <div>Образец за предлог проект</div>
+                        </a>
+                        <a href="/media/11776/образец-за-пријава-за-проект-2025.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11760/javen-povik-javni-ustanovi-2026.pdf" target="_blank">
+                    Јавен повик  за  прибирање барања за користење средства од Буџетот на Град Скопје за 2026 година, наменети  за финансирање и поддршка на програми и проекти на јавните установи од областа на културата основани од Град Скопје за 2026 година 
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 06.12.2025
+            </div>
+            <div class="app-text">
+                        <a href="/media/11762/пријава-за-конкурс-2026-година.doc" target="_blank">
+                            <div>Пријава</div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11715/javen-povik-za-subvencii-na-zanaetcii.pdf" target="_blank">
+                    Јавен повик за субвенционирање на дефицитарни занаетчии и занаети во изумирање во градот Скопје за 2025 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 28.11.2025
+            </div>
+            <div class="app-text">
+                        <a href="/media/11716/изјава.docx" target="_blank">
+                            <div>Изјава</div>
+                        </a>
+                        <a href="/media/11717/образец-барање.doc" target="_blank">
+                            <div>Образец, барање субвенции за занаетчии </div>
+                        </a>
+            </div>
+        </div>
+    </div>
+    <div class="app-box">
+        <div class="app-box-left">
+            <div class="app-title">
+                <a href="/media/11573/javen-povik-subvencii-cistenje-odzaci.pdf" target="_blank">
+                    Јавен повик за субвенционирање на домаќинствата на граѓаните на подрачјето на градот Скопје за надоместување на дел од трошоците за чистење на оџаци за 2025 година
+                </a>
+            </div>
+            <div class="app-year">
+                Отворен до: 31.10.2025
+            </div>
+            <div class="app-text">
+            </div>
+        </div>
+    </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <button onclick="topFunction()" id="toTopButton" title="Go to top"><i class="fas fa-chevron-up"></i></button>
+    </main>
+    
+
+<style>
+    .footer a {
+        color: #909090 !important;
+        font-size: 0.9rem;
+    }
+
+    .social {
+        font-size: 1.5rem;
+    }
+
+    .collectionbg {
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+</style>
+
+<footer class="py-5 footer" style="background-color:#2f2f2f !important; background-image: url(/assets/img/city_skyline_transparent.png) !important">
+    <div class="layer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    
+                    <div class="row">
+
+                        <div class="col-md">
+                            
+                            <ul class="list-unstyled text-small">
+                                <li><a href="https://skopje.gov.mk/mk/footer/fakti-simboli/">Факти и Симболи</a></li>
+                                
+                                
+                                    <li><a href="https://skopje.gov.mk/mk/footer/povazni-telefoni/">Поважни телефони</a></li>
+                                                                    <li><a href="https://skopje.gov.mk/mk/footer/korisni-linkovi/">Корисни линкови</a></li>
+                                    <li><a href="https://skopje.gov.mk/mk/footer/pocesni-gragjani/">Почесни граѓани</a></li>
+                                    <li><a href="https://skopje.gov.mk/mk/footer/nagradi-13ti-noemvri/">"13ти Ноември"</a></li>
+                                    <li><a href="#" target="_blank">Локации за Јавни настани</a></li>
+                                    <li><a href="/media/2829/tovaren-soobrakjaj_sp-crtezhi.pdf" target="_blank">ОСП - за водење на товарниот сообраќај</a></li>
+                                    <li><a href="https://www.skopjelab.mk/" target="_blank">Центар за иновации</a></li>
+                                </ul>
+                        </div>
+                        <div class="col-md">
+                            
+                            <ul class="list-unstyled text-small">
+                                <li><a href="https://www.e-nabavki.gov.mk/PublicAccess/Home.aspx#/home" target="_blank">Е-набавки</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/skopje/javni-pretprijatija/">Јавни претпријатија</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/skopje/kulturni-ustanovi/">Културни установи</a></li>
+                                
+                                <li><a href="https://skopje.gov.mk/mk/skopje/sredni-ucilista/">Образовни институции</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/footer/uslugi-socijalna-zastita/">Услуги од областа на социјалната заштита</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/footer/komisija-prava-na-pacienti/">Комисија за права на пациенти</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md">
+                            
+                            <ul class="list-unstyled text-small">
+                                <li><a href="https://skopje.gov.mk/mk/footer/proekti/">Проекти и акции</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/objavi/strategii/">Стратегии</a></li>
+                                <li><a href="http://ipserver1.skopje.gov.mk/e-skopje/sluzben%20glasnik%20so%20konverzija.nsf" target="_blank">Службен гласник</a></li>
+                                <li><a href="https://skopje.gov.mk/mk/objavi/glasilo/">Информативно гласило</a></li>
+                                <li><a href="http://skopje.mk" target="_blank">Туристички сајт</a></li>
+                                <li><a href="http://nvo.skopje.gov.mk/" target="_blank">НВО Порта</a></li>
+                                <li><a href="https://gisportal.skopje.gov.mk/GisZaGragjani/">ГИС за граѓаните</a></li>
+                                <li><a href="https://gisportal.skopje.gov.mk/korisnik/" target="_blank">Граѓанска иницијатива</a></li>
+                                <li><a href="https://gisportal.skopje.gov.mk/gup/" target="_blank">ГУП</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" style="color:#e0e0e0;">
+                    <p style="font-size: 1.5rem;">Следете нè</p>
+                    <ul class="nav social-bar">
+                        <li class="nav-item">
+                            <a class="nav-link " target="_blank" href="https://www.facebook.com/CityofSkopje/"><i class="fab fa-facebook-f social" style="color:#e0e0e0;"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " target="_blank" href="https://twitter.com/CityofSkopje"><i class="fab fa-twitter social" style="color:#e0e0e0;"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " target="_blank" href="https://www.youtube.com/channel/UChnvnL2Inms7iLk6uzQFyTw"><i class="fab fa-youtube social" style="color:#e0e0e0;"></i></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " target="_blank" href="https://www.instagram.com/gradskopje.oficijalna/?hl=en"><i class="fab fa-instagram social" style="color:#e0e0e0;"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                </div>
+                <div class="col-md-4">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+    
+<script src="/assets/jquery-3.3.1.min.js"></script>
+<script src="/assets/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $(function () {
+        var icons = {
+            header: "ui-icon-circle-plus",
+            activeHeader: "ui-icon-blank"
+        };
+        $("#accordion").accordion({
+            icons: icons,
+            autoHeight: false,
+            collapsible: true,
+            active: 'none'
+        });
+        $("#accordion13").accordion({
+            icons: icons,
+            autoHeight: false,
+            collapsible: true,
+            active: 'none'
+        });
+        $("#accordion13-1").accordion({
+            icons: icons,
+            autoHeight: false,
+            collapsible: true,
+            active: 'none'
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        $('.toggle-expander').click(function (e) {
+            var target = '#' + $(this).data('target');
+            $(target).toggleClass('expanded');
+        });
+    });
+
+    function toggleByClass(sender, className, duration = "slow") {
+        var prevText = $(sender).text();
+        $(sender).text($(sender).attr('hidden-name'));
+        $(sender).attr("hidden-name", prevText);
+        $('.' + className).toggle(duration);
+
+    }
+
+    window.onscroll = function () { scrollFunction() };
+
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("toTopButton").style.display = "block";
+        } else {
+            document.getElementById("toTopButton").style.display = "none";
+        }
+    }
+
+    // When the user clicks on the button, scroll to the top of the document
+    function topFunction() {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    }
+</script>
+    
+</body>
+</html>

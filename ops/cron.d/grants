@@ -1,0 +1,28 @@
+# Scheduled jobs. Install on the VPS with:
+#   sudo cp ops/cron.d/grants /etc/cron.d/grants && sudo chmod 644 /etc/cron.d/grants
+#
+# Timing is UTC. Europe/Skopje is UTC+1 in winter and UTC+2 in summer, so these
+# run between 04:15 and 05:15 local -- deliberately after midnight-published
+# calls and before the working day.
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Nightly backup. Encrypts, uploads off-site, prunes, pings the heartbeat.
+15 3 * * *  root  cd /srv/grants && ./ops/backup.sh >> /var/log/grants-backup.log 2>&1
+
+# Ingestion. Every 4 hours `flask ingest due` runs each active source whose last
+# run failed or is more than 20 hours old: about once a day when healthy, retried
+# at the next wake-up when not. New calls are written unpublished and queued for review.
+0 */4 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest due >> /var/log/grants-ingest.log 2>&1
+
+# Source health. A dead scraper is the primary business failure mode, so this
+# judges every source independently of the ingestion run that may itself be broken,
+# and reports to healthchecks.io, which emails (docs/runbook.md §4). After the
+# 04:00 ingestion run, so a morning alert describes last night.
+30 6 * * *  root  cd /srv/grants && docker compose exec -T web flask ingest health >> /var/log/grants-health.log 2>&1
+
+# Reviewer decisions become evaluation cases (docs/matching.md §6, app/review/cases.py).
+# Each rejected or edited item is written once to /srv/review-cases; pulling them to
+# a laptop and committing them is a person's job (docs/runbook.md §5).
+45 2 * * *  root  cd /srv/grants && docker compose exec -T web flask review export-cases >> /var/log/grants-review-cases.log 2>&1

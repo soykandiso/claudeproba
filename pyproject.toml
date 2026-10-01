@@ -1,0 +1,54 @@
+[project]
+name = "grants"
+version = "0.1.0"
+description = "Grant and subsidy matching platform for North Macedonia"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic>=1.14",
+    "anthropic>=1.5.0",
+    "fastembed>=0.8,<0.9",
+    "flask>=3.0",
+    "gunicorn>=23.0",
+    "httpx>=0.28.1",
+    "pgvector>=0.3",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+    "pypdf>=6.18.1",
+    "pyyaml>=6.0.3",
+    "redis>=5.2",
+    "rq>=2.0",
+    "selectolax>=0.4.11",
+    "sqlalchemy>=2.0",
+    "weasyprint>=70.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# Alembic's autogenerate emits long op.create_index calls, older-style type
+# annotations, and an import of every custom type in app/models/ whether the
+# migration uses it or not. Rewriting them by hand to satisfy the linter would
+# mean editing migrations that have already run somewhere, which is never worth it.
+"migrations/versions/*" = ["E501", "F401", "UP007", "UP035", "I001"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# The app is run as a package from the repo root, not installed, so tests need
+# the root on sys.path.
+pythonpath = ["."]
+
+[tool.uv]
+package = false

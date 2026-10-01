@@ -1,0 +1,48 @@
+# Frozen by ops/dev/freeze_eval_fixtures.py from tests/fixtures and
+# tests/cassettes/extract_call. Do not hand-edit: re-run the script.
+slug: ipard-notice-03-2025
+shape: 'претходна најава: објавена, но уште не е повик по кој се аплицира'
+title_mk: Претходна најава за објавување на Јавен повик 03/2025 (ИПАРД Програма 2021-2027)
+institution: Агенција за финансиска поддршка во земјоделството (ИПАРД)
+canonical_url: https://www.ipardpa.gov.mk/mk/Home/IpardPovici/34
+reference_code: 03/2025
+status: announced
+published_at: null
+deadline_at: null
+eligibility_gap: null
+grant_min_mkd: null
+grant_max_mkd: null
+cofinancing_pct: null
+document:
+  path: document.txt
+  sha256: edef2d915e04a0e035e03dc98083e0feb67dc171a3a8ef4b534803c7bbbcbf86
+  characters: 4790
+  text_source: native
+criteria:
+- kind: narrative_verify
+  label_mk: Инвестицијата спаѓа во мерка 7 – Диверзификација на фарми и развој на бизниси
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.85
+  quote: 'Мерка 7 - Диверзификација на фарми и развој на бизниси и тоа следните приоритетни сектори:'
+  quote_start: 1369
+  quote_end: 1459
+- kind: narrative_verify
+  label_mk: 'Поддржан сектор: алтернативно земјоделско производство'
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.7
+  quote: Aлтернативно земјоделско производство (кое не е поддржано според мерките 1 и 3)
+  quote_start: 1463
+  quote_end: 1542
+- kind: narrative_verify
+  label_mk: Повикот трае 45 дена од објавувањето во дневните весници
+  field: null
+  operator: null
+  value_json: null
+  confidence: 0.9
+  quote: Јавниот повик ќе трае 45 дена од денот на објавување во дневните весници.
+  quote_start: 3213
+  quote_end: 3286

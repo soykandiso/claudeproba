@@ -1,0 +1,60 @@
+{
+  "document_kind": "call",
+  "title_mk": {
+    "document": 1,
+    "quote": "EdTech Accelerator",
+    "value": "EdTech Accelerator"
+  },
+  "reference_code": {
+    "document": 1,
+    "quote": "Topic ID: DIGITAL-2026-SKILLS-10-EDTECH",
+    "value": "DIGITAL-2026-SKILLS-10-EDTECH"
+  },
+  "published_on": {
+    "document": 1,
+    "quote": "Publication date: 01.04.2026",
+    "value": "2026-04-01"
+  },
+  "opens_on": {
+    "document": 1,
+    "quote": "Opening date: 21.04.2026",
+    "value": "2026-04-21"
+  },
+  "deadline": {
+    "document": 1,
+    "quote": "Deadline date: 01.10.2026",
+    "value": "2026-10-01",
+    "time": null
+  },
+  "total_budget": null,
+  "grant_min": null,
+  "grant_max": null,
+  "grant_share_pct": null,
+  "criteria": [
+    {
+      "document": 1,
+      "quote": "2. Eligible countries",
+      "kind": "narrative_verify",
+      "label_mk": "Земјата на апликантот треба да е меѓу прифатливите земји наведени во документот за повикот",
+      "applies_to_all_applicants": true,
+      "confidence": 0.8
+    },
+    {
+      "document": 1,
+      "quote": "4. Financial and operational capacity and exclusion",
+      "kind": "applicant_attest",
+      "label_mk": "Финансиски и оперативен капацитет и отсуство на основи за исклучување",
+      "applies_to_all_applicants": true,
+      "confidence": 0.7
+    },
+    {
+      "document": 1,
+      "quote": "Standard application form (DEP) — the application form specific to this call is available in the Submission System",
+      "kind": "documentary",
+      "label_mk": "Стандарден образец за апликација (DEP) од системот за поднесување",
+      "applies_to_all_applicants": true,
+      "confidence": 0.85
+    }
+  ],
+  "notes_for_reviewer": "The topic page only points to the call document for eligibility (sections 6 and 7). Financial support to third parties is up to 150.000 EUR per third party; that is not the grant to the applicant."
+}

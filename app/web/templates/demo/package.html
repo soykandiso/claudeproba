@@ -1,0 +1,69 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% set call = m.call %}
+{% block title %}Пакет документи: {{ call.reference }}{% endblock %}
+{% macro unfilled(what) %}<span class="unfilled">Внесете: {{ what }}</span>{% endmacro %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.order_detail', no=o.no) }}">Назад кон нарачката</a>
+  <div class="report-head stack">
+    <p class="small soft">Пакет документи за {{ o.buyer.name }}, нарачка {{ o.no }}</p>
+    <h1>{{ call.title }}</h1>
+    <p class="soft">{{ call.institution }}, <span class="id id--14">{{ call.reference }}</span></p>
+    <p class="draft-label">Нацрт за дополнување. Подготвен со помош на автоматска обработка и прегледан од консултант{% if review %} на {{ review.at }}{% endif %}. Барањето го дополнувате, потпишувате и поднесувате вие.</p>
+  </div>
+
+  <section class="stack-lg" aria-labelledby="form-h">
+    <div class="stack">
+      <h2 id="form-h">1. Образец за апликација</h2>
+      <p class="soft">Полињата што ги знаеме се пополнети. Финансиските и правните податоци не ги пополнуваме: мора да бидат вашите вистински бројки, па се означени за внес.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger ledger--form">
+        <tbody>
+          <tr><th scope="row">Назив на барателот</th><td>{{ o.buyer.name }}</td></tr>
+          <tr><th scope="row">ЕМБС</th><td class="id id--14">{{ o.buyer.embs }}</td></tr>
+          <tr><th scope="row">ЕДБ</th><td class="id id--14">{{ o.buyer.edb }}</td></tr>
+          <tr><th scope="row">Седиште</th><td>{{ o.buyer.city }}, општина {{ municipality_label(profile) }}</td></tr>
+          <tr><th scope="row">Главна дејност</th><td>{{ profile.answers.nace or unfilled('шифра и назив на дејноста од Централниот регистар') }}</td></tr>
+          <tr><th scope="row">Година на основање</th><td>{{ profile.answers.founded }}</td></tr>
+          <tr><th scope="row">Број на вработени</th><td>{{ unfilled('точниот број од последниот годишен извештај, профилот има само опсег ' ~ employees_label(profile)) }}</td></tr>
+          <tr><th scope="row">Одговорно лице</th><td>{{ unfilled('име и презиме на управителот') }}</td></tr>
+          <tr><th scope="row">Вкупна вредност на проектот</th><td>{{ unfilled('износ во МКД според понудите') }}</td></tr>
+          <tr><th scope="row">Сопствено учество</th><td>{{ unfilled('износ во МКД, најмалку ' ~ call.cofinancing_pct ~ '% од вредноста') if call.cofinancing_pct else unfilled('износ во МКД') }}</td></tr>
+          <tr><th scope="row">Приходи и добивка, претходна година</th><td>{{ unfilled('од билансот на успех') }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="desc-h">
+    <div class="stack">
+      <h2 id="desc-h">2. Опис на проектот, нацрт</h2>
+      <p class="soft">Прочитајте го и поправете го. Ништо во него не смее да остане ако не е точно за вашата фирма.</p>
+    </div>
+    <div class="draft stack">
+      <p>{{ o.buyer.name }} е {{ form_label(profile) }} од општина {{ municipality_label(profile) }}, основано во {{ profile.answers.founded }} година{% if profile.nace_code %}, со главна дејност {{ profile.nace_code }}{% endif %}.</p>
+      <p>Со проектот „{{ profile.answers.description or 'опис на проектот' }}“ фирмата планира инвестиција во: {{ purpose_words or 'опишете ја инвестицијата' }}. {{ unfilled('два до три реда за тоа кој проблем го решава проектот и за кого') }}</p>
+      <p>Очекувани резултати: {{ unfilled('мерливи резултати, на пример нови производи, вработувања или заштеда') }}</p>
+      <p>{% set purpose = call.criteria|selectattr('kind', 'equalto', 'narrative_verify')|first %}Проектот е во согласност со намената на повикот наведена во {{ purpose.clause if purpose else 'текстот на повикот' }}. {{ unfilled('објаснување зошто, со ваши зборови') }}</p>
+    </div>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="attach-h">
+    <div class="stack">
+      <h2 id="attach-h">3. Што треба вие да обезбедите</h2>
+      <p class="soft">Без овие прилози барањето не е комплетно. Ниту еден од нив не може да го подготви платформата.</p>
+    </div>
+    <ul class="checklist">
+      {% for d in call.documents %}<li>{{ d }}</li>{% endfor %}
+      {% for r in m.open_items %}<li>{% if r.verdict == 'likely_eligible' %}Изјава или доказ{% else %}Проверка{% endif %}: {{ r.criterion.label }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="deadline-h">
+    <h2 id="deadline-h">Рок</h2>
+    <p>Барањето се поднесува до {{ ui.deadline(call.deadline) }}.</p>
+  </section>
+</div>
+{% endblock %}

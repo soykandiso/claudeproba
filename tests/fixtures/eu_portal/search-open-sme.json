@@ -1,0 +1,681 @@
+{
+ "apiVersion": "2.154",
+ "terms": "SME",
+ "responseTime": 86,
+ "totalResults": 168,
+ "pageNumber": 1,
+ "pageSize": 20,
+ "sort": "[sortStatus:ASC]",
+ "groupByField": "sortStatus",
+ "queryLanguage": {
+  "language": "en",
+  "probability": 0.0
+ },
+ "spellingSuggestion": "<b>smes</b>",
+ "bestBets": [],
+ "results": [
+  {
+   "apiVersion": "2.154",
+   "reference": "11321COMPETITIVE_CALLen",
+   "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/43977648",
+   "contentType": "text/plain",
+   "language": "en",
+   "databaseLabel": "SEDIA",
+   "database": "SEDIA",
+   "summary": "DIGITWIN4CIUE Reduction-Fees Scholarships",
+   "weight": 0.0,
+   "groupById": "1",
+   "content": "DIGITWIN4CIUE Reduction-Fees Scholarships",
+   "accessRestriction": false,
+   "checksum": "B9AA031346F55C0805DEB5C35A005EDE8CB6C4506511F8CE7137E9F1BC37F53A",
+   "metadata": {
+    "es_SortDate": [
+     "2025-07-11T00:00:00.000+0000"
+    ],
+    "beneficiaryAdministration": [
+     "<p><strong>OVERVIEW</strong></p><p class=\"ql-align-justify\">The DIGITWIN4CIUE Reduction-Fees Scholarships program provides financial support to eligible students to facilitate their participation in the Executive Master in Digital Twins for Infrastructures and Cities. The scholarships aim to promote diversity in terms of gender, age, and socio-economic background while ensuring access to high-quality education in digital fields</p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships are open to applicants who are enrolled and accepted in the Executive Master in Digital Twins for Infrastructures and cities (Eventually, scholarships will be awarded for other courses offered by the European Center of Excellence in Digitalization of Infrastructures and Cities).</p><p><br></p><p><strong>TYPES OF SCHOLARSHIPS AVAILABLE </strong></p><p class=\"ql-align-justify\">The following types of scholarships are available:</p><ol><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Partial tuition fee waivers (€1,500-3,000 per year)</li></ol><p><br></p><p><strong>ELIGIBILITY AND SELECTION</strong></p><p><strong>Elegibility requirements</strong></p><p class=\"ql-align-justify\">To qualify for a DIGITWIN4CIUE Reduction-Fees Scholarships, applicants must: </p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Be a national of an eligible country, including:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Listed EEA countries and countries associated with the Digital Europe Programme (or those engaged in ongoing association negotiations) at the time of the call (2021)&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Meet the following criteria:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Have been officially accepted into the program&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Have paid the reservation fee&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Be enrolled as a full-time student in the master’s program for 2025–2026&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Commit to completing the Master's programme in the first academic year of the student's enrolment.&nbsp;</li></ol><p><strong>Selection Criteria and Priorization</strong></p><p><strong>DIGITWIN4CIUE Reduction-Fees DIGITWIN4CIUE Reduction-Fees Scholarships</strong> will be awarded based on a merit score (ranging from 1 to 5) and specific priority criteria<strong> </strong>The amount granted will vary between €1,500 and €3,000, depending on the score achieved.<strong>&nbsp;</strong></p><p class=\"ql-indent-1\"><strong>Merit score</strong></p><p class=\"ql-align-justify\">The merit score will be determined by:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Previous academic and professional experience.&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Curriculum vitae.&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Letter of motivation, including the applicant’s justification for financial support.&nbsp;</li></ol><p class=\"ql-indent-1\"><strong>Priority criteria</strong></p><p class=\"ql-align-justify\">To enhance diversity and inclusion, the DIGITWIN4CIUE program prioritizes:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Female applicants</strong> from any EU or EU-associated country to promote gender balance&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Applicants from Regional Innovation Scheme (RIS) countries</strong>, which are part of the EIT Regional Innovation Scheme (supporting students from countries with moderate or modest innovation scores and lower GDP).&nbsp;&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Students affiliated with the organizing Higher Education Institutions (HEIs)</strong>, such as alumni, professors, employees, and PhD researchers from:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Universidad Politécnica de Madrid&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>ENPC&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>ITU&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>BME&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Other partner institutions&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Students self-financed AND without employer or working in a SME (up to 50 salaries)</strong>.&nbsp;</li></ol><p class=\"ql-align-justify\"><br></p><p class=\"ql-align-justify\"><strong>SCHOLARSHIPS TERMS AND PAYMENTS ARRANGEMENTS</strong></p><p class=\"ql-align-justify\"><strong>Payment process</strong></p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships are applied as tuition fee discounts, with recipients informed of their net tuition fee after deduction.&nbsp;</p><p class=\"ql-align-justify\"><strong>Reservation fee</strong></p><p class=\"ql-align-justify\">Applicants must have paid the <strong>reservation fee</strong>, that won’t be reimbursed in any case.&nbsp;</p><p class=\"ql-align-justify\"><strong>Termination of Scholarships</strong></p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships awards may be <strong>terminated</strong> under the following conditions:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Mandatory Termination</strong> – The scholarship will be revoked if the student:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Discontinues studies&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Takes academic leave&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Fails at least one course during the academic year&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Violates the rules of ethics and academic honesty&nbsp;</li></ol><p class=\"ql-align-justify\"><strong>Note:</strong> If a scholarship is terminated, the reservation fee will <strong>not</strong> be reimbursed.&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Voluntary Termination</strong> – Students may withdraw from the scholarship for personal reasons by submitting a written request to the study program committee. In this case, the reservation fee will also <strong>not</strong> be reimbursed.&nbsp;</li></ol><p class=\"ql-align-justify\"><br></p><p class=\"ql-align-justify\"><strong>SCHOLARSHIP COMPATIBILITY POLICY</strong></p><p class=\"ql-align-justify\">The DIGITWIN4CIUE Reduction-Fees Scholarships are compatible with any other DIGITWIN4CIUE project scholarships. These scholarships are co-financed (50%) by the European Union.&nbsp;&nbsp;&nbsp;</p><p class=\"ql-align-justify\">However, scholarship funds are not compatible with other grants if their combined total exceeds the full cost of the master’s program, nor may they be used for any purpose other than the one originally intended.&nbsp;&nbsp;</p><p class=\"ql-align-justify\">Additionally, the scholarships offered in this call are not compatible with other tuition fee scholarships, unless explicitly stated otherwise in the call for the other scholarship.&nbsp;&nbsp;</p><p class=\"ql-indent-1\"><br></p>"
+    ],
+    "sortStatus": [
+     "1"
+    ],
+    "description": [],
+    "language": [
+     "en"
+    ],
+    "title": [
+     "Specialised education programmes in key capacity areas"
+    ],
+    "type": [
+     "8"
+    ],
+    "esST_checksum": [
+     "B9AA031346F55C0805DEB5C35A005EDE8CB6C4506511F8CE7137E9F1BC37F53A"
+    ],
+    "duration": [],
+    "destinationDetails": [
+     "<p><strong>OVERVIEW</strong></p><p class=\"ql-align-justify\">The DIGITWIN4CIUE Reduction-Fees Scholarships program provides financial support to eligible students to facilitate their participation in the Executive Master in Digital Twins for Infrastructures and Cities. The scholarships aim to promote diversity in terms of gender, age, and socio-economic background while ensuring access to high-quality education in digital fields</p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships are open to applicants who are enrolled and accepted in the Executive Master in Digital Twins for Infrastructures and cities (Eventually, scholarships will be awarded for other courses offered by the European Center of Excellence in Digitalization of Infrastructures and Cities).</p><p><br></p><p><strong>TYPES OF SCHOLARSHIPS AVAILABLE </strong></p><p class=\"ql-align-justify\">The following types of scholarships are available:</p><ol><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Partial tuition fee waivers (€1,500-3,000 per year)</li></ol><p><br></p><p><strong>ELIGIBILITY AND SELECTION</strong></p><p><strong>Elegibility requirements</strong></p><p class=\"ql-align-justify\">To qualify for a DIGITWIN4CIUE Reduction-Fees Scholarships, applicants must: </p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Be a national of an eligible country, including:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Listed EEA countries and countries associated with the Digital Europe Programme (or those engaged in ongoing association negotiations) at the time of the call (2021)&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Meet the following criteria:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Have been officially accepted into the program&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Have paid the reservation fee&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Be enrolled as a full-time student in the master’s program for 2025–2026&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Commit to completing the Master's programme in the first academic year of the student's enrolment.&nbsp;</li></ol><p><strong>Selection Criteria and Priorization</strong></p><p><strong>DIGITWIN4CIUE Reduction-Fees DIGITWIN4CIUE Reduction-Fees Scholarships</strong> will be awarded based on a merit score (ranging from 1 to 5) and specific priority criteria<strong> </strong>The amount granted will vary between €1,500 and €3,000, depending on the score achieved.<strong>&nbsp;</strong></p><p class=\"ql-indent-1\"><strong>Merit score</strong></p><p class=\"ql-align-justify\">The merit score will be determined by:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Previous academic and professional experience.&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Curriculum vitae.&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Letter of motivation, including the applicant’s justification for financial support.&nbsp;</li></ol><p class=\"ql-indent-1\"><strong>Priority criteria</strong></p><p class=\"ql-align-justify\">To enhance diversity and inclusion, the DIGITWIN4CIUE program prioritizes:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Female applicants</strong> from any EU or EU-associated country to promote gender balance&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Applicants from Regional Innovation Scheme (RIS) countries</strong>, which are part of the EIT Regional Innovation Scheme (supporting students from countries with moderate or modest innovation scores and lower GDP).&nbsp;&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Students affiliated with the organizing Higher Education Institutions (HEIs)</strong>, such as alumni, professors, employees, and PhD researchers from:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Universidad Politécnica de Madrid&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>ENPC&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>ITU&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>BME&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Other partner institutions&nbsp;</li><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Students self-financed AND without employer or working in a SME (up to 50 salaries)</strong>.&nbsp;</li></ol><p class=\"ql-align-justify\"><br></p><p class=\"ql-align-justify\"><strong>SCHOLARSHIPS TERMS AND PAYMENTS ARRANGEMENTS</strong></p><p class=\"ql-align-justify\"><strong>Payment process</strong></p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships are applied as tuition fee discounts, with recipients informed of their net tuition fee after deduction.&nbsp;</p><p class=\"ql-align-justify\"><strong>Reservation fee</strong></p><p class=\"ql-align-justify\">Applicants must have paid the <strong>reservation fee</strong>, that won’t be reimbursed in any case.&nbsp;</p><p class=\"ql-align-justify\"><strong>Termination of Scholarships</strong></p><p class=\"ql-align-justify\">DIGITWIN4CIUE Reduction-Fees Scholarships awards may be <strong>terminated</strong> under the following conditions:&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Mandatory Termination</strong> – The scholarship will be revoked if the student:&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Discontinues studies&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Takes academic leave&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Fails at least one course during the academic year&nbsp;</li><li data-list=\"bullet\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Violates the rules of ethics and academic honesty&nbsp;</li></ol><p class=\"ql-align-justify\"><strong>Note:</strong> If a scholarship is terminated, the reservation fee will <strong>not</strong> be reimbursed.&nbsp;</p><ol><li data-list=\"ordered\" class=\"ql-align-justify\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Voluntary Termination</strong> – Students may withdraw from the scholarship for personal reasons by submitting a written request to the study program committee. In this case, the reservation fee will also <strong>not</strong> be reimbursed.&nbsp;</li></ol><p class=\"ql-align-justify\"><br></p><p class=\"ql-align-justify\"><strong>SCHOLARSHIP COMPATIBILITY POLICY</strong></p><p class=\"ql-align-justify\">The DIGITWIN4CIUE Reduction-Fees Scholarships are compatible with any other DIGITWIN4CIUE project scholarships. These scholarships are co-financed (50%) by the European Union.&nbsp;&nbsp;&nbsp;</p><p class=\"ql-align-justify\">However, scholarship funds are not compatible with other grants if their combined total exceeds the full cost of the master’s program, nor may they be used for any purpose other than the one originally intended.&nbsp;&nbsp;</p><p class=\"ql-align-justify\">Additionally, the scholarships offered in this call are not compatible with other tuition fee scholarships, unless explicitly stated otherwise in the call for the other scholarship.&nbsp;&nbsp;</p><p class=\"ql-indent-1\"><br></p>"
+    ],
+    "esST_FileName": [
+     "file.txt"
+    ],
+    "ccm2Id": [
+     "43977648"
+    ],
+    "callccm2Id": [
+     "11321"
+    ],
+    "DATASOURCE": [
+     "SEDIA"
+    ],
+    "REFERENCE": [
+     "11321COMPETITIVE_CALLen"
+    ],
+    "projectAcronym": [
+     "DIGITWIN4CIUE"
+    ],
+    "callTitle": [
+     "DIGITWIN4CIUE Reduction-Fees Scholarships"
+    ],
+    "frameworkProgramme": [
+     "43152860"
+    ],
+    "budget": [
+     "100000"
+    ],
+    "identifier": [
+     "DIGITAL-2021-SKILLS-01-SPECIALISED"
+    ],
+    "furtherInformation": [
+     "<p><strong>Legal disclaimer:</strong></p><p><em>This call (as well as the financial support that will be provided through it) is NOT an EU action. This call is launched solely by Fundación Agustín de Betancourt (FUNAB). The financial support to the selected successful applicants will be provided </em><strong><em>directly</em></strong><em> by FUNAB </em><strong><em>in its own name</em></strong><em> and </em><strong><em>under its own responsibility</em></strong><em>. FUNAB's own responsibility includes the preparation and drafting of this call as well as the selection of successful applicants that will receive the said financial support. The publication of this call in the EU Funding & Tenders Portal is made solely for information purposes with the aim to increase the visibility of this call to the general public, including to potential applicants (i.e. students). The said publication shall not be construed as direct or indirect approval of the content and conditions of this call by the relevant EU authorities or as any form of waiver from the above-described responsibility of FUNAB.</em></p>"
+    ],
+    "caName": [
+     "DIGITWIN4CIUE Reduction-Fees Scholarships"
+    ],
+    "es_ContentType": [
+     "text/plain"
+    ],
+    "esDA_FirstIngestDate": [
+     "2025-07-14T15:44:07.450+0200"
+    ],
+    "programmePeriod": [
+     "2021 - 2027"
+    ],
+    "deadlineDate": [
+     "2025-10-31T17:00:00.000+0000",
+     "2026-09-15T23:00:00.000+0000"
+    ],
+    "esDA_IngestDate": [
+     "2026-02-20T14:45:20.871+0100"
+    ],
+    "closingDate": [
+     "2026-02-20T00:00:00Z"
+    ],
+    "url": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/43977648"
+    ],
+    "es_Combine": [
+     "1"
+    ],
+    "esST_URL": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/43977648"
+    ],
+    "esDA_QueueDate": [
+     "2026-02-20T14:45:20.858+0100"
+    ],
+    "projectName": [
+     "DIGITAL TWINS FOR COMPLEX INFRASTRUCTURES AND URBAN ECOSYSTEMS"
+    ],
+    "projectId": [
+     "101084054"
+    ],
+    "startDate": [
+     "2025-07-11T00:00:00.000+0000"
+    ],
+    "deadlineModel": [
+     "multiple cut-off"
+    ],
+    "status": [
+     "31094502"
+    ]
+   },
+   "enrichedMetadata": {},
+   "children": [],
+   "highlightedFragments": [],
+   "citation": "Specialised education programmes in key capacity areas. Available at: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/43977648"
+  },
+  {
+   "apiVersion": "2.154",
+   "reference": "13882COMPETITIVE_CALLen",
+   "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/46786367",
+   "contentType": "text/plain",
+   "language": "en",
+   "databaseLabel": "SEDIA",
+   "database": "SEDIA",
+   "summary": "Enhancing the Cybersecurity Capabilities of the Domestic SME Sector (SSNS-NCC-HU-FSTP-2026)",
+   "weight": 0.0,
+   "groupById": "1",
+   "content": "Enhancing the Cybersecurity Capabilities of the Domestic <b>SME</b> Sector (SSNS-NCC-HU-FSTP-2026)",
+   "accessRestriction": false,
+   "checksum": "4CD0CB7B8DBDC93F0F8F05608D631F33A0AB1C79E4FE52AB6AB76B8180167130",
+   "metadata": {
+    "es_SortDate": [
+     "2026-03-24T00:00:00.000+0000"
+    ],
+    "beneficiaryAdministration": [
+     "<p><strong>HOW TO SUBMIT A GRANT APPLICATION?</strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Complete and submit your application using the online application form. Log in at https://www.palyazat.gov.hu via the \"Single sign-on Interface Login\" button to access the e-Government (EPTK) system.</li></ol><p>A user manual illustrating the use of the Unified Institutional System Interface is available at <a href=\"https://help.fair.gov.hu/node/427\" rel=\"noopener noreferrer\" target=\"_blank\">https://help.fair.gov.hu/node/427</a>.</p><p><strong>HOW ARE SUBMITTED GRANT APPLICATIONS EVALUATED? </strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>continuously check the eligibility of applications received in each phase according to the eligibility criteria specified in the call.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>submit eligible applications for content evaluation on an ongoing basis.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>make grant decision in each phase in order of the scores achieved during the evaluation.</li></ol><p>Applicants are advised to monitor announcements and system messages. Notifications about budget monitoring are sent only to businesses that have started completing their grant application.</p><p>Details are included in the call for proposals entitled Enhancing the Cybersecurity Capabilities of the Domestic SME Sector, code SSNS-NCC-HU-FSTP-2026. The call can be downloaded from the official website of <a href=\"https://ncc.gov.hu/hirek/\" rel=\"noopener noreferrer\" target=\"_blank\">NCC-HU</a> and from the website <a href=\"https://www.palyazat.gov.hu/programok/ncc-hu\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.palyazat.gov.hu</a>.</p><p>If you have any questions or comments regarding the call for proposals, please contact the NCC-HU customer service at ncc-ih@nbsz.gov.hu.</p>"
+    ],
+    "sortStatus": [
+     "1"
+    ],
+    "description": [
+     "<p><strong>WHO CAN SUBMIT A GRANT APPLICATION?</strong></p><p>Micro, small and medium-sized enterprises may submit grant applications for the call if they:</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>have at least three closed financial years (each supported by financial statements and covering full 365-day period of operation as a pre-company is not included);</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>operate in the sectors listed in Annexes 2 or 3 of the Cybersecurity Act</li></ol><p><strong>WHAT ACTIVITIES ARE ELIGIBLE FOR SUPPORT?</strong></p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Acquisition of new equipment and intangible assets resulting in the enhancement of cyber resilience</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Centralised endpoint protection solutions (traditional antivirus);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Advanced endpoint protection and incident detection solutions (EDR/XDR);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Perimeter protection solutions (firewall, Web Application Firewall, proxy, VPN gateway);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Network traffic monitoring and intrusion detection solutions (WAF, IDS/IPS, NDR);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Solutions against denial-of-service attacks (Anti-DDoS);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Data backup and recovery solutions (backup/restore);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Centralised log collection solutions (log management);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Advanced log analysis solutions;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Security information and event management solutions (SIEM);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Mobile device management solutions (MDM);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Multi-factor authentication solutions (MFA);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Identity and access a management solutions (IAM);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Data loss prevention solutions (DLP);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Anti-spam and e-mail security solutions;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Governance, risk and compliance management solutions (GRC);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Encryption and key management solutions;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Replacement of hardware or software components that are no longer supported by security update (obsolete hardware/software).</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Procurement of Services related to the enhancement of cyber resilience:</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Cybersecurity testing and assessment services (vulnerability testing);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Cybersecurity Operations Centre (SOC) services;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Cybersecurity-related training activities;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Subscriptions to cybersecurity training platforms;</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Integration of hardware and software tools (system design, implementation, configuration, testing and documentation);</li><li data-list=\"bullet\" class=\"ql-indent-1\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Cybersecurity-related consulting and professional advisory services.</li></ol><p><strong><u>Details are included in the call for tenders!</u></strong></p>"
+    ],
+    "language": [
+     "en"
+    ],
+    "title": [
+     "Deploying The Network of National Coordination Centres with Member States"
+    ],
+    "type": [
+     "8"
+    ],
+    "esST_checksum": [
+     "4CD0CB7B8DBDC93F0F8F05608D631F33A0AB1C79E4FE52AB6AB76B8180167130"
+    ],
+    "duration": [
+     "WHEN IS THE CALL FOR PROPOSALS AVAILABLE?\nThe call for proposals with the code number SSNS-NCC-HU-FSTP-2026 entitled “Enhancing the Cybersecurity Capabilities of the Domestic SME Sector” was published on 2026.03.24 on the official website of NCC-HU and on the website https://www.palyazat.gov.hu.\n\nWHEN CAN THE GRANT APPLICATION BE SUBMITTED?\nGrant applications may be submitted electronically via the application system between 9:00 (CEST) on 8 April 2026 to 23:59 (CEST) on 28 May 2026"
+    ],
+    "destinationDetails": [
+     "<p><strong>HOW TO SUBMIT A GRANT APPLICATION?</strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Complete and submit your application using the online application form. Log in at https://www.palyazat.gov.hu via the \"Single sign-on Interface Login\" button to access the e-Government (EPTK) system.</li></ol><p>A user manual illustrating the use of the Unified Institutional System Interface is available at <a href=\"https://help.fair.gov.hu/node/427\" rel=\"noopener noreferrer\" target=\"_blank\">https://help.fair.gov.hu/node/427</a>.</p><p><strong>HOW ARE SUBMITTED GRANT APPLICATIONS EVALUATED? </strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>continuously check the eligibility of applications received in each phase according to the eligibility criteria specified in the call.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>submit eligible applications for content evaluation on an ongoing basis.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>make grant decision in each phase in order of the scores achieved during the evaluation.</li></ol><p>Applicants are advised to monitor announcements and system messages. Notifications about budget monitoring are sent only to businesses that have started completing their grant application.</p><p>Details are included in the call for proposals entitled Enhancing the Cybersecurity Capabilities of the Domestic SME Sector, code SSNS-NCC-HU-FSTP-2026. The call can be downloaded from the official website of <a href=\"https://ncc.gov.hu/hirek/\" rel=\"noopener noreferrer\" target=\"_blank\">NCC-HU</a> and from the website <a href=\"https://www.palyazat.gov.hu/programok/ncc-hu\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.palyazat.gov.hu</a>.</p><p>If you have any questions or comments regarding the call for proposals, please contact the NCC-HU customer service at ncc-ih@nbsz.gov.hu.</p>"
+    ],
+    "esST_FileName": [
+     "file.txt"
+    ],
+    "ccm2Id": [
+     "46786367"
+    ],
+    "callccm2Id": [
+     "13882"
+    ],
+    "DATASOURCE": [
+     "SEDIA"
+    ],
+    "REFERENCE": [
+     "13882COMPETITIVE_CALLen"
+    ],
+    "projectAcronym": [
+     "NCC-HU"
+    ],
+    "callTitle": [
+     "Enhancing the Cybersecurity Capabilities of the Domestic SME Sector (SSNS-NCC-HU-FSTP-2026)"
+    ],
+    "frameworkProgramme": [
+     "43152860"
+    ],
+    "budget": [
+     "2000000"
+    ],
+    "identifier": [
+     "DIGITAL-ECCC-2024-DEPLOY-NCC-06-MS-COORDINATION"
+    ],
+    "furtherInformation": [
+     "<p>The purpose of this call for proposals is to enhance the cybersecurity resilience and risk management capabilities of the domestic SME sector, thereby contributing to the objectives of the European Cybersecurity Industrial, Technology and Research Competence Centre (hereinafter: ECCC) as set out in the Digital Europe Cybersecurity 2025-2027 Work Programme.</p><p><strong><u>Under this call for proposals:</u></strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Micro, small and medium-sized enterprises (SMEs) may submit grant applications without territorial restrictions;</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Applications must comply with the limitations specified in the call;</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Eligible applicants are those operating in the sectors listed in Annexes 2 or 3 of <a href=\"https://njt.hu/jogszabaly/2024-69-00-00\" rel=\"noopener noreferrer\" target=\"_blank\">Act LXIX of 2024 </a>on Cyber Security in Hungary.</li></ol><p><strong><u>Call for proposals</u></strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Managing authority: NCC-HU;</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Funding source: Digital Europe Programme and the Hungarian State budget, through NCC-HU call for proposals DIGITAL-ECCC-2024-DEPLOY-NCC-06;</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Evaluation procedure: applications will be evaluated in stages with funding decisions taken in order of the scores achieved within each stage.</li></ol><p>Rules and Regulations</p><p>The detailed rules on how the NCC-HU manages and uses the are set out in Government <a href=\"https://njt.hu/jogszabaly/2025-474-20-22\" rel=\"noopener noreferrer\" target=\"_blank\">Decree No. 474/2025. (XII. 30.) </a>on the detailed rules for the activities of the National Coordination Centre (hereinafter: Government Decree). Applicants are hereby informed that the following documents jointly contain all conditions necessary for preparing and submitting a grant application:</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>the call for proposals,</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>the Government Decree,</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>the General Terms and Conditions (hereinafter: GTC),</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>the NCC-HU Accounting Guide (hereinafter: Accounting Guide),</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>the grant application form and its annexes.</li></ol><p>The managing authority reserves the right to amend the documents. Any amendments will be published and applicants are requested to regularly monitor the official website of the NCC-HU and on the palyazat.gov.hu for updates.</p><p>The managing authority may set stricter requirements in the call for proposals than those laid down in the general rules of the Accounting Guide. In the event of any discrepancy between the provisions of the call for proposals and the general provisions of the Accounting Guide, the provisions of the call for proposals shall prevail.</p><p>The financing of activities eligible under this call for proposals shall be considered State aid within the meaning of Article 107(1) of the Treaty on the Functioning of the European Union (TFEU).</p><p>Such aid maybe implemented in compliance with EU competition law under the following categories of aid and applicable rules:</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>General de minimis aid (EU) Commision Regulation 2023/2832</li></ol>"
+    ],
+    "caName": [
+     "Enhancing the Cybersecurity Capabilities of the Domestic SME Sector (SSNS-NCC-HU-FSTP-2026)"
+    ],
+    "es_ContentType": [
+     "text/plain"
+    ],
+    "esDA_FirstIngestDate": [
+     "2026-05-08T08:59:38.614+0200"
+    ],
+    "programmePeriod": [
+     "2021 - 2027"
+    ],
+    "deadlineDate": [
+     "2026-06-28T22:59:00.000+0000"
+    ],
+    "esDA_IngestDate": [
+     "2026-05-24T20:40:05.708+0200"
+    ],
+    "closingDate": [
+     "2026-05-24T00:00:00Z"
+    ],
+    "url": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/46786367"
+    ],
+    "es_Combine": [
+     "1"
+    ],
+    "esST_URL": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/46786367"
+    ],
+    "esDA_QueueDate": [
+     "2026-05-24T20:40:05.694+0200"
+    ],
+    "projectName": [
+     "National Coordination Centre - Hungary"
+    ],
+    "projectId": [
+     "101194933"
+    ],
+    "startDate": [
+     "2026-03-24T00:00:00.000+0000"
+    ],
+    "deadlineModel": [
+     "single-stage"
+    ],
+    "status": [
+     "31094502"
+    ]
+   },
+   "enrichedMetadata": {},
+   "children": [],
+   "highlightedFragments": [
+    "Enhancing the Cybersecurity Capabilities of the Domestic <b>SME</b> Sector (SSNS-NCC-HU-FSTP-2026)"
+   ],
+   "citation": "Deploying The Network of National Coordination Centres with Member States. Available at: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/46786367"
+  },
+  {
+   "apiVersion": "2.154",
+   "reference": "12447COMPETITIVE_CALLen",
+   "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/45114064",
+   "contentType": "text/plain",
+   "language": "en",
+   "databaseLabel": "SEDIA",
+   "database": "SEDIA",
+   "summary": "TU Graz GreenChips-EDU Scholarship",
+   "weight": 0.0,
+   "groupById": "1",
+   "content": "TU Graz GreenChips-EDU Scholarship",
+   "accessRestriction": false,
+   "checksum": "5671AA7978F1FFBF10B8F09D24075EFC84F0A87650BD571F09B968F31BC29FF1",
+   "metadata": {
+    "es_SortDate": [
+     "2025-12-01T00:00:00.000+0000"
+    ],
+    "beneficiaryAdministration": [
+     "<h1 class=\"ql-align-center\"><strong>GreenChips-EDU Scholarship</strong></h1><h1><strong>1. Purpose of the call</strong></h1><h1><br></h1><p>The <a href=\"https://www.tugraz.at/projekte/greenchips-edu/home\" rel=\"noopener noreferrer\" target=\"_blank\">GreenChips-EDU Project</a> was launched in 2023 with the aim of supporting talents in sustainable semiconductor technologies across Europe. The project seeks to educate students and researchers, equipping them with knowledge that will contribute to eco-friendly chip design, energy-efficient manufacturing, and materials innovation for the future of the EU.</p><p>As part of this initiative, TU Graz is pleased to announce a call for applications for scholarships <strong>supporting Master’s students enrolled or planning to enroll in the relevant study programmes at TU Graz</strong>:</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Electrical and Electronics Engineering</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Information and Computer Engineering</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Biomedical Engineering</li></ol><p>The scholarship is intended to provide financial support to students participating in academia-industry collaborations through <strong>mobility programmes</strong>. The goal is to foster cooperation between academia and industry and enrich the educational experience of students dedicated to advancing sustainable and innovative technologies in the electronics and microelectronics sectors.</p><p><br></p><h1><strong>2. Type of grants</strong></h1><h1><br></h1><p>The eligible expenses outlined in this document must be directly related to international and domestic mobility activities carried out at partner institutions participating in the GreenChips-EDU project. These mobility activities may also take place at industrial partner sites, including those that are not formal project partners, provided they align with the project's objectives and offer meaningful academic or professional engagement. In such cases, the mobility may take the form of professional training, enabling students to gain hands-on experience and develop practical skills within relevant industry settings.</p><p>University partner institutions include the following:</p><p><strong>Politecnico di Torino (PoliTo) </strong>– Italy</p><p><strong>Technische Universität Darmstadt (TUDa) </strong>– Germany</p><p><strong>Universitat Politècnica de Catalunya (UPC) </strong>– Spain</p><p><strong>Grenoble INP – UGA </strong>– France</p><p><strong>Universidade de Lisboa (ULisboa) </strong>– Portugal</p><p><strong>Carinthia University of Applied Sciences (CUAS) – Austria</strong></p><p>Industry, SME and research partners include:</p><p><strong>INESC ID </strong>– Portugal</p><p><strong>Joanneum Research </strong>– Austria</p><p><strong>Infineon Technologies Austria </strong>– Austria (and global)</p><p><strong>Končar Inem </strong>– Croatia</p><p><strong>Silicongate LDA </strong>– Portugal</p><p><strong>Aedvices Consulting </strong>– France</p><p><strong>RUSZ</strong> – Austria</p><p><strong>Business Konsens OG</strong> – Austria</p><p>This funding call offers six distinct types of grants. While students are permitted to apply for multiple grants, the total amount awarded to any individual must not exceed €10,000, regardless of the maximum limits assigned to each grant type. Financial aid may be provided in the form of reimbursement and/or a fixed amount granted in advance. Each type of grant specifies which of these funding methods applies.</p><p>The total funding available is <strong>€40,000.</strong></p><p>Students/applicants must disclose any other scholarships or fellowships they have already been awarded or are currently applying for at the time of submitting their application for this scholarship program. Additionally, they must inform us of any scholarships or fellowships they are granted thereafter.</p><p><br></p><h2>2.1. Coverage for tuition and registration fees</h2><h2><br></h2><p>Only semesters that commence before 30 June 2027 are considered eligible. Funding may be provided for up to a maximum of four consecutive semesters, covering credits taken both at TU Graz and at the mobility destination.</p><p><strong>Scope of coverage:</strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Waiver of Tuition Fees for all first-time enrolled credits, provided they align with the academic path designed for the academic activity</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Coverage of any mandatory administrative fees</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Coverage of any optional fees, if they align with the goals of the scholarship programme</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>For students, enrolled in a double degree programme, tuitions and fees occurring at host institution</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>For students enrolled in a double degree programme, cost related to the issuance of the Master’s Degree certificate at both institutions (TU Graz and host institution)</li></ol><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive a maximum of <strong>€3,500</strong> as reimbursement.</p><p><br></p><h2>2.2. Coverage for participating specialised courses/trainings</h2><h2><br></h2><p>This grant type supports participation in specialization courses or training programmes offered by universities or industries affiliated with the GreenChips-EDU project. It is intended to complement international and domestic mobility activities. All expenses must be incurred <strong>before 30 June 2027.</strong></p><p><strong>Scope of coverage:</strong></p><p>These expenses are related to activities additional to those initially agreed upon for the mobility period. Examples of concepts that could be covered by the programme include:</p><p>· Courses beyond those offered by the TU Graz degree programme, such as specialisation courses, introductory training related to topics addressed in the Master’s thesis, or similar initiatives in the GreenChips-EDU thematic areas, are also eligible.</p><p>· Micro-credentials are also eligible for funding under the scholarship programme.</p><p><strong>Covered Expenses:</strong></p><p>Registration or tuition fees for extra courses, certification costs for micro-credentials, Material or software required for those additional courses, travel or accommodation if the course or training is held at a different location (if justified).</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to €1,500 as reimbursement. The grant type 2.2 grant includes a travel allowance of max. 500 €, including a daily scholarship rate (ranging from 5 -15 €, depending on the host country), and reimbursement of the course fees, up to a maximum of 1000 €.</p><p>An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.3. Coverage for the costs of issuing documentation</h2><h2><br></h2><p>This grant type covers essential expenses related to obtaining the documentation required by the host institution, provided these are necessary for international mobility. All expenses must be incurred <strong>before 30 June 2027.</strong></p><p><strong>Covered Expenses:</strong></p><p>· Visa & Residence Permit Application and Issuance</p><p>– Costs associated with applying for and obtaining a visa/ residence permit.</p><p>· Insurance Coverage</p><p>– Expenses for life, health, accident, and civil liability insurance required during the mobility period.</p><p>· Language Accreditation</p><p>– Fees for language proficiency exams and official language certificates.</p><p>· Translation fees</p><p>– Costs for translations of required documents.</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€1,000</strong> as reimbursement.</p><p><br></p><h2>2.4. Contribution to the costs of short-term mobility stays related to the Master's Degree</h2><h2><br></h2><p>This grant type supports short-term mobility expenses not covered by the Erasmus+ Programme. It specifically excludes participation in Blended Intensive Programmes (BIPs).</p><p><strong>Scope of Coverage: </strong></p><p>To be eligible for the grant, applicants must meet <strong>all </strong>of the following conditions:</p><p>All activities must be completed by 30 June 2027. The mobility period must typically be less than 2 months. The proposed activity must fall under one of the following eligible categories:</p><p>· Participation in international or domestic events, such as summer schools, workshops, or conferences.</p><p>· Completion of a Master’s thesis at a foreign or domestic institution that is part of the GreenChips-EDU network.</p><p>· Professional training or internships at companies aligned with the GreenChips-EDU project.</p><p>Please find interactive formats offered by the GreenChips-EDU project here: <a href=\"https://www.tugraz.at/projekte/greenchips-edu/news-events/event-calendar\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.tugraz.at/projekte/greenchips-edu/news-events/event-calendar</a></p><p>Please find internship opportunities by the GreenChips-EDU project here: <a href=\"https://www.tugraz.at/projekte/greenchips-edu/student-opportunities/internship-offers\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.tugraz.at/projekte/greenchips-edu/student-opportunities/internship-offers</a></p><p><br></p><p><strong>Covered Expenses:</strong></p><p>Transport, accommodation, and meals.</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€1,500 </strong>as<strong> </strong>a fixed amount payment in advance (€ 79/day, up to a maximus total of 1500EUR including the travel cost indicated in <strong>“Distance Band Support”).</strong></p><p>An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.5. Contribution to the expenses of long-term mobility stays related to the Master's Degree</h2><h2><br></h2><p>This grant type provides additional financial support to ease the financial burden on students participating in long-term mobility, particularly in double degree programmes. All activities must be completed by 30 June 2027.</p><p><strong>Scope of Coverage:</strong></p><p>GreenChips-EDU programme may cover days that exceed the maximum duration funded by Erasmus+ (e.g., a 6-month stay with only 5 months of Erasmus+ support).</p><p>For students enrolled in a double degree programme, GreenChips-EDU may provide support for living during the <strong>first year </strong>of the programme while the students are still at TU Graz.</p><p><strong>Covered Expenses:</strong></p><p>Transport, accommodation, and meals (taxi or private transport requires justification if public transport is available for the same route).</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€6,000 </strong>as<strong> </strong>a fixed amount payment in advance. An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.6. Contribution to expenses for scientific achievements during the mobility stay</h2><h2><br></h2><p>This grant type supports research activities carried out by Master’s students working on their final projects, preferably during a mobility period, that lead to a scientific publication aligned with GreenChips-EDU topics. All expenses must be incurred <strong>before 30 June 2027</strong>.</p><p><strong>Scope of Coverage and funding limit:</strong></p><p>Scientific Publication Fees</p><p>Up to <strong>€1,000 </strong>for full open-access publication in <strong>Q1 or Q2 journals</strong>.</p><p>Up to <strong>€500 </strong>for full open-access publication in <strong>Q3 or Q4 journals</strong>.</p><p>Presentation Materials</p><p>Up to <strong>€100 </strong>for the preparation of <strong>posters </strong>for scientific congresses.</p><p>High-Level Conference Attendance.</p><p>This limit increases to <strong>€2,000 </strong>if the congress is rated <strong>CORE A*</strong>.</p><p>Under this grant type, each beneficiary may be awarded funding in the form of reimbursement.</p><p><br></p><h1><strong>3. Who can apply for this grant? </strong></h1><h1><br></h1><h2>3.1 Applicants criteria</h2><p>Students who are enrolled—or have applied for admission—for the 2025/2026 academic year or later in one of the following three master’s programmes at TU Graz will be eligible to receive a scholarship (only students in these three programmes are eligible under this call):</p><p>· Electrical and Electronics Engineering</p><p>· Information and Computer Engineering</p><p>· Biomedical Engineering</p><p><br></p><p><strong>The applicant must hold the nationality of:</strong></p><p>EU Member States or countries associated with the Digital Europe Programme (e.g., countries in the European Economic Area - EEA: Iceland, Liechtenstein, Norway - and other nations that have signed association agreements, including those from the Western Balkans and Eastern Europe: Albania, Bosnia and Herzegovina, Kosovo, Moldova, Montenegro, North Macedonia, Serbia, Turkey, and Ukraine).</p><p><br></p><h1><strong>4. Submission of applications</strong></h1><h1><br></h1><h2>4.1 Application method and documentation</h2><p>Applications may be submitted starting from the day following the publication of the scholarship call.</p><p><strong>Applications must be submitted by the following deadlines:</strong></p><p>(The scholarship call includes four application rounds to allow for phased evaluation and funding, ensuring the full €40,000 grant is awarded in batches by June 2027.)</p><p><strong>Call 1: 15 February 2026, 23:59 (CET)</strong></p><p><strong>Call 2: 1 July 2026, 23:59 (CET)</strong></p><p><strong>Call 3: 14 February 2027, 23:59 (CET)</strong></p><p><strong>Call 4: 1 June 2027, 23:59 (CET)</strong></p><p>The application must be submitted to the designated office at TU Graz. To submit your application or for inquiries, please send an e-mail to <a href=\"mailto:greenchips-edu.scholarships.ife@tugraz.at\" rel=\"noopener noreferrer\" target=\"_blank\">greenchips-edu.scholarships.ife@tugraz.at</a></p><p>The following documentation must be attached to the application form:</p><p>· Form A : Cover Letter</p><p>Please submit a cover letter that includes the following: A brief introduction of yourself, highlighting your academic background / merits and current field of study. A description of your personal, social, economic, and professional circumstances, as well as your academic performance, that may be relevant to your scholarship application. If possible, outline your future academic and career plans, including the field in which you wish to further pursue your academic knowledge.</p><p><br></p><p>· Form B: Application of Grant (see checklist below)</p><p>o Please indicate the type(s) of grant(s) you are applying for.</p><p>o Multiple selections are allowed if you are applying for more than one type.</p><p><br></p><p>· Academic Grade Documentation:</p><p>Please provide a document stating the average grade of your completed Bachelor’s degree or Master’s Degree, specifically in a field that is related to Electrical/Electronic Engineering, Information and Computer Engineering or Biomedical Engineering or has a strong relevance to the objectives of the GreenChips-EDU project.</p><p>The selection committee at the Institute of Electronics (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster) will check the average grade of all students in the same degree programme over the past year and use it as part of selection criteria.</p><p>· Documentary accreditation:</p><p>Applicants are responsible for providing documentation that supports the situations described in the previous point (likely referring to eligibility criteria or merit-based considerations). This includes:</p><p>Documentation Required for GPA and Academic Merits</p><p><br></p><p>You should provide:</p><p><strong>o Official academic transcripts from your institution(s)</strong></p><p><strong>o Degree certificates or diplomas </strong></p><p><strong>o GPA certification or a document explaining the grading scale (especially if it's not standard)</strong></p><p><strong>o Awards or honours received (e.g., Dean’s List, scholarships, academic competitions)</strong></p><p><strong>o Letters of recommendation (if applicable)</strong></p><p>o Documentation for Social and Economic Circumstances</p><p>o You may need to submit:</p><p><strong>§ Proof of income (e.g., tax returns, salary slips, or income certificates)</strong></p><p><strong>§ Family income statements or affidavits</strong></p><p><strong>§ Social security or welfare documentation</strong></p><p><strong>§&nbsp;Proof of residence&nbsp;in a disadvantaged area (if relevant)</strong></p><p><strong>§&nbsp;Medical or disability certificates (if applicable)</strong></p><p><strong>§&nbsp;Any official documentation that supports claims of economic hardship or social disadvantage</strong></p><p><br></p><p>· Accreditation of Mobility Placement</p><p>Applicants must provide:</p><p><strong>Proof of having secured a mobility placement in one of the destinations approved by the call, or, if not yet confirmed a document signed by the Head of Studies of your institution and the Deputy Director of International Relations, endorsing the application.</strong></p><p><strong> This document must clearly state the destination of the mobility and the estimated period the student will remain abroad</strong></p><p>· Justification for Grants Type 2.2 – Specialized Trainings</p><p>Applicants must submit a <strong>justification document</strong> explaining the relevance and benefit of the specialized training. This document must include at least:</p><p>o<strong> The name and description of the course or activity</strong></p><p><strong>o Its purpose</strong></p><p><strong>o The organizing institution</strong></p><p><strong>o The location where the training takes place</strong></p><p><strong>o Course registration confirmation or payment confirmation (if applicable)</strong></p><p>· Documentation for Grants Type 2.6 – Scientific Achievement</p><p>Applicants must provide:</p><p><strong>o A copy of the publication or poster related to the grant application</strong></p><p><strong>o The complete reference number of the place of publication</strong></p><p><strong>o&nbsp;&nbsp;All documentation to verify the expenses related to the publication</strong></p><p><br></p><p><strong>5.&nbsp;&nbsp;Selection criteria</strong></p><p>The evaluation of the applications will be carried out by the selection committee (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster), which will consider the academic merit of the candidate as well as gender and socioeconomic inequalities in the relevant field of studies, mentioned in section 3.1.</p><p>Each application will be assigned a score based on an evaluation system of 35 points structured in 6 blocks:</p><p><br></p><h2>5.1. (20 points) Academic performance (r1)</h2><p>Academic performance will be measured in terms of the average grade (g) of a completed Bachelor's Degree (or Master's Degree) that is directly linked to the field of studies specified in section 3.1 or is directly connected to or has a special relevance to the objectives of the GreenChips-EDU project.</p><p>The calculation will be made by comparing the average grade (g) of the applicant with the average grade (g<sub>avg</sub>) obtained by all students who have completed the same Bachelor's or Master's Degree in the previous year. Students who have completed a Bachelor's programme or Master’s programme at another university (none TU Graz) are required to provide the average grade (g<sub>avg</sub>) obtained by all students who completed the same Bachelor's or Master's degree at that university in the previous academic year.</p><p>Additional considerations:</p><p>In the event that the selection committee does not have this data, the applicant will receive 0 points in this section 5.1.</p><p>This information must be certified by the institution where the Bachelor's or Master's Degree was obtained.</p><p><br></p><h2>5.2. (5 points) Additional academic merits (r2)</h2><p>This section assesses academic merits beyond those derived from their academic performance. Specifically:</p><p>·(+1 point) If the student has completed a Bachelor's or Master's Degree beyond that used for the calculation of r<sub>1</sub>.</p><p>·(+1 point) If the student has received a recognition or award for their academic activity. Honours are not included in this consideration.</p><p>·(+1 point) If the student is the author of a publication or poster in a conference or research journal.</p><p>a.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(+1 point) If the student demonstrates training in the field of sustainability or green electronics (Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering).</p><p>·(+1 point) If the student has developed projects related to the field of studies mentioned in section 3.1 beyond those required to obtain academic degrees.</p><p>·The concepts listed above are considered independently, with r<sub>2</sub> being the sum of all those that the student fulfills in accordance with the documentation provided.</p><p><br></p><h2>5.3. (5 points) Professional experience (r3)</h2><p>The applicant's work experience in the field of Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering will be valued. Depending on the number of accredited hours, the applicant will receive:</p><p>·(1 point) Between 100 hours and 500 hours.</p><p>·(2 points) Between 500 hours and 900 hours.</p><p>·(3 points) Between 900 hours and 1800 hours.</p><p>·(4 points) More than 1800 hours.</p><p>Applications that prove work experience in the field of sustainability or green electronics (Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering) will receive an additional point.</p><p><br></p><h2>5.4. (2 points) Positive gender discrimination (r<sub>4</sub>)</h2><p>Two points will be assigned to female applicants, as a mechanism of positive discrimination that seeks to improve the presence of women in the relevant study and industry field.</p><p><br></p><h2>5.5. (2 points) Situation of vulnerability (r<sub>5</sub>)</h2><p>The applicant may receive 2 points if they can prove that they are in a situation of socioeconomic vulnerability. This accreditation may be based on other grants already granted and that takes this condition into account.</p><h2>5.6. (1 point) Motivation and alignment with the call (r6)</h2><p>The student's motivation and the alignment of the application with the objectives of the call will be valued with one point.</p><p><br></p><p><strong>Resolution of applications</strong></p><p>Applications will be assessed by a selection (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster). The result will be announced electronically to all candidates.</p><p><br></p><h1><strong>6.&nbsp;&nbsp;Final Report </strong></h1><p class=\"ql-align-justify\">Students will be asked to provide a <strong>final report that outlines the experience and the main outcomes</strong> taken from it. This final report aims to help improve the scholarship program and support dissemination by sharing experiences that may inspire other students to participate. Therefore, the following elements are expected as part of the final report:</p><p class=\"ql-align-justify\">·&nbsp;A short questionnaire to gather students’ feedback on the scholarship call, aimed at improving future editions.</p><p class=\"ql-align-justify\">·&nbsp;A brief video (30 to 60 seconds) focused on the activity funded by the scholarship. This material will be used in outreach campaigns to engage more students and help ensure that the goals of the GreenChips-EDU project continue beyond its official duration.</p><p><br></p><h1>Form A : Cover Letter</h1><p>Please write a brief introduction of yourself, highlighting your academic background / merits and current field of study. A description of your personal, social, economic, and professional circumstances, as well as your academic performance, that may be relevant to your scholarship application. If possible, outline your future academic and career plans, including the field in which you wish to further pursue your academic knowledge.</p><p><br></p><h1>Form B: Application of Grant (Checklist)</h1><p>All applicants must submit</p><p>ð Form A</p><p>ð Documentation Required for GPA and Academic Merits</p><p>ð Documentation for Social and Economic Circumstances</p><p>ð Average grade of your completed Bachelor’s Degree or Master’s Degree</p><p>ð All Scholarship funding or grant currently being received</p><p>Scholarship/ Grant Name:</p><p>Duration of Scholarship/Grant to be received :</p><p><br></p><p><strong>Coverage for tuition and registration fees</strong></p><p>Please indicate the Master’s programme you are enrolled in, specify the semester for which you are applying for tuition support, and attach proof of your mobility placement</p><p>Master’s Programme:</p><p>Semester:</p><p>Attach Proof of your Mobility: ð Yes ð No</p><p><strong>Coverage for participating specialized courses/trainings</strong></p><p>Please list any specialized courses or trainings you have registered for or completed, including the cost. Submit proof of payment and proof of course registration.</p><p><strong>The name the course:</strong></p><p><strong>Course content and its purpose:</strong></p><p><strong>Information about the institution, Name / Location:</strong></p><p><strong>Attach course registration confirmation or payment confirmation:&nbsp;ðYes ðNo</strong></p><p><strong><u>Coverage for the costs of issuing documentation</u></strong></p><p>Please list any costs incurred for issuing documentation and submit proof of payment.</p><p>………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………..</p><p><strong><u>Contribution to the costs of short-term mobility stays related to the Master's Degree</u></strong></p><p>Please state the destination and duration of your visit, along with the purpose of the trip.</p><p>Destination:</p><p>Duration:</p><p>Blended Intensive Programmes (BIPs) ð Yes&nbsp;&nbsp;ð No</p><p>Erasmus+: ð Yes&nbsp;&nbsp;ð No</p><p>Duration of Erasmus+</p><p>Purpose of your visit:</p><p><br></p><p><strong><u>Contribution to the expenses of long-term mobility stays related to the Master's Degree</u></strong></p><p>Accreditation of Mobility Placement: ð Yes ð No</p><p>Destination and duration of your stay:</p><p>Erasmus+: ð Yes&nbsp;&nbsp;ð No</p><p>Duration of Erasmus+:</p><p><strong>Contribution to expenses for scientific achievements during the mobility stay</strong></p><p>Submit the payment receipt along with explanations for the following applicable items.</p><p><strong>· A copy of the publication or poster related to the grant application</strong></p><p><strong>· The complete reference number of the place of publication</strong></p><p><strong>· All documentation to verify the expenses related to the publication</strong></p><p><strong>· Payment receipt </strong></p><p><br></p><p class=\"ql-align-center\"><br></p><h1><strong>Distance Band Support</strong></h1><p>To calculate the distance between the home university and the host institution, the EU Distance Calculator is used. The amounts are lump sums.</p><div class=\"quill-better-table-wrapper\"><table class=\"quill-better-table\"><colgroup><col width=\"100\"><col width=\"100\"><col width=\"100\"></colgroup><tbody><tr data-row=\"1\"><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\"><strong>Distance</strong></p></td><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\"><strong><em>Environmentally friendly travel (EUR)</em>*</strong></p></td><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\"><strong>Non-environmentally friendly travel (EUR)</strong></p></td></tr><tr data-row=\"2\"><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">10 – 99 km</p></td><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€56</p></td><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€28</p></td></tr><tr data-row=\"3\"><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">100 – 499 km</p></td><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€285</p></td><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€211</p></td></tr><tr data-row=\"4\"><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">500 – 1999 km</p></td><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€417</p></td><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€309</p></td></tr><tr data-row=\"5\"><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">2000 – 2999 km</p></td><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€535</p></td><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€395</p></td></tr><tr data-row=\"6\"><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">3000 – 3999 km</p></td><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€785</p></td><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€580</p></td></tr><tr data-row=\"7\"><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">4000 – 7999 km</p></td><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€1188</p></td><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€1188</p></td></tr><tr data-row=\"8\"><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">8000+ km</p></td><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€1735</p></td><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€1735</p></td></tr></tbody></table></div><p class=\"ql-align-center\">&nbsp;</p><p>*According to the European Commission Programme Guide, environmentally friendly travel includes low-emission means of transport such as train, bus, or carpooling.</p>"
+    ],
+    "sortStatus": [
+     "1"
+    ],
+    "description": [
+     "<h1>Disclaimer</h1><p>This call (as well as the financial support that will be provided through it) is NOT an EU action. This call is launched solely by TU GRAZ. The financial support to the selected successful applicants will be provided directly by TU GRAZ in its own name and under its own responsibility. TU GRAZ’s own responsibility includes the preparation and drafting of this call as well as the selection of successful applicants that will receive the said financial support. The publication of this call in the EU Funding & Tenders Portal is made solely for information purposes with the aim to increase the visibility of this call to the general public, including to potential applicants (i.e., students). The said publication shall not be construed as direct or indirect approval of the content and conditions of this call by the relevant EU authorities or as any form of waiver from the above-described responsibility of TU GRAZ.</p>"
+    ],
+    "language": [
+     "en"
+    ],
+    "title": [
+     "Specialised education programmes or modules in key capacity areas"
+    ],
+    "type": [
+     "8"
+    ],
+    "esST_checksum": [
+     "5671AA7978F1FFBF10B8F09D24075EFC84F0A87650BD571F09B968F31BC29FF1"
+    ],
+    "duration": [],
+    "destinationDetails": [
+     "<h1 class=\"ql-align-center\"><strong>GreenChips-EDU Scholarship</strong></h1><h1><strong>1. Purpose of the call</strong></h1><h1><br></h1><p>The <a href=\"https://www.tugraz.at/projekte/greenchips-edu/home\" rel=\"noopener noreferrer\" target=\"_blank\">GreenChips-EDU Project</a> was launched in 2023 with the aim of supporting talents in sustainable semiconductor technologies across Europe. The project seeks to educate students and researchers, equipping them with knowledge that will contribute to eco-friendly chip design, energy-efficient manufacturing, and materials innovation for the future of the EU.</p><p>As part of this initiative, TU Graz is pleased to announce a call for applications for scholarships <strong>supporting Master’s students enrolled or planning to enroll in the relevant study programmes at TU Graz</strong>:</p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Electrical and Electronics Engineering</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Information and Computer Engineering</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Biomedical Engineering</li></ol><p>The scholarship is intended to provide financial support to students participating in academia-industry collaborations through <strong>mobility programmes</strong>. The goal is to foster cooperation between academia and industry and enrich the educational experience of students dedicated to advancing sustainable and innovative technologies in the electronics and microelectronics sectors.</p><p><br></p><h1><strong>2. Type of grants</strong></h1><h1><br></h1><p>The eligible expenses outlined in this document must be directly related to international and domestic mobility activities carried out at partner institutions participating in the GreenChips-EDU project. These mobility activities may also take place at industrial partner sites, including those that are not formal project partners, provided they align with the project's objectives and offer meaningful academic or professional engagement. In such cases, the mobility may take the form of professional training, enabling students to gain hands-on experience and develop practical skills within relevant industry settings.</p><p>University partner institutions include the following:</p><p><strong>Politecnico di Torino (PoliTo) </strong>– Italy</p><p><strong>Technische Universität Darmstadt (TUDa) </strong>– Germany</p><p><strong>Universitat Politècnica de Catalunya (UPC) </strong>– Spain</p><p><strong>Grenoble INP – UGA </strong>– France</p><p><strong>Universidade de Lisboa (ULisboa) </strong>– Portugal</p><p><strong>Carinthia University of Applied Sciences (CUAS) – Austria</strong></p><p>Industry, SME and research partners include:</p><p><strong>INESC ID </strong>– Portugal</p><p><strong>Joanneum Research </strong>– Austria</p><p><strong>Infineon Technologies Austria </strong>– Austria (and global)</p><p><strong>Končar Inem </strong>– Croatia</p><p><strong>Silicongate LDA </strong>– Portugal</p><p><strong>Aedvices Consulting </strong>– France</p><p><strong>RUSZ</strong> – Austria</p><p><strong>Business Konsens OG</strong> – Austria</p><p>This funding call offers six distinct types of grants. While students are permitted to apply for multiple grants, the total amount awarded to any individual must not exceed €10,000, regardless of the maximum limits assigned to each grant type. Financial aid may be provided in the form of reimbursement and/or a fixed amount granted in advance. Each type of grant specifies which of these funding methods applies.</p><p>The total funding available is <strong>€40,000.</strong></p><p>Students/applicants must disclose any other scholarships or fellowships they have already been awarded or are currently applying for at the time of submitting their application for this scholarship program. Additionally, they must inform us of any scholarships or fellowships they are granted thereafter.</p><p><br></p><h2>2.1. Coverage for tuition and registration fees</h2><h2><br></h2><p>Only semesters that commence before 30 June 2027 are considered eligible. Funding may be provided for up to a maximum of four consecutive semesters, covering credits taken both at TU Graz and at the mobility destination.</p><p><strong>Scope of coverage:</strong></p><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Waiver of Tuition Fees for all first-time enrolled credits, provided they align with the academic path designed for the academic activity</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Coverage of any mandatory administrative fees</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Coverage of any optional fees, if they align with the goals of the scholarship programme</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>For students, enrolled in a double degree programme, tuitions and fees occurring at host institution</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>For students enrolled in a double degree programme, cost related to the issuance of the Master’s Degree certificate at both institutions (TU Graz and host institution)</li></ol><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive a maximum of <strong>€3,500</strong> as reimbursement.</p><p><br></p><h2>2.2. Coverage for participating specialised courses/trainings</h2><h2><br></h2><p>This grant type supports participation in specialization courses or training programmes offered by universities or industries affiliated with the GreenChips-EDU project. It is intended to complement international and domestic mobility activities. All expenses must be incurred <strong>before 30 June 2027.</strong></p><p><strong>Scope of coverage:</strong></p><p>These expenses are related to activities additional to those initially agreed upon for the mobility period. Examples of concepts that could be covered by the programme include:</p><p>· Courses beyond those offered by the TU Graz degree programme, such as specialisation courses, introductory training related to topics addressed in the Master’s thesis, or similar initiatives in the GreenChips-EDU thematic areas, are also eligible.</p><p>· Micro-credentials are also eligible for funding under the scholarship programme.</p><p><strong>Covered Expenses:</strong></p><p>Registration or tuition fees for extra courses, certification costs for micro-credentials, Material or software required for those additional courses, travel or accommodation if the course or training is held at a different location (if justified).</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to €1,500 as reimbursement. The grant type 2.2 grant includes a travel allowance of max. 500 €, including a daily scholarship rate (ranging from 5 -15 €, depending on the host country), and reimbursement of the course fees, up to a maximum of 1000 €.</p><p>An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.3. Coverage for the costs of issuing documentation</h2><h2><br></h2><p>This grant type covers essential expenses related to obtaining the documentation required by the host institution, provided these are necessary for international mobility. All expenses must be incurred <strong>before 30 June 2027.</strong></p><p><strong>Covered Expenses:</strong></p><p>· Visa & Residence Permit Application and Issuance</p><p>– Costs associated with applying for and obtaining a visa/ residence permit.</p><p>· Insurance Coverage</p><p>– Expenses for life, health, accident, and civil liability insurance required during the mobility period.</p><p>· Language Accreditation</p><p>– Fees for language proficiency exams and official language certificates.</p><p>· Translation fees</p><p>– Costs for translations of required documents.</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€1,000</strong> as reimbursement.</p><p><br></p><h2>2.4. Contribution to the costs of short-term mobility stays related to the Master's Degree</h2><h2><br></h2><p>This grant type supports short-term mobility expenses not covered by the Erasmus+ Programme. It specifically excludes participation in Blended Intensive Programmes (BIPs).</p><p><strong>Scope of Coverage: </strong></p><p>To be eligible for the grant, applicants must meet <strong>all </strong>of the following conditions:</p><p>All activities must be completed by 30 June 2027. The mobility period must typically be less than 2 months. The proposed activity must fall under one of the following eligible categories:</p><p>· Participation in international or domestic events, such as summer schools, workshops, or conferences.</p><p>· Completion of a Master’s thesis at a foreign or domestic institution that is part of the GreenChips-EDU network.</p><p>· Professional training or internships at companies aligned with the GreenChips-EDU project.</p><p>Please find interactive formats offered by the GreenChips-EDU project here: <a href=\"https://www.tugraz.at/projekte/greenchips-edu/news-events/event-calendar\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.tugraz.at/projekte/greenchips-edu/news-events/event-calendar</a></p><p>Please find internship opportunities by the GreenChips-EDU project here: <a href=\"https://www.tugraz.at/projekte/greenchips-edu/student-opportunities/internship-offers\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.tugraz.at/projekte/greenchips-edu/student-opportunities/internship-offers</a></p><p><br></p><p><strong>Covered Expenses:</strong></p><p>Transport, accommodation, and meals.</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€1,500 </strong>as<strong> </strong>a fixed amount payment in advance (€ 79/day, up to a maximus total of 1500EUR including the travel cost indicated in <strong>“Distance Band Support”).</strong></p><p>An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.5. Contribution to the expenses of long-term mobility stays related to the Master's Degree</h2><h2><br></h2><p>This grant type provides additional financial support to ease the financial burden on students participating in long-term mobility, particularly in double degree programmes. All activities must be completed by 30 June 2027.</p><p><strong>Scope of Coverage:</strong></p><p>GreenChips-EDU programme may cover days that exceed the maximum duration funded by Erasmus+ (e.g., a 6-month stay with only 5 months of Erasmus+ support).</p><p>For students enrolled in a double degree programme, GreenChips-EDU may provide support for living during the <strong>first year </strong>of the programme while the students are still at TU Graz.</p><p><strong>Covered Expenses:</strong></p><p>Transport, accommodation, and meals (taxi or private transport requires justification if public transport is available for the same route).</p><p><strong>Funding Limit:</strong></p><p>Under this grant type, each beneficiary may receive up to <strong>€6,000 </strong>as<strong> </strong>a fixed amount payment in advance. An initial 80% of the funding will be disbursed upfront, with the remaining 20% released upon submission of the student’s report.</p><p><br></p><h2>2.6. Contribution to expenses for scientific achievements during the mobility stay</h2><h2><br></h2><p>This grant type supports research activities carried out by Master’s students working on their final projects, preferably during a mobility period, that lead to a scientific publication aligned with GreenChips-EDU topics. All expenses must be incurred <strong>before 30 June 2027</strong>.</p><p><strong>Scope of Coverage and funding limit:</strong></p><p>Scientific Publication Fees</p><p>Up to <strong>€1,000 </strong>for full open-access publication in <strong>Q1 or Q2 journals</strong>.</p><p>Up to <strong>€500 </strong>for full open-access publication in <strong>Q3 or Q4 journals</strong>.</p><p>Presentation Materials</p><p>Up to <strong>€100 </strong>for the preparation of <strong>posters </strong>for scientific congresses.</p><p>High-Level Conference Attendance.</p><p>This limit increases to <strong>€2,000 </strong>if the congress is rated <strong>CORE A*</strong>.</p><p>Under this grant type, each beneficiary may be awarded funding in the form of reimbursement.</p><p><br></p><h1><strong>3. Who can apply for this grant? </strong></h1><h1><br></h1><h2>3.1 Applicants criteria</h2><p>Students who are enrolled—or have applied for admission—for the 2025/2026 academic year or later in one of the following three master’s programmes at TU Graz will be eligible to receive a scholarship (only students in these three programmes are eligible under this call):</p><p>· Electrical and Electronics Engineering</p><p>· Information and Computer Engineering</p><p>· Biomedical Engineering</p><p><br></p><p><strong>The applicant must hold the nationality of:</strong></p><p>EU Member States or countries associated with the Digital Europe Programme (e.g., countries in the European Economic Area - EEA: Iceland, Liechtenstein, Norway - and other nations that have signed association agreements, including those from the Western Balkans and Eastern Europe: Albania, Bosnia and Herzegovina, Kosovo, Moldova, Montenegro, North Macedonia, Serbia, Turkey, and Ukraine).</p><p><br></p><h1><strong>4. Submission of applications</strong></h1><h1><br></h1><h2>4.1 Application method and documentation</h2><p>Applications may be submitted starting from the day following the publication of the scholarship call.</p><p><strong>Applications must be submitted by the following deadlines:</strong></p><p>(The scholarship call includes four application rounds to allow for phased evaluation and funding, ensuring the full €40,000 grant is awarded in batches by June 2027.)</p><p><strong>Call 1: 15 February 2026, 23:59 (CET)</strong></p><p><strong>Call 2: 1 July 2026, 23:59 (CET)</strong></p><p><strong>Call 3: 14 February 2027, 23:59 (CET)</strong></p><p><strong>Call 4: 1 June 2027, 23:59 (CET)</strong></p><p>The application must be submitted to the designated office at TU Graz. To submit your application or for inquiries, please send an e-mail to <a href=\"mailto:greenchips-edu.scholarships.ife@tugraz.at\" rel=\"noopener noreferrer\" target=\"_blank\">greenchips-edu.scholarships.ife@tugraz.at</a></p><p>The following documentation must be attached to the application form:</p><p>· Form A : Cover Letter</p><p>Please submit a cover letter that includes the following: A brief introduction of yourself, highlighting your academic background / merits and current field of study. A description of your personal, social, economic, and professional circumstances, as well as your academic performance, that may be relevant to your scholarship application. If possible, outline your future academic and career plans, including the field in which you wish to further pursue your academic knowledge.</p><p><br></p><p>· Form B: Application of Grant (see checklist below)</p><p>o Please indicate the type(s) of grant(s) you are applying for.</p><p>o Multiple selections are allowed if you are applying for more than one type.</p><p><br></p><p>· Academic Grade Documentation:</p><p>Please provide a document stating the average grade of your completed Bachelor’s degree or Master’s Degree, specifically in a field that is related to Electrical/Electronic Engineering, Information and Computer Engineering or Biomedical Engineering or has a strong relevance to the objectives of the GreenChips-EDU project.</p><p>The selection committee at the Institute of Electronics (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster) will check the average grade of all students in the same degree programme over the past year and use it as part of selection criteria.</p><p>· Documentary accreditation:</p><p>Applicants are responsible for providing documentation that supports the situations described in the previous point (likely referring to eligibility criteria or merit-based considerations). This includes:</p><p>Documentation Required for GPA and Academic Merits</p><p><br></p><p>You should provide:</p><p><strong>o Official academic transcripts from your institution(s)</strong></p><p><strong>o Degree certificates or diplomas </strong></p><p><strong>o GPA certification or a document explaining the grading scale (especially if it's not standard)</strong></p><p><strong>o Awards or honours received (e.g., Dean’s List, scholarships, academic competitions)</strong></p><p><strong>o Letters of recommendation (if applicable)</strong></p><p>o Documentation for Social and Economic Circumstances</p><p>o You may need to submit:</p><p><strong>§ Proof of income (e.g., tax returns, salary slips, or income certificates)</strong></p><p><strong>§ Family income statements or affidavits</strong></p><p><strong>§ Social security or welfare documentation</strong></p><p><strong>§&nbsp;Proof of residence&nbsp;in a disadvantaged area (if relevant)</strong></p><p><strong>§&nbsp;Medical or disability certificates (if applicable)</strong></p><p><strong>§&nbsp;Any official documentation that supports claims of economic hardship or social disadvantage</strong></p><p><br></p><p>· Accreditation of Mobility Placement</p><p>Applicants must provide:</p><p><strong>Proof of having secured a mobility placement in one of the destinations approved by the call, or, if not yet confirmed a document signed by the Head of Studies of your institution and the Deputy Director of International Relations, endorsing the application.</strong></p><p><strong> This document must clearly state the destination of the mobility and the estimated period the student will remain abroad</strong></p><p>· Justification for Grants Type 2.2 – Specialized Trainings</p><p>Applicants must submit a <strong>justification document</strong> explaining the relevance and benefit of the specialized training. This document must include at least:</p><p>o<strong> The name and description of the course or activity</strong></p><p><strong>o Its purpose</strong></p><p><strong>o The organizing institution</strong></p><p><strong>o The location where the training takes place</strong></p><p><strong>o Course registration confirmation or payment confirmation (if applicable)</strong></p><p>· Documentation for Grants Type 2.6 – Scientific Achievement</p><p>Applicants must provide:</p><p><strong>o A copy of the publication or poster related to the grant application</strong></p><p><strong>o The complete reference number of the place of publication</strong></p><p><strong>o&nbsp;&nbsp;All documentation to verify the expenses related to the publication</strong></p><p><br></p><p><strong>5.&nbsp;&nbsp;Selection criteria</strong></p><p>The evaluation of the applications will be carried out by the selection committee (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster), which will consider the academic merit of the candidate as well as gender and socioeconomic inequalities in the relevant field of studies, mentioned in section 3.1.</p><p>Each application will be assigned a score based on an evaluation system of 35 points structured in 6 blocks:</p><p><br></p><h2>5.1. (20 points) Academic performance (r1)</h2><p>Academic performance will be measured in terms of the average grade (g) of a completed Bachelor's Degree (or Master's Degree) that is directly linked to the field of studies specified in section 3.1 or is directly connected to or has a special relevance to the objectives of the GreenChips-EDU project.</p><p>The calculation will be made by comparing the average grade (g) of the applicant with the average grade (g<sub>avg</sub>) obtained by all students who have completed the same Bachelor's or Master's Degree in the previous year. Students who have completed a Bachelor's programme or Master’s programme at another university (none TU Graz) are required to provide the average grade (g<sub>avg</sub>) obtained by all students who completed the same Bachelor's or Master's degree at that university in the previous academic year.</p><p>Additional considerations:</p><p>In the event that the selection committee does not have this data, the applicant will receive 0 points in this section 5.1.</p><p>This information must be certified by the institution where the Bachelor's or Master's Degree was obtained.</p><p><br></p><h2>5.2. (5 points) Additional academic merits (r2)</h2><p>This section assesses academic merits beyond those derived from their academic performance. Specifically:</p><p>·(+1 point) If the student has completed a Bachelor's or Master's Degree beyond that used for the calculation of r<sub>1</sub>.</p><p>·(+1 point) If the student has received a recognition or award for their academic activity. Honours are not included in this consideration.</p><p>·(+1 point) If the student is the author of a publication or poster in a conference or research journal.</p><p>a.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(+1 point) If the student demonstrates training in the field of sustainability or green electronics (Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering).</p><p>·(+1 point) If the student has developed projects related to the field of studies mentioned in section 3.1 beyond those required to obtain academic degrees.</p><p>·The concepts listed above are considered independently, with r<sub>2</sub> being the sum of all those that the student fulfills in accordance with the documentation provided.</p><p><br></p><h2>5.3. (5 points) Professional experience (r3)</h2><p>The applicant's work experience in the field of Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering will be valued. Depending on the number of accredited hours, the applicant will receive:</p><p>·(1 point) Between 100 hours and 500 hours.</p><p>·(2 points) Between 500 hours and 900 hours.</p><p>·(3 points) Between 900 hours and 1800 hours.</p><p>·(4 points) More than 1800 hours.</p><p>Applications that prove work experience in the field of sustainability or green electronics (Electrical and Electronics Engineering, Information and Computer Engineering, Biomedical Engineering) will receive an additional point.</p><p><br></p><h2>5.4. (2 points) Positive gender discrimination (r<sub>4</sub>)</h2><p>Two points will be assigned to female applicants, as a mechanism of positive discrimination that seeks to improve the presence of women in the relevant study and industry field.</p><p><br></p><h2>5.5. (2 points) Situation of vulnerability (r<sub>5</sub>)</h2><p>The applicant may receive 2 points if they can prove that they are in a situation of socioeconomic vulnerability. This accreditation may be based on other grants already granted and that takes this condition into account.</p><h2>5.6. (1 point) Motivation and alignment with the call (r6)</h2><p>The student's motivation and the alignment of the application with the objectives of the call will be valued with one point.</p><p><br></p><p><strong>Resolution of applications</strong></p><p>Applications will be assessed by a selection (Prof. Bernd Deutschmann, Semih Ramazanoglu PhD, Marco Pfeifer, Michael Kleinschuster). The result will be announced electronically to all candidates.</p><p><br></p><h1><strong>6.&nbsp;&nbsp;Final Report </strong></h1><p class=\"ql-align-justify\">Students will be asked to provide a <strong>final report that outlines the experience and the main outcomes</strong> taken from it. This final report aims to help improve the scholarship program and support dissemination by sharing experiences that may inspire other students to participate. Therefore, the following elements are expected as part of the final report:</p><p class=\"ql-align-justify\">·&nbsp;A short questionnaire to gather students’ feedback on the scholarship call, aimed at improving future editions.</p><p class=\"ql-align-justify\">·&nbsp;A brief video (30 to 60 seconds) focused on the activity funded by the scholarship. This material will be used in outreach campaigns to engage more students and help ensure that the goals of the GreenChips-EDU project continue beyond its official duration.</p><p><br></p><h1>Form A : Cover Letter</h1><p>Please write a brief introduction of yourself, highlighting your academic background / merits and current field of study. A description of your personal, social, economic, and professional circumstances, as well as your academic performance, that may be relevant to your scholarship application. If possible, outline your future academic and career plans, including the field in which you wish to further pursue your academic knowledge.</p><p><br></p><h1>Form B: Application of Grant (Checklist)</h1><p>All applicants must submit</p><p>ð Form A</p><p>ð Documentation Required for GPA and Academic Merits</p><p>ð Documentation for Social and Economic Circumstances</p><p>ð Average grade of your completed Bachelor’s Degree or Master’s Degree</p><p>ð All Scholarship funding or grant currently being received</p><p>Scholarship/ Grant Name:</p><p>Duration of Scholarship/Grant to be received :</p><p><br></p><p><strong>Coverage for tuition and registration fees</strong></p><p>Please indicate the Master’s programme you are enrolled in, specify the semester for which you are applying for tuition support, and attach proof of your mobility placement</p><p>Master’s Programme:</p><p>Semester:</p><p>Attach Proof of your Mobility: ð Yes ð No</p><p><strong>Coverage for participating specialized courses/trainings</strong></p><p>Please list any specialized courses or trainings you have registered for or completed, including the cost. Submit proof of payment and proof of course registration.</p><p><strong>The name the course:</strong></p><p><strong>Course content and its purpose:</strong></p><p><strong>Information about the institution, Name / Location:</strong></p><p><strong>Attach course registration confirmation or payment confirmation:&nbsp;ðYes ðNo</strong></p><p><strong><u>Coverage for the costs of issuing documentation</u></strong></p><p>Please list any costs incurred for issuing documentation and submit proof of payment.</p><p>………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………..</p><p><strong><u>Contribution to the costs of short-term mobility stays related to the Master's Degree</u></strong></p><p>Please state the destination and duration of your visit, along with the purpose of the trip.</p><p>Destination:</p><p>Duration:</p><p>Blended Intensive Programmes (BIPs) ð Yes&nbsp;&nbsp;ð No</p><p>Erasmus+: ð Yes&nbsp;&nbsp;ð No</p><p>Duration of Erasmus+</p><p>Purpose of your visit:</p><p><br></p><p><strong><u>Contribution to the expenses of long-term mobility stays related to the Master's Degree</u></strong></p><p>Accreditation of Mobility Placement: ð Yes ð No</p><p>Destination and duration of your stay:</p><p>Erasmus+: ð Yes&nbsp;&nbsp;ð No</p><p>Duration of Erasmus+:</p><p><strong>Contribution to expenses for scientific achievements during the mobility stay</strong></p><p>Submit the payment receipt along with explanations for the following applicable items.</p><p><strong>· A copy of the publication or poster related to the grant application</strong></p><p><strong>· The complete reference number of the place of publication</strong></p><p><strong>· All documentation to verify the expenses related to the publication</strong></p><p><strong>· Payment receipt </strong></p><p><br></p><p class=\"ql-align-center\"><br></p><h1><strong>Distance Band Support</strong></h1><p>To calculate the distance between the home university and the host institution, the EU Distance Calculator is used. The amounts are lump sums.</p><div class=\"quill-better-table-wrapper\"><table class=\"quill-better-table\"><colgroup><col width=\"100\"><col width=\"100\"><col width=\"100\"></colgroup><tbody><tr data-row=\"1\"><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\"><strong>Distance</strong></p></td><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\"><strong><em>Environmentally friendly travel (EUR)</em>*</strong></p></td><td data-row=\"1\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line ql-align-center\" data-row=\"1\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\"><strong>Non-environmentally friendly travel (EUR)</strong></p></td></tr><tr data-row=\"2\"><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">10 – 99 km</p></td><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€56</p></td><td data-row=\"2\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"2\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€28</p></td></tr><tr data-row=\"3\"><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">100 – 499 km</p></td><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€285</p></td><td data-row=\"3\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"3\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€211</p></td></tr><tr data-row=\"4\"><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">500 – 1999 km</p></td><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€417</p></td><td data-row=\"4\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"4\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€309</p></td></tr><tr data-row=\"5\"><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">2000 – 2999 km</p></td><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€535</p></td><td data-row=\"5\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"5\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€395</p></td></tr><tr data-row=\"6\"><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">3000 – 3999 km</p></td><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€785</p></td><td data-row=\"6\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"6\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€580</p></td></tr><tr data-row=\"7\"><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">4000 – 7999 km</p></td><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€1188</p></td><td data-row=\"7\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"7\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€1188</p></td></tr><tr data-row=\"8\"><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"1\" data-rowspan=\"1\" data-colspan=\"1\">8000+ km</p></td><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"2\" data-rowspan=\"1\" data-colspan=\"1\">€1735</p></td><td data-row=\"8\" rowspan=\"1\" colspan=\"1\"><p class=\"qlbt-cell-line\" data-row=\"8\" data-cell=\"3\" data-rowspan=\"1\" data-colspan=\"1\">€1735</p></td></tr></tbody></table></div><p class=\"ql-align-center\">&nbsp;</p><p>*According to the European Commission Programme Guide, environmentally friendly travel includes low-emission means of transport such as train, bus, or carpooling.</p>"
+    ],
+    "esST_FileName": [
+     "file.txt"
+    ],
+    "ccm2Id": [
+     "45114064"
+    ],
+    "callccm2Id": [
+     "12447"
+    ],
+    "DATASOURCE": [
+     "SEDIA"
+    ],
+    "REFERENCE": [
+     "12447COMPETITIVE_CALLen"
+    ],
+    "projectAcronym": [
+     "GreenChips-EDU"
+    ],
+    "callTitle": [
+     "TU Graz GreenChips-EDU Scholarship"
+    ],
+    "frameworkProgramme": [
+     "43152860"
+    ],
+    "budget": [
+     "40000"
+    ],
+    "identifier": [
+     "DIGITAL-2022-SKILLS-03-SPECIALISED-EDU"
+    ],
+    "furtherInformation": [
+     "<p><a href=\"mailto:greenchips-edu.scholarships.ife@tugraz.at\" rel=\"noopener noreferrer\" target=\"_blank\">greenchips-edu.scholarships.ife@tugraz.at</a></p>"
+    ],
+    "caName": [
+     "TU Graz GreenChips-EDU Scholarship"
+    ],
+    "es_ContentType": [
+     "text/plain"
+    ],
+    "esDA_FirstIngestDate": [
+     "2025-12-01T15:09:23.784+0100"
+    ],
+    "programmePeriod": [
+     "2021 - 2027"
+    ],
+    "deadlineDate": [
+     "2026-02-15T23:59:00.000+0000",
+     "2026-07-01T23:59:00.000+0000",
+     "2027-02-14T23:59:00.000+0000",
+     "2027-06-01T23:59:00.000+0000"
+    ],
+    "esDA_IngestDate": [
+     "2026-05-19T14:05:31.262+0200"
+    ],
+    "closingDate": [
+     "2026-05-19T00:00:00Z"
+    ],
+    "url": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/45114064"
+    ],
+    "es_Combine": [
+     "1"
+    ],
+    "esST_URL": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/45114064"
+    ],
+    "esDA_QueueDate": [
+     "2026-05-19T14:05:31.247+0200"
+    ],
+    "projectName": [
+     "Building a Digitally-Supported Education Ecosystem for Next Generation Microelectronics Experts in Sustainable Chips and Applications for a Green and Circular Economy"
+    ],
+    "projectId": [
+     "101123309"
+    ],
+    "startDate": [
+     "2025-12-01T00:00:00.000+0000"
+    ],
+    "deadlineModel": [
+     "multiple cut-off"
+    ],
+    "status": [
+     "31094502"
+    ]
+   },
+   "enrichedMetadata": {},
+   "children": [],
+   "highlightedFragments": [],
+   "citation": "Specialised education programmes or modules in key capacity areas. Available at: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/45114064"
+  },
+  {
+   "apiVersion": "2.154",
+   "reference": "14063COMPETITIVE_CALLen",
+   "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154",
+   "contentType": "text/plain",
+   "language": "en",
+   "databaseLabel": "SEDIA",
+   "database": "SEDIA",
+   "summary": "RESIST II PROCESS INNOVATION OPEN CALL",
+   "weight": 0.0,
+   "groupById": "1",
+   "content": "RESIST II PROCESS INNOVATION OPEN CALL",
+   "accessRestriction": false,
+   "checksum": "9CD1DDA8F6631ED00B1C52971BAEAD44CFFB4DFF7D325CC352DB1A43391EFD63",
+   "metadata": {
+    "es_SortDate": [
+     "2026-05-13T00:00:00.000+0000"
+    ],
+    "beneficiaryAdministration": [
+     "<p>This open call aims to support European SMEs operating in the Mobility, Transport and Automotive ecosystem to redefine their manufacturing or industrial processes, carrying out improvements in current operations and/or incorporating new methods or systems which allow them to be more digital, green and resilient. The call is split into two cut-offs or application periods: the 1st one, launched on the 13th May 2026, will be opened for 2 months, while the 2nd one is expected to be launched in May 2027</p><p><strong><u>Eligible candidates</u></strong></p><p>The Open call is addressed to SMEs working in the MTA ecosystem and located in EU Member States or SMP associated countries. SMEs can apply individually or in consortium (2-3 SMEs from different NUTS2 regions)</p><p><strong><u>Submission process</u></strong></p><p>Applications to the RESIST II process innovation open call must be submitted electronically vía the following <a href=\"https://0273250431.wiin.io/en/applications/resist-ii-process-innovation-open-call-1st-cut-off\" rel=\"noopener noreferrer\" target=\"_blank\">online platform</a>. Eligible candidates must fill in the corresponding application form and upload the required annexes (resilience check + declaration of honour)</p><p><strong><u>Evaluation process in three stages</u></strong></p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Verification of the admissibility and eligibility of applications</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Analysis of eligible proposals by at least 3 independent experts and scoring according to the 4 evaluation criteria specified in the Guide for applicants. Applications will then be ranked in descending order based on the scores obtained and the established tie-breaking rules</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>The resulting ranking list must be reviewed by the consortium partners for its validation</li></ol>"
+    ],
+    "sortStatus": [
+     "1"
+    ],
+    "description": [
+     "<p>Project cost categories may include:</p><p>• External services and procurement (e.g. testing, certification, consulting, specialised technical services)</p><p>• Equipment, components and consumables</p><p>• Personnel costs of staff directly involved in the project</p><p>• Prototype development, pilot testing and validation activities</p>"
+    ],
+    "language": [
+     "en"
+    ],
+    "title": [
+     "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery"
+    ],
+    "type": [
+     "8"
+    ],
+    "esST_checksum": [
+     "9CD1DDA8F6631ED00B1C52971BAEAD44CFFB4DFF7D325CC352DB1A43391EFD63"
+    ],
+    "duration": [
+     "9 months"
+    ],
+    "destinationDetails": [
+     "<p>This open call aims to support European SMEs operating in the Mobility, Transport and Automotive ecosystem to redefine their manufacturing or industrial processes, carrying out improvements in current operations and/or incorporating new methods or systems which allow them to be more digital, green and resilient. The call is split into two cut-offs or application periods: the 1st one, launched on the 13th May 2026, will be opened for 2 months, while the 2nd one is expected to be launched in May 2027</p><p><strong><u>Eligible candidates</u></strong></p><p>The Open call is addressed to SMEs working in the MTA ecosystem and located in EU Member States or SMP associated countries. SMEs can apply individually or in consortium (2-3 SMEs from different NUTS2 regions)</p><p><strong><u>Submission process</u></strong></p><p>Applications to the RESIST II process innovation open call must be submitted electronically vía the following <a href=\"https://0273250431.wiin.io/en/applications/resist-ii-process-innovation-open-call-1st-cut-off\" rel=\"noopener noreferrer\" target=\"_blank\">online platform</a>. Eligible candidates must fill in the corresponding application form and upload the required annexes (resilience check + declaration of honour)</p><p><strong><u>Evaluation process in three stages</u></strong></p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Verification of the admissibility and eligibility of applications</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Analysis of eligible proposals by at least 3 independent experts and scoring according to the 4 evaluation criteria specified in the Guide for applicants. Applications will then be ranked in descending order based on the scores obtained and the established tie-breaking rules</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>The resulting ranking list must be reviewed by the consortium partners for its validation</li></ol>"
+    ],
+    "esST_FileName": [
+     "file.txt"
+    ],
+    "ccm2Id": [
+     "47108154"
+    ],
+    "callccm2Id": [
+     "14063"
+    ],
+    "DATASOURCE": [
+     "SEDIA"
+    ],
+    "REFERENCE": [
+     "14063COMPETITIVE_CALLen"
+    ],
+    "projectAcronym": [
+     "RESIST II"
+    ],
+    "callTitle": [
+     "RESIST II PROCESS INNOVATION OPEN CALL"
+    ],
+    "frameworkProgramme": [
+     "43252476"
+    ],
+    "budget": [
+     "800000"
+    ],
+    "identifier": [
+     "SMP-COSME-2024-CLUSTER-01"
+    ],
+    "furtherInformation": [
+     "<p>Applicants could receive <strong>up to 20,000€ in the case of individual projects </strong>and <strong>up to 30,000€/SME in the case of collaborative projects</strong>, with <strong>90% of co-financing rate</strong></p><p>Apart from the funding, selected SMEs will benefit from a <strong>complementary package of services </strong>provided during their projects implementation, including technical support, access to the pool of experts, training courses and internationalisation opportunities in third countries</p>"
+    ],
+    "caName": [
+     "RESIST II PROCESS INNOVATION OPEN CALL"
+    ],
+    "es_ContentType": [
+     "text/plain"
+    ],
+    "esDA_FirstIngestDate": [
+     "2026-05-13T10:29:43.412+0200"
+    ],
+    "programmePeriod": [
+     "2021 - 2027"
+    ],
+    "deadlineDate": [
+     "2026-07-13T17:00:00.000+0000",
+     "2027-07-13T17:00:00.000+0000"
+    ],
+    "esDA_IngestDate": [
+     "2026-05-19T14:00:14.706+0200"
+    ],
+    "closingDate": [
+     "2026-05-19T00:00:00Z"
+    ],
+    "url": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+    ],
+    "es_Combine": [
+     "1"
+    ],
+    "esST_URL": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+    ],
+    "esDA_QueueDate": [
+     "2026-05-19T14:00:14.689+0200"
+    ],
+    "projectName": [
+     "Resilience through Sustainable processes and production for the European automotive InduSTry"
+    ],
+    "projectId": [
+     "101236714"
+    ],
+    "startDate": [
+     "2026-05-13T00:00:00.000+0000"
+    ],
+    "deadlineModel": [
+     "multiple cut-off"
+    ],
+    "status": [
+     "31094502"
+    ]
+   },
+   "enrichedMetadata": {},
+   "children": [],
+   "highlightedFragments": [],
+   "citation": "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery. Available at: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+  },
+  {
+   "apiVersion": "2.154",
+   "reference": "14062COMPETITIVE_CALLen",
+   "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154",
+   "contentType": "text/plain",
+   "language": "en",
+   "databaseLabel": "SEDIA",
+   "database": "SEDIA",
+   "summary": "RESIST II PRODUCT INNOVATION OPEN CALL",
+   "weight": 0.0,
+   "groupById": "1",
+   "content": "RESIST II PRODUCT INNOVATION OPEN CALL",
+   "accessRestriction": false,
+   "checksum": "75DAD2186D2537F62AFCF193637181C45CF66C24E0626B2D81FB412D7C4FD470",
+   "metadata": {
+    "es_SortDate": [
+     "2026-05-13T00:00:00.000+0000"
+    ],
+    "beneficiaryAdministration": [
+     "<p>This open call aims to support European SMEs operating in the Mobility, Transport and Automotive ecosystem to develop new or significantly improved products/services for a better digital and environmental performance, allowing them to reach an increased level of resilience. The call is split into two cut-offs or application periods: the 1st one, launched on the 13th May 2026, will be opened for 2 months, while the 2nd one is expected to be launched in May 2027</p><p><strong><u>Eligible candidates</u></strong></p><p>The Open call is addressed to SMEs working in the MTA ecosystem and located in EU Member States or SMP associated countries. SMEs can apply individually or in consortium (2-3 SMEs from different NUTS2 regions)</p><p><strong><u>Submission process</u> </strong></p><p>Applications to the RESIST II product innovation open call must be submitted electronically vía the following <a href=\"https://bit.ly/4eyTBsz\" rel=\"noopener noreferrer\" target=\"_blank\">online platform</a>. Eligible candidates must fill in the corresponding application form and upload the required annexes (resilience check + declaration of honour)</p><p><strong><u>Evaluation process in three stages</u></strong></p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Verification of the admissibility and eligibility of applications</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Analysis of eligible proposals by at least 3 independent experts and scoring according to the 4 evaluation criteria specified in the Guide for applicants. Applications will then be ranked in descending order based on the scores obtained and the established tie-breaking rules</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>The resulting ranking list must be reviewed by the consortium partners for its validation</li></ol>"
+    ],
+    "sortStatus": [
+     "1"
+    ],
+    "description": [
+     "<p>Project cost categories may include:</p><p>• External services and procurement (e.g. testing, certification, consulting, specialised technical services)</p><p>• Equipment, components and consumables</p><p>• Personnel costs of staff directly involved in the project</p><p>• Prototype development, pilot testing and validation activities</p>"
+    ],
+    "language": [
+     "en"
+    ],
+    "title": [
+     "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery"
+    ],
+    "type": [
+     "8"
+    ],
+    "esST_checksum": [
+     "75DAD2186D2537F62AFCF193637181C45CF66C24E0626B2D81FB412D7C4FD470"
+    ],
+    "duration": [
+     "9 months"
+    ],
+    "destinationDetails": [
+     "<p>This open call aims to support European SMEs operating in the Mobility, Transport and Automotive ecosystem to develop new or significantly improved products/services for a better digital and environmental performance, allowing them to reach an increased level of resilience. The call is split into two cut-offs or application periods: the 1st one, launched on the 13th May 2026, will be opened for 2 months, while the 2nd one is expected to be launched in May 2027</p><p><strong><u>Eligible candidates</u></strong></p><p>The Open call is addressed to SMEs working in the MTA ecosystem and located in EU Member States or SMP associated countries. SMEs can apply individually or in consortium (2-3 SMEs from different NUTS2 regions)</p><p><strong><u>Submission process</u> </strong></p><p>Applications to the RESIST II product innovation open call must be submitted electronically vía the following <a href=\"https://bit.ly/4eyTBsz\" rel=\"noopener noreferrer\" target=\"_blank\">online platform</a>. Eligible candidates must fill in the corresponding application form and upload the required annexes (resilience check + declaration of honour)</p><p><strong><u>Evaluation process in three stages</u></strong></p><ol><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Verification of the admissibility and eligibility of applications</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Analysis of eligible proposals by at least 3 independent experts and scoring according to the 4 evaluation criteria specified in the Guide for applicants. Applications will then be ranked in descending order based on the scores obtained and the established tie-breaking rules</li><li data-list=\"ordered\"><span class=\"ql-ui\" contenteditable=\"false\"></span>The resulting ranking list must be reviewed by the consortium partners for its validation</li></ol>"
+    ],
+    "esST_FileName": [
+     "file.txt"
+    ],
+    "ccm2Id": [
+     "47108154"
+    ],
+    "callccm2Id": [
+     "14062"
+    ],
+    "DATASOURCE": [
+     "SEDIA"
+    ],
+    "REFERENCE": [
+     "14062COMPETITIVE_CALLen"
+    ],
+    "projectAcronym": [
+     "RESIST II"
+    ],
+    "callTitle": [
+     "RESIST II PRODUCT INNOVATION OPEN CALL"
+    ],
+    "frameworkProgramme": [
+     "43252476"
+    ],
+    "budget": [
+     "800000"
+    ],
+    "identifier": [
+     "SMP-COSME-2024-CLUSTER-01"
+    ],
+    "furtherInformation": [
+     "<p>Applicants could receive <strong>up to 20,000€ in the case of individual projects </strong>and <strong>up to 30,000€/SME in the case of collaborative projects</strong>, with <strong>90% of co-financing rate</strong></p><p>Apart from the funding, selected SMEs will benefit from a <strong>complementary package of services </strong>provided during their projects implementation, including technical support, access to the pool of experts, training courses and internationalisation opportunities in third countries</p>"
+    ],
+    "caName": [
+     "RESIST II PRODUCT INNOVATION OPEN CALL"
+    ],
+    "es_ContentType": [
+     "text/plain"
+    ],
+    "esDA_FirstIngestDate": [
+     "2026-05-13T08:16:13.595+0200"
+    ],
+    "programmePeriod": [
+     "2021 - 2027"
+    ],
+    "deadlineDate": [
+     "2026-07-13T17:00:00.000+0000",
+     "2027-07-13T17:00:00.000+0000"
+    ],
+    "esDA_IngestDate": [
+     "2026-05-19T14:00:12.303+0200"
+    ],
+    "closingDate": [
+     "2026-05-19T00:00:00Z"
+    ],
+    "url": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+    ],
+    "es_Combine": [
+     "1"
+    ],
+    "esST_URL": [
+     "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+    ],
+    "esDA_QueueDate": [
+     "2026-05-19T14:00:12.282+0200"
+    ],
+    "projectName": [
+     "Resilience through Sustainable processes and production for the European automotive InduSTry"
+    ],
+    "projectId": [
+     "101236714"
+    ],
+    "startDate": [
+     "2026-05-13T00:00:00.000+0000"
+    ],
+    "deadlineModel": [
+     "multiple cut-off"
+    ],
+    "status": [
+     "31094502"
+    ]
+   },
+   "enrichedMetadata": {},
+   "children": [],
+   "highlightedFragments": [],
+   "citation": "Joint Cluster Initiatives (EUROCLUSTERS) for Europe’s recovery. Available at: https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/47108154"
+  }
+ ],
+ "warnings": []
+}

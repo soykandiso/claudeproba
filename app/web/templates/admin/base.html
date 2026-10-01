@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="mk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="data:,">
+  <title>{% block title %}Админ{% endblock %}</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/fira-sans-cyrillic-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/source-serif-4-cyrillic-600-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="wordmark" href="{{ url_for('admin.queue') }}">Грантови.мк</a>
+      <nav class="site-nav" aria-label="Админ">
+        <a href="{{ url_for('admin.queue') }}" {% if request.endpoint == 'admin.queue' %}aria-current="page"{% endif %}>Ред за преглед</a>
+        <a href="{{ url_for('admin.manual_entry') }}" {% if request.endpoint and request.endpoint.startswith('admin.manual_entry') %}aria-current="page"{% endif %}>Рачен внес</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="wrap">
+      {% for message in messages %}<p class="notice" role="status">{{ message }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% block main %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% set call = m.call %}
+{% block title %}{% if order %}Извештај{% else %}Пример извештај{% endif %}: {{ call.title }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  {% if order %}
+  <a class="back" href="{{ url_for('demo.order_detail', no=order.no) }}">Назад кон нарачката</a>
+  {% else %}
+  <a class="back" href="{{ url_for('demo.shortlist') }}">Назад кон листата</a>
+  {% endif %}
+
+  <div class="report-head stack-lg">
+    <div class="stack">
+      <p class="small soft">{% if order %}Детален извештај за {{ order.buyer.name }}, нарачка {{ order.no }}{% else %}Пример на детален извештај{% if sample_profile %}, за примерниот профил{% endif %}{% endif %}</p>
+      <h1>{{ call.title }}</h1>
+      <p class="soft">{{ call.institution }}</p>
+    </div>
+    <dl class="facts">
+      <div><dt>Број на повикот</dt><dd class="id id--14">{{ call.reference }}</dd></div>
+      <div><dt>Рок за пријава</dt><dd>{{ ui.deadline(call.deadline) }}</dd></div>
+      <div><dt>Најмногу по барател</dt><dd>{{ call.max_eur|thousands }} EUR<br><span class="small soft">{{ call.max_mkd|thousands }} МКД</span></dd></div>
+      <div><dt>Последна проверка</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+    </dl>
+    <div class="call call--{{ m.verdict }} stack">
+      {{ ui.verdict(m.verdict) }}
+      <p>
+        {% if m.verdict == 'eligible' %}Сите услови што може да се проверат од профилот и од текстот на повикот се исполнети. Пред да аплицирате, проверете ги документите во делот 3.
+        {% elif m.verdict == 'likely_eligible' %}Условите од повикот се исполнети, освен оние што треба вие да ги потврдите. Ги има во делот 2.
+        {% elif m.verdict == 'needs_verification' %}Еден или повеќе услови не може да се потврдат. Погледнете што треба да се провери во делот 2.
+        {% else %}Фирмата не исполнува услов кој е јасно пропишан во повикот.{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% include "demo/_report_body.html" %}
+
+  <section class="stack-lg" aria-labelledby="next-h">
+    <div class="stack">
+      <h2 id="next-h">4. Преглед и следни чекори</h2>
+      {% if order and review %}
+      <p class="review-stamp">Прегледано од консултант пред испраќање, {{ review.at }}</p>
+      {% else %}
+      <p class="soft">Ова е пример. Вистинскиот извештај го прегледува консултант пред да ви се испрати, најдоцна еден работен ден по уплатата.</p>
+      {% endif %}
+      <p class="soft">Извештајот е проценка според објавениот текст на повикот. Одлуката за доделување ја носи {{ call.institution }}.</p>
+    </div>
+    {% if m.verdict != 'not_eligible' %}
+    <div class="actions">
+      {% if not order %}
+      <a class="btn" href="{{ url_for('demo.order_form', slug=call.slug, product='report') }}">Нарачај детален извештај</a>
+      <span class="small soft">8.900 МКД без ДДВ</span>
+      {% endif %}
+      <a class="btn btn--quiet" href="{{ url_for('demo.order_form', slug=call.slug, product='package') }}">Нарачај пакет документи</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

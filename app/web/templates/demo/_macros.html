@@ -1,0 +1,32 @@
+{# Shared pieces of the demo. Import with: {% import "demo/_macros.html" as ui with context %} #}
+
+{% macro excerpt(c, compact=false) %}
+<figure class="excerpt{% if compact %} excerpt--compact{% endif %}">
+  <blockquote>{{ c.quote }}</blockquote>
+  <figcaption>
+    <span><span class="cite-mark">Извор:</span> {{ c.clause }}</span>
+    <span>{{ c.source_url.split('/')[2] }}</span>
+    <span>Преземено {{ c.retrieved|mkdate }}</span>
+    <a href="{{ url_for('demo.source', snapshot_id=c.snapshot_id, od=c.char_start, do=c.char_end) }}">Види во документот</a>
+    <span class="id" title="Снимка и позиција на цитатот во изворниот документ">{{ c.snapshot_id }} {{ c.char_start }}–{{ c.char_end }}</span>
+  </figcaption>
+</figure>
+{% endmacro %}
+
+{% macro verdict(v) %}<span class="verdict verdict--{{ v }}">{{ verdict_labels[v] }}</span>{% endmacro %}
+
+{% macro deadline(d) %}<span class="deadline">{{ d|mkdate }}{% set left = days_left(d) %}{% if left %}, {{ left }}{% endif %}</span>{% endmacro %}
+
+{% macro call_facts(call) %}
+<dl class="facts">
+  <div><dt>Рок за пријава</dt><dd>{{ deadline(call.deadline) }}</dd></div>
+  <div><dt>Најмногу по барател</dt><dd>{{ call.max_eur|thousands }} EUR<br><span class="small soft">{{ call.max_mkd|thousands }} МКД</span></dd></div>
+  <div><dt>Последна проверка</dt><dd>{{ call.last_verified|mkdate }}</dd></div>
+</dl>
+{% endmacro %}
+
+{% macro field_error(errors, name) %}{% if errors.get(name) %}<span class="field-error" id="{{ name }}-error">{{ errors[name] }}</span>{% endif %}{% endmacro %}
+
+{% macro invalid(errors, name) %}{% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
+
+{% macro busy_form() %}onsubmit="var b=this.querySelector('[type=submit]:focus')||this.querySelector('[type=submit]');b.setAttribute('aria-busy','true')"{% endmacro %}

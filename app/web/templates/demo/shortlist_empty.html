@@ -1,0 +1,19 @@
+{% extends "demo/base.html" %}
+{% block title %}Листа на повици{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack-lg">
+    <div class="stack">
+      <h1>Листата се прави од профилот на фирмата</h1>
+      <p class="soft">Сè уште нема внесен профил. Одговорете на десетте прашања и листата ќе се појави тука.</p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="{{ url_for('demo.intake') }}">Внеси профил на фирмата</a>
+      <form method="post" action="{{ url_for('demo.sample_profile') }}">
+        <button class="btn btn--quiet" type="submit">Пробај со примерен профил</button>
+      </form>
+    </div>
+    <p class="small soft">Примерниот профил е ДООЕЛ за компјутерско програмирање од Центар, основано 2022, со 2–9 вработени.</p>
+  </div>
+</div>
+{% endblock %}

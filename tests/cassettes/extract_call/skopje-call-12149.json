@@ -1,0 +1,74 @@
+{
+  "document_kind": "call",
+  "title_mk": {
+    "document": 1,
+    "quote": "за субвенционирање на дефицитарни занаетчии и занаети во изумирање во градот Скопје за 2026",
+    "value": "Јавен повик за субвенционирање на дефицитарни занаетчии и занаети во изумирање во градот Скопје за 2026 година"
+  },
+  "reference_code": null,
+  "published_on": null,
+  "opens_on": null,
+  "deadline": {
+    "document": 1,
+    "quote": "1.4. Јавниот повик ќе трае најдоцна до 30.11.2026 година или до исцрпување на предвидените финансиски средства",
+    "value": "2026-11-30",
+    "time": null
+  },
+  "total_budget": {
+    "document": 1,
+    "quote": "400.000,00 денари и истите ќе се доделуваат се до нивно целосно искористување.",
+    "amount": 400000,
+    "currency": "MKD"
+  },
+  "grant_min": null,
+  "grant_max": {
+    "document": 1,
+    "quote": "1.2. Средствата што Градот Скопје ќе ги субвенционира се во износ од 20.000,00 денари поединечна субвенција.",
+    "amount": 20000,
+    "currency": "MKD"
+  },
+  "grant_share_pct": null,
+  "criteria": [
+    {
+      "document": 1,
+      "quote": "Занаетчии, жители на град Скопје ( во општините: Аеродром, Гази Баба, Бутел, Чаир, Ѓорче Петров, Карпош,",
+      "kind": "applicant_attest",
+      "label_mk": "Занаетчии со живеалиште во една од општините на Град Скопје",
+      "applies_to_all_applicants": true,
+      "confidence": 0.8
+    },
+    {
+      "document": 1,
+      "quote": "Дане користеле средства од Град Скопје во тековната година;",
+      "kind": "applicant_attest",
+      "label_mk": "Не користеле средства од Град Скопје во тековната година",
+      "applies_to_all_applicants": true,
+      "confidence": 0.85
+    },
+    {
+      "document": 1,
+      "quote": "занаетчиска дозвола и обавуваат занаетчиски дејности во изумирање, кои согласно обработените податоци",
+      "kind": "narrative_verify",
+      "label_mk": "Занаетот е меѓу дефицитарните занаети во изумирање наведени во повикот",
+      "applies_to_all_applicants": true,
+      "confidence": 0.7
+    },
+    {
+      "document": 1,
+      "quote": "Решение за упис во Регистар на занаетчии, занаетчиска дозвола;",
+      "kind": "documentary",
+      "label_mk": "Решение за упис во Регистар на занаетчии или занаетчиска дозвола",
+      "applies_to_all_applicants": true,
+      "confidence": 0.9
+    },
+    {
+      "document": 1,
+      "quote": "Тековна состојба од Централниот регистар на Република Северна Македонија не постара од 6 (шест) месеци;",
+      "kind": "documentary",
+      "label_mk": "Тековна состојба од Централниот регистар, не постара од шест месеци",
+      "applies_to_all_applicants": true,
+      "confidence": 0.9
+    }
+  ],
+  "notes_for_reviewer": "OCR text of a scanned call. Quotes keep the scanner's errors (\"Дане\" for \"Да не\"); compare with the PDF. The contact web address and e-mail are garbled in the OCR."
+}

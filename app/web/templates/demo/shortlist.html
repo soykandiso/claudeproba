@@ -1,0 +1,105 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% block title %}Листа на повици{% endblock %}
+
+{% macro call_item(m) %}
+{% set call = m.call %}
+<li class="call call--{{ m.verdict }} stack">
+  {{ ui.verdict(m.verdict) }}
+  <div class="stack" style="--gap: 4px">
+    <h3><a href="{{ url_for('demo.report', slug=call.slug) }}">{{ call.title }}</a></h3>
+    <p class="soft small">{{ call.institution }}</p>
+  </div>
+  <p>{{ call.summary }}</p>
+  {{ ui.call_facts(call) }}
+  <ul class="reasons" aria-label="Услови од повикот">
+    {% for r in m.results %}
+    <li>
+      <span class="outcome">{{ criterion_labels[r.verdict] }}</span>
+      <p>{{ r.criterion.label }}</p>
+      {% if r.note %}<p class="small soft">{{ r.note }}</p>{% endif %}
+      {% if r.citation %}
+      <details class="cite">
+        <summary>Цитат од повикот, {{ r.citation.clause }}</summary>
+        {{ ui.excerpt(r.citation, compact=true) }}
+      </details>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% if m.verdict != 'not_eligible' %}
+  <details class="why">
+    <summary>Зошто е на ова место во листата</summary>
+    <dl class="breakdown">
+      {% for name, value, reason in m.breakdown %}
+      <div><dt>{{ score_labels[name] }}</dt><dd>{{ reason }}</dd></div>
+      {% endfor %}
+    </dl>
+  </details>
+  <div class="actions">
+    <a class="btn btn--quiet" href="{{ url_for('demo.report', slug=call.slug) }}">Види што содржи деталниот извештај</a>
+  </div>
+  {% endif %}
+</li>
+{% endmacro %}
+
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Отворени повици за вашиот профил</h1>
+    <p class="soft">{{ form_label(profile) }}{% if profile.nace_code %}, дејност {{ profile.nace_code }}{% endif %}, {{ municipality_label(profile) }}. Основана {{ profile.answers.founded }}, {{ employees_label(profile) }} вработени.</p>
+    <p class="small"><a href="{{ url_for('demo.intake') }}">Измени го профилот</a></p>
+  </div>
+
+  <section class="stack" aria-labelledby="legend-h" style="padding-block: 24px;">
+    <h2 id="legend-h" class="label-heading">Што значат ознаките</h2>
+    <ul class="legend">
+      {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
+    </ul>
+    <p class="small soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
+  </section>
+
+  <section aria-labelledby="open-h" style="padding-top: 32px;">
+    {% if open_matches %}
+    <h2 id="open-h">{{ open_matches|length }} {{ 'повик' if open_matches|length == 1 else 'повици' }}, подредени според тоа колку одговараат</h2>
+    <ol class="calls">
+      {% for m in open_matches %}{{ call_item(m) }}{% endfor %}
+    </ol>
+    {% else %}
+    <div class="stack">
+      <h2 id="open-h">Нема отворен повик на кој можете да аплицирате</h2>
+      <p class="soft">Ниту еден отворен повик не одговара на овој профил. Проверете дали дејноста и видот на субјект се точни, или вклучете следење за да ве известиме кога ќе се објави нов повик.</p>
+      <div class="actions">
+        <a class="btn btn--quiet" href="{{ url_for('demo.monitoring') }}">Вклучи следење</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  {% if excluded %}
+  <section aria-labelledby="excluded-h">
+    <div class="stack">
+      <h2 id="excluded-h">Повици за кои не можете да аплицирате</h2>
+      <p class="soft">Отворени се, но фирмата не исполнува услов што е јасно пропишан во повикот. Ги прикажуваме за да знаете дека се проверени.</p>
+    </div>
+    <ul class="calls">
+      {% for m in excluded %}{{ call_item(m) }}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="stack" aria-labelledby="model-h">
+    <h2 id="model-h">Што би добила автоматската анализа</h2>
+    <p class="soft">За деталниот извештај, условите од повикот се проверуваат со јазичен модел. Моделот го добива само обликот на фирмата, не и кој е таа. Описот на проектот прво поминува низ бришење на лични податоци.</p>
+    <dl class="breakdown">
+      <div><dt>Дејност</dt><dd class="id">{{ shape.nace }}</dd></div>
+      <div><dt>Големина</dt><dd class="id">{{ shape.size_band }}</dd></div>
+      <div><dt>Регион</dt><dd>{{ shape.region }}</dd></div>
+      <div><dt>Старост</dt><dd>{{ shape.age_band }}</dd></div>
+      <div><dt>Инвестиција</dt><dd>{{ shape.investment_band }}</dd></div>
+      <div><dt>Опис</dt><dd>{{ scrubbed or 'нема опис' }}</dd></div>
+    </dl>
+    <p class="small soft">Редоследот е според тежините <span class="id">{{ weights_version }}</span>. Верзијата се запишува со секоја листа, за истиот резултат да може да се добие повторно.</p>
+  </section>
+</div>
+{% endblock %}

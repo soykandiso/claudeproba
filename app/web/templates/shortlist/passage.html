@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Цитат од повикот{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('shortlist.index') }}">Назад кон повиците</a>
+  <div class="report-head stack">
+    <p class="small soft">Цитат од зачуваниот текст на повикот</p>
+    <h1>{{ call.title_mk }}</h1>
+    <p>{{ criterion.label_mk }}</p>
+    <dl class="facts">
+      <div><dt>Институција</dt><dd>{{ institution }}</dd></div>
+      <div><dt>Преземено</dt><dd>{{ snapshot.fetched_at|mkdate }}</dd></div>
+      <div><dt>Извор</dt><dd class="break"><a href="{{ source_url }}" rel="noopener">{{ source_url.split('/')[2] }}</a></dd></div>
+      <div><dt>Позиција на цитатот</dt><dd class="id id--14">{{ snapshot.id }} {{ criterion.quote_start }}–{{ criterion.quote_end }}</dd></div>
+    </dl>
+    <p class="small soft">Означениот текст е точно од знак {{ criterion.quote_start }} до знак {{ criterion.quote_end }} во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.</p>
+  </div>
+  <div class="document">{{ before }}<mark id="quote">{{ quoted }}</mark>{{ after }}</div>
+</div>
+{% endblock %}

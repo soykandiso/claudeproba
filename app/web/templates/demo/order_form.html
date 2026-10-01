@@ -1,0 +1,67 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% block title %}Нарачка: {{ product_name }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.report', slug=call.slug) }}">Назад кон извештајот</a>
+  <div class="report-head stack">
+    <p class="small soft">Нарачка</p>
+    <h1>{{ product_name }}</h1>
+    <p class="soft">{{ call.title }}</p>
+  </div>
+
+  <dl class="facts facts--wide">
+    <div><dt>Цена без ДДВ</dt><dd>{{ net|thousands }} МКД</dd></div>
+    <div><dt>ДДВ 18%</dt><dd>{{ vat|thousands }} МКД</dd></div>
+    <div><dt>Вкупно</dt><dd><strong>{{ (net + vat)|thousands }} МКД</strong></dd></div>
+    <div><dt>Рок за испорака</dt><dd>{% if product == 'report' %}Еден работен ден по уплатата{% else %}Пет работни дена по уплатата{% endif %}</dd></div>
+  </dl>
+
+  {% if errors %}
+  <div class="notice" role="alert">
+    <p><strong>Нарачката не е испратена.</strong> Поправете ги означените полиња.</p>
+  </div>
+  {% endif %}
+
+  <form class="form stack-lg" method="post" novalidate {{ ui.busy_form() }}>
+    <div>
+      <div class="field">
+        <label for="name">Назив на фирмата</label>
+        <input class="input" id="name" name="name" value="{{ buyer.name }}" autocomplete="organization" {{ ui.invalid(errors, 'name') }}>
+        {{ ui.field_error(errors, 'name') }}
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="embs">ЕМБС</label>
+          <input class="input id-input" id="embs" name="embs" value="{{ buyer.embs }}" inputmode="numeric" maxlength="7" {{ ui.invalid(errors, 'embs') }}>
+          {{ ui.field_error(errors, 'embs') }}
+        </div>
+        <div class="field">
+          <label for="edb">ЕДБ</label>
+          <input class="input id-input" id="edb" name="edb" value="{{ buyer.edb }}" maxlength="16" {{ ui.invalid(errors, 'edb') }}>
+          {{ ui.field_error(errors, 'edb') }}
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="city">Седиште</label>
+          <input class="input" id="city" name="city" value="{{ buyer.city }}" autocomplete="address-level2" {{ ui.invalid(errors, 'city') }}>
+          {{ ui.field_error(errors, 'city') }}
+        </div>
+        <div class="field">
+          <label for="email">Е-пошта за профактурата</label>
+          <input class="input" id="email" name="email" type="email" value="{{ buyer.email }}" autocomplete="email" {{ ui.invalid(errors, 'email') }}>
+          {{ ui.field_error(errors, 'email') }}
+        </div>
+      </div>
+    </div>
+
+    <p class="privacy-note">Овие податоци служат само за профактурата и не се праќаат во автоматската анализа. Во демото внесете измислени податоци: се чуваат во колачето на прелистувачот и може да ги прочита секој што го користи истиот прелистувач.</p>
+
+    <div class="actions">
+      <button class="btn" type="submit">Издај профактура</button>
+      <span class="small soft">Плаќањето е со банкарски трансфер. Анализата започнува по уплатата.</span>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{# The activity field, whole, because HTMX swaps it whole when a result is picked.
+   Rendered from intake/form.html inside the page, and from intake.activities on a pick.
+
+   With JavaScript off this is an ordinary text input, and `resolve_nace` takes a typed
+   code as readily as a chosen one — the search is an accelerator, not the way in. #}
+<div class="field" id="nace-field">
+  <label for="nace">{{ q.label_mk }} <span class="optional">(по избор)</span></label>
+
+  <input class="input" id="nace" name="nace" type="text" autocomplete="off"
+         value="{{ a.get('nace', '') }}"
+         placeholder="Шифра или име на дејноста"
+         hx-get="{{ url_for('intake.activities') }}"
+         hx-trigger="input changed delay:300ms"
+         hx-target="#nace-results"
+         hx-indicator="#nace-busy"
+         {% if errors.get('nace') %}aria-invalid="true"{% endif %}
+         aria-describedby="{{ 'nace-error ' if errors.get('nace') }}nace-hint"
+         aria-controls="nace-results">
+
+  <span class="hint" id="nace-hint">{{ q.hint_mk }}</span>
+  {% if errors.get('nace') %}<span class="field-error" id="nace-error">{{ errors['nace'] }}</span>{% endif %}
+  {% if chosen_nace %}
+  <span class="chosen">Прочитано како <span class="id">{{ chosen_nace.code }}</span> {{ chosen_nace.name_mk }}</span>
+  {% endif %}
+
+  <span class="htmx-indicator small soft" id="nace-busy" role="status">Се пребарува…</span>
+  {# Empty on render: the results only ever arrive as a swap. #}
+  <div id="nace-results" class="picker" aria-live="polite"></div>
+</div>

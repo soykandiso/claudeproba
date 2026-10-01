@@ -1,0 +1,21 @@
+.git
+.github
+.venv
+.claude
+docs
+tests
+evals
+ops
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+.env
+.env.*
+!.env.example
+*.md
+# Prompts are versioned .md files the gateway reads at runtime.
+!prompts/**/*.md
+Dockerfile
+docker-compose.yml
+Caddyfile

@@ -1,0 +1,47 @@
+{
+  "document_kind": "advance_notice",
+  "title_mk": {
+    "document": 1,
+    "quote": "за објавување на Јавен повик 03/2025 за доставување на барања за користење на средства од Инструментот за",
+    "value": "Претходна најава за објавување на Јавен повик 03/2025 (ИПАРД Програма 2021-2027)"
+  },
+  "reference_code": {
+    "document": 1,
+    "quote": "за објавување на Јавен повик 03/2025",
+    "value": "03/2025"
+  },
+  "published_on": null,
+  "opens_on": null,
+  "deadline": null,
+  "total_budget": null,
+  "grant_min": null,
+  "grant_max": null,
+  "grant_share_pct": null,
+  "criteria": [
+    {
+      "document": 1,
+      "quote": "Мерка 7 - Диверзификација на фарми и развој на бизниси и тоа следните приоритетни сектори:",
+      "kind": "narrative_verify",
+      "label_mk": "Инвестицијата спаѓа во мерка 7 – Диверзификација на фарми и развој на бизниси",
+      "applies_to_all_applicants": true,
+      "confidence": 0.85
+    },
+    {
+      "document": 1,
+      "quote": "Алтернативно земјоделско производство (кое не е поддржано според мерките 1 и 3)",
+      "kind": "narrative_verify",
+      "label_mk": "Поддржан сектор: алтернативно земјоделско производство",
+      "applies_to_all_applicants": true,
+      "confidence": 0.7
+    },
+    {
+      "document": 1,
+      "quote": "Јавниот повик ќе трае 45 дена од денот на објавување во дневните весници.",
+      "kind": "narrative_verify",
+      "label_mk": "Повикот трае 45 дена од објавувањето во дневните весници",
+      "applies_to_all_applicants": true,
+      "confidence": 0.9
+    }
+  ],
+  "notes_for_reviewer": "Advance notice only; the call itself is expected in Q4 2025."
+}

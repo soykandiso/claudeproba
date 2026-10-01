@@ -1,0 +1,37 @@
+# Development overlay: edit code on the host, see it immediately in the browser.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Kept in a separate file rather than docker-compose.override.yml, which compose
+# applies automatically -- that would silently turn a production `docker compose
+# up` on the VPS into a development one.
+
+services:
+  web:
+    # The Flask development server watches the bind-mounted source and restarts
+    # on save. --no-debugger is deliberate: the Werkzeug debugger offers an
+    # interactive Python console to anyone who can reach it, and in Codespaces
+    # this port can be made public.
+    command:
+      ["flask", "run", "--host", "0.0.0.0", "--port", "8000", "--reload", "--no-debugger"]
+    environment:
+      FLASK_APP: app:create_app
+      GRANTS_ENV: development
+      # Open pages refresh themselves on save (app/web/devreload.py).
+      GRANTS_LIVE_RELOAD: "true"
+    volumes:
+      - ./app:/srv/app/app:ro
+      - ./migrations:/srv/app/migrations:ro
+      - ./config:/srv/app/config:ro
+      - ./prompts:/srv/app/prompts:ro
+      # Reference data, read at runtime by stage 0. Mounted like config so a
+      # re-import is visible without rebuilding the image.
+      - ./data:/srv/app/data:ro
+
+  worker:
+    # The worker reloads by restarting the container; RQ has no watcher.
+    volumes:
+      - ./app:/srv/app/app:ro
+      - ./config:/srv/app/config:ro
+      - ./prompts:/srv/app/prompts:ro
+      - ./data:/srv/app/data:ro

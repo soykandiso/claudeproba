@@ -1,0 +1,71 @@
+{% extends "demo/base.html" %}
+{% import "demo/_macros.html" as ui with context %}
+{% block title %}Админ: нарачка {{ o.no }}{% endblock %}
+{% block main %}
+<div class="wrap">
+  <a class="back" href="{{ url_for('demo.admin') }}">Назад кон редот</a>
+  <div class="report-head stack">
+    <p class="small soft">{{ product_name }}, нарачка {{ o.no }}, чека преглед пред испраќање</p>
+    <h1>{{ m.call.title }}</h1>
+    <p>{{ ui.verdict(m.verdict) }}</p>
+    {% if review %}<p class="review-stamp">{{ 'Прифатено и испратено' if review.outcome == 'accepted' else 'Вратено на доработка' }}, {{ review.at }}{% if review.note %}: {{ review.note }}{% endif %}</p>{% endif %}
+  </div>
+
+  <section class="stack-lg" aria-labelledby="checks-h">
+    <h2 id="checks-h">Автоматски проверки пред испраќање</h2>
+    <ul class="checks">
+      <li class="{{ 'check--ok' if not checks.banned else 'check--fail' }}">
+        <strong>Забранети изрази:</strong> {% if checks.banned %}пронајдени {{ checks.banned|join(', ') }}. Испраќањето е блокирано.{% else %}нема.{% endif %}
+      </li>
+      <li class="{{ 'check--ok' if checks.citations_ok else 'check--fail' }}">
+        <strong>Цитати:</strong> {% if checks.citations_ok %}секој услов има цитат што е дословно во снимката.{% else %}има услов без проверлив цитат. Испраќањето е блокирано.{% endif %}
+      </li>
+    </ul>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="applicant-h">
+    <div class="stack">
+      <h2 id="applicant-h">Што видел моделот за барателот</h2>
+      <p class="soft">Назив, ЕМБС, ЕДБ и е-пошта од нарачката не стигнуваат до моделот.</p>
+    </div>
+    <dl class="breakdown">
+      {% for k, v in shape.items() %}<div><dt class="id">{{ k }}</dt><dd>{{ v }}</dd></div>{% endfor %}
+    </dl>
+  </section>
+
+  <section class="stack-lg" aria-labelledby="crit-h">
+    <h2 id="crit-h">Услови, еден по еден</h2>
+    {% for row in rows %}
+    {% set r = row.r %}
+    <article class="criterion stack">
+      <span class="outcome">{{ criterion_labels[r.verdict] }}, {{ decided_by_labels[r.decision.decided_by] }}{% if r.decision.decided_by == 'model' %}, одговор <span class="id">{{ r.decision.outcome }}</span>, сигурност {{ '%.2f'|format(r.criterion.confidence) }}{% endif %}</span>
+      <h3 class="criterion__title">{{ r.criterion.label }}</h3>
+      {% if r.note %}<p class="soft">{{ r.note }}</p>{% endif %}
+      {% if row.context %}
+      <p class="small">Во снимката, знаци <span class="id">{{ r.citation.char_start }}–{{ r.citation.char_end }}</span>:</p>
+      <div class="document document--context">{{ row.context }}</div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+
+  {% if o.state == 'in_progress' %}
+  <section class="stack-lg" aria-labelledby="decide-h">
+    <h2 id="decide-h">Одлука</h2>
+    <form method="post" action="{{ url_for('demo.admin_order_decide', no=o.no) }}">
+      <div class="actions">
+        <button class="btn" type="submit" name="action" value="accept" {% if checks.banned or not checks.citations_ok %}disabled{% endif %}>Прифати и испрати до клиентот</button>
+      </div>
+    </form>
+    <form class="stack form-narrow" method="post" action="{{ url_for('demo.admin_order_decide', no=o.no) }}">
+      <div class="field">
+        <label for="note">Што треба да се поправи</label>
+        <input class="input" id="note" name="note">
+        <span class="hint">Поправката станува случај за евалуација (P2 s34).</span>
+      </div>
+      <div class="actions"><button class="btn btn--quiet" type="submit" name="action" value="reject">Врати на доработка</button></div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

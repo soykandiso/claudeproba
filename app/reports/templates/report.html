@@ -1,0 +1,146 @@
+{#- The paid report on paper (P2 s35). Rendered by app/reports/render.py, never by Flask.
+    `data-theirs` marks the institution's own words (quotes, call titles): the lint
+    skips them, the font check does not. -#}
+{%- macro statements(items) -%}
+<ul class="statements">
+  {% for s in items %}
+  <li>{{ s.text_mk }} <span class="cites">(услов{{ "и" if s.cites|length > 1 else "" }} {{ s.cites|join(", ") }})</span></li>
+  {% endfor %}
+</ul>
+{%- endmacro -%}
+{%- macro excerpt(c, label="Зборовите на повикот") -%}
+<figure class="excerpt">
+  <figcaption class="excerpt-label">{{ label }}</figcaption>
+  <blockquote data-theirs>{{ c.quote }}</blockquote>
+  <p class="source">
+    <span><span class="cite-mark">Извор:</span> {{ c.source_url|host }}</span>
+    <span>Преземено на {{ c.retrieved_at|instant }}</span>
+    <span class="id">Снимка {{ c.snapshot_id }}, знаци {{ c.char_start }}–{{ c.char_end }}</span>
+  </p>
+</figure>
+{%- endmacro -%}
+{%- macro verdict(v) -%}<span class="verdict verdict--{{ v }}">{{ verdict_labels[v] }}</span>{%- endmacro -%}
+<!doctype html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<title>Извештај {{ reference }}</title>
+<meta name="generator" content="app/reports/render.py {{ renderer_version }}">
+<style>
+{{ font_faces }}
+{{ tokens }}
+</style>
+<link rel="stylesheet" href="{{ report_css }}">
+<style>
+  @page { @bottom-left { content: "Извештај {{ reference }}, издаден на {{ issued|mkdate }}"; } }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <h1>Извештај за подобност на јавни повици</h1>
+  <dl class="facts">
+    <div><dt>Број на извештајот</dt><dd class="id">{{ reference }}</dd></div>
+    <div><dt>Издаден на</dt><dd>{{ issued|mkdate }}</dd></div>
+    <div><dt>Состојба на повиците на</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
+    <div><dt>Разгледани отворени повици</dt><dd>{{ draft.candidates_considered or draft.calls|length }}</dd></div>
+  </dl>
+</header>
+
+<section>
+  <h2>Како да го читате</h2>
+  <p>Секој услов подолу е пренесен со зборовите на самиот повик, со изворот и датумот кога текстот е преземен. Оценката е наша проценка врз основа на тој текст и на податоците што ги внесовте. Одлуката за секоја пријава ја носи институцијата што го објавила повикот.</p>
+  <ul class="legend">
+    <li>{{ verdict("eligible") }} сите услови се исполнети според текстот на повикот</li>
+    <li>{{ verdict("likely_eligible") }} остануваат само изјави што ги давате вие при пријавата</li>
+    <li>{{ verdict("needs_verification") }} барем еден услов треба да се провери пред пријавата</li>
+    <li>{{ verdict("not_eligible") }} услов од повикот јасно не е исполнет</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Профил на барателот</h2>
+  <dl class="profile">
+    {% for line in draft.applicant.splitlines() if line.strip() %}
+    {% set label, _, value = line.lstrip("- ").partition(": ") %}
+    <div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+    {% endfor %}
+  </dl>
+</section>
+
+{% if draft.summary %}
+<section>
+  <h2>Резиме</h2>
+  {{ statements(draft.summary) }}
+</section>
+{% endif %}
+
+{% for call in draft.calls %}
+<section class="call call--{{ call.verdict }}">
+  <p class="call-number">Повик {{ call.number }}</p>
+  <h2 data-theirs>{{ call.title }}</h2>
+  <p class="soft">{{ call.institution }}</p>
+  <p>{{ verdict(call.verdict) }}</p>
+  <dl class="facts">
+    <div><dt>Рок за пријава</dt><dd>{% if call.deadline %}<span class="deadline">{{ call.deadline|instant }}</span>{% else %}Нема објавен рок{% endif %}</dd></div>
+    <div><dt>Состојба на</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
+    <div><dt>Повикот на страницата на институцијата</dt><dd class="url">{{ call.url }}</dd></div>
+  </dl>
+
+  {% if call.explanation %}
+  <h3>Што значи оценката</h3>
+  {{ statements(call.explanation) }}
+  {% endif %}
+
+  <h3>Условите на повикот</h3>
+  <ol class="clauses">
+    {% for c in call.conditions %}
+    <li>
+      <span class="ref">{{ c.ref }}</span>
+      <div class="clause">
+        <p class="clause-label">{{ c.label }}</p>
+        <p class="outcome">{{ criterion_labels[c.verdict] }}{% if c.decided_by != "applicant" %} ({{ decided_by.get(c.decided_by, c.decided_by) }}){% endif %}</p>
+        {% if c.reason %}<p class="reason">{{ c.reason }}</p>{% endif %}
+        {% if c.citation %}{{ excerpt(c.citation) }}{% endif %}
+        {% if c.evidence and c.evidence.quote != (c.citation.quote if c.citation else None) %}
+        {{ excerpt(c.evidence, "Каде е проверено во текстот") }}
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+
+  {% if call.next_steps %}
+  <h3>Следни чекори</h3>
+  {{ statements(call.next_steps) }}
+  {% endif %}
+</section>
+{% endfor %}
+
+{% if draft.excluded %}
+<section class="excluded">
+  <h2>Повици за кои не можете да аплицирате</h2>
+  <p>Ги наведуваме за да знаете зошто ги нема погоре. Секој е исклучен од правило што се применува на податоците што ги внесовте.</p>
+  {% for call in draft.excluded %}
+  <div class="call call--{{ not_eligible }}">
+    <h3 data-theirs>{{ call.title }}</h3>
+    <p class="soft">{{ call.institution }}</p>
+    {% for c in call.conditions %}
+    <div class="clause">
+      <p class="clause-label">{{ c.label }}</p>
+      {% if c.reason %}<p class="reason">{{ c.reason }}</p>{% endif %}
+      {% if c.citation %}{{ excerpt(c.citation) }}{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="closing">
+  <h2>Што овој извештај не е</h2>
+  <p>Ова не е одлука на институцијата и не е ветување за исход на пријавата. Повикот може да се измени или да се затвори пред рокот; пред да се пријавите, проверете ја неговата последна верзија на страницата на институцијата. Покрај секој цитат е наведено кога текстот е преземен.</p>
+</section>
+
+</body>
+</html>

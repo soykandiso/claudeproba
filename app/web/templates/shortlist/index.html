@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% import "shortlist/_macros.html" as ui with context %}
+{% block title %}Отворени повици за вашиот профил{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Отворени повици за вашиот профил</h1>
+    <p class="soft">{{ summary }}.</p>
+    <p class="small"><a href="{{ url_for('intake.form') }}">Измени го профилот</a></p>
+  </div>
+
+  <section class="stack" aria-labelledby="legend-h" style="padding-block: 24px;">
+    <h2 id="legend-h" class="label-heading">Што значат ознаките</h2>
+    <ul class="legend">
+      {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
+    </ul>
+    <p class="small soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
+  </section>
+
+  <section aria-labelledby="open-h" style="padding-top: 32px;">
+    {% if result.open %}
+    <div class="stack">
+      <h2 id="open-h">{{ result.open_total }} {{ 'отворен повик' if result.open_total == 1 else 'отворени повици' }}, подредени според тоа колку одговараат</h2>
+      {% if result.open_total > result.open|length %}
+      <p class="soft">Прикажани се првите {{ result.open|length }}, со сите услови и цитати.</p>
+      {% endif %}
+    </div>
+    <ol class="calls">
+      {% for e in result.open %}{{ ui.call_item(e) }}{% endfor %}
+    </ol>
+    {% else %}
+    <div class="stack">
+      <h2 id="open-h">Нема отворен повик на кој можете да аплицирате</h2>
+      <p class="soft">Ниту еден отворен повик не одговара на овој профил. Проверете дали дејноста и видот на субјект се точни.</p>
+      <div class="actions">
+        <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">Измени го профилот</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  {% if result.excluded %}
+  <section aria-labelledby="excluded-h">
+    <div class="stack">
+      <h2 id="excluded-h">Повици за кои не можете да аплицирате</h2>
+      <p class="soft">Отворени се, но фирмата не исполнува услов што е јасно пропишан во повикот. Ги прикажуваме за да знаете дека се проверени.{% if result.excluded_total > result.excluded|length %} Прикажани се {{ result.excluded|length }} од {{ result.excluded_total }}.{% endif %}</p>
+    </div>
+    <ul class="calls">
+      {% for e in result.excluded %}{{ ui.call_item(e) }}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <p class="small soft">Редоследот е според тежините <span class="id">{{ result.weights_version }}</span>.</p>
+</div>
+{% endblock %}

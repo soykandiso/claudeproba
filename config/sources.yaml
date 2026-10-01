@@ -1,0 +1,135 @@
+# Ingestion sources: one entry per source_feed row. `flask ingest sync-sources`
+# writes this file into the database; the file is the truth, the rows follow it.
+#
+# Values come from the reconnaissance of 13.09.2026 (docs/sources.md §6).
+#   expected_cadence_days  how often something new usually appears
+#   staleness_sla_days     how long without a NEW CALL before `flask ingest health`
+#                          alerts that the source is quiet. Generous where calls are
+#                          seasonal (sources.md §6.4). A source whose runs fail
+#                          alerts after 30 hours regardless (app/ingestion/health.py).
+#   rate_limit_rps         requests per second per host; 0.2 is one per 5 s
+#
+# A source is `active: false` until its fetcher exists in app/ingestion/sources/,
+# or when it is never scheduled (manual: run on demand from /admin).
+
+sources:
+  - slug: eu-portal
+    name_mk: Портал за финансирање и тендери на ЕУ
+    name_en: EU Funding & Tenders Portal
+    institution: European Commission
+    base_url: https://ec.europa.eu/info/funding-tenders/opportunities/portal
+    access_method: api
+    # For the D10 scope (39 topics), not the whole portal: new topics in those
+    # programmes arrive in batches when a work programme's calls open.
+    expected_cadence_days: 7
+    staleness_sla_days: 30
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: robots allows portal paths; reuse terms not yet read (P3 s43)
+    # Built in P1 s13 (16.09.2026). Which programmes are crawled is SCOPE in
+    # app/ingestion/sources/eu_portal.py (docs/decisions.md D10).
+    priority: 2
+    active: true
+
+  - slug: av
+    name_mk: Агенција за вработување на Република Северна Македонија
+    name_en: Employment Service Agency
+    institution: АВРСМ
+    base_url: https://av.gov.mk
+    access_method: api
+    expected_cadence_days: 14
+    staleness_sla_days: 45
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no terms published; robots disallows *.pdf, JSON endpoint allowed
+    # Priority 1 since 16.09.2026: FITR still does not answer from a datacenter,
+    # so AV took the first end-to-end fetcher slot (docs/sources.md §6.1).
+    priority: 1
+    active: true
+
+  - slug: economy
+    name_mk: Министерство за економија и труд
+    name_en: Ministry of Economy and Labour
+    institution: МЕТ
+    base_url: https://www.economy.gov.mk
+    access_method: html
+    expected_cadence_days: 45
+    staleness_sla_days: 120
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no terms published; attachments on portal.mdt.gov.mk
+    # Built in P1 s18 (16.09.2026): app/ingestion/sources/economy.py.
+    priority: 4
+    active: true
+
+  - slug: skopje
+    name_mk: Град Скопје
+    name_en: City of Skopje
+    institution: Град Скопје
+    base_url: https://skopje.gov.mk
+    access_method: pdf_index
+    expected_cadence_days: 10
+    staleness_sla_days: 60
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no robots.txt, no terms published; calls are scanned PDFs
+    # Built in P1 s19 (16.09.2026) as a configured municipal listing: another
+    # municipality with the same shape of page is a copy of this entry with its own
+    # selectors (app/ingestion/sources/municipal.py, docs/sources.md §6.8).
+    options:
+      kind: municipal_listing
+      listing_url: https://skopje.gov.mk/mk/apliciraj/javni-povici/
+      item: div.app-box
+      title: div.app-title a
+      deadline: div.app-year
+      attachments: div.app-text a
+      document_labels: [критериуми]
+      exclude_titles: [набавка]
+    priority: 5
+    active: true
+
+  - slug: ipard
+    name_mk: Агенција за финансиска поддршка во земјоделството и руралниот развој
+    name_en: Agency for Financial Support in Agriculture and Rural Development
+    institution: АФПЗРР
+    base_url: https://www.ipardpa.gov.mk
+    access_method: html
+    expected_cadence_days: 120
+    staleness_sla_days: 240
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: no robots.txt; footer says all rights reserved
+    # Built in P1 s20 (16.09.2026): app/ingestion/sources/ipard.py, IPARD 2021-2027.
+    priority: 6
+    active: true
+
+  - slug: fitr
+    name_mk: Фонд за иновации и технолошки развој
+    name_en: Fund for Innovation and Technology Development
+    institution: ФИТР
+    base_url: https://fitr.mk
+    access_method: html
+    expected_cadence_days: 60
+    staleness_sla_days: 180
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: UNVERIFIED -- host did not respond from a datacenter (sources.md §6.1)
+    priority: 3
+    active: false
+
+  # Calls the operator pastes by URL (docs/sources.md §3, app/ingestion/sources/manual.py).
+  # Inactive on purpose: never scheduled, never judged by `flask ingest health`; each
+  # entry answers in the review queue instead. Cadence and SLA are unused.
+  - slug: manual
+    name_mk: Рачен внес
+    name_en: Manual entry
+    institution: Рачен внес
+    base_url: manual  # no site of its own; each call keeps the URL it was entered with
+    access_method: manual
+    expected_cadence_days: 30
+    staleness_sla_days: 365
+    rate_limit_rps: 0.2
+    terms_url: null
+    terms_note: pasted by the operator; robots.txt of each URL is still obeyed
+    priority: 90
+    active: false

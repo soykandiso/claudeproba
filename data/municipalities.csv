@@ -1,0 +1,81 @@
+code,name_mk,name_en,region_code,dzs_id,city_of_skopje
+MK00101,Велес,Veles,MK001,1180,false
+MK00102,Градско,Gradsko,MK001,1295,false
+MK00103,Демир Капија,Demir Kapija,MK001,1333,false
+MK00104,Кавадарци,Kavadartsi,MK001,1490,false
+MK00105,Лозово,Lozovo,MK001,1708,false
+MK00106,Неготино,Negotino,MK001,1805,false
+MK00107,Росоман,Rosoman,MK001,2003,false
+MK00108,Свети Николе,Sveti Nikole,MK001,2046,false
+MK00109,Чашка,Chashka,MK001,2216,false
+MK00201,Берово,Berovo,MK002,1040,false
+MK00202,Виница,Vinitsa,MK002,1201,false
+MK00203,Делчево,Delchevo,MK002,1325,false
+MK00204,Зрновци,Zrnovtsi,MK002,1457,false
+MK00205,Карбинци,Karbintsi,MK002,1511,false
+MK00206,Кочани,Kochani,MK002,1597,false
+MK00207,Македонска Каменица,Makedonska Kamenitsa,MK002,1732,false
+MK00208,Пехчево,Pehchevo,MK002,1929,false
+MK00209,Пробиштип,Probishtip,MK002,1961,false
+MK00210,Чешиново - Облешево,Cheshinovo - Obleshevo,MK002,2232,false
+MK00211,Штип,Shtip,MK002,2283,false
+MK00301,Вевчани,Vevchani,MK003,1171,false
+MK00303,Дебар,Debar,MK003,1309,false
+MK00304,Дебарца,Debartsa,MK003,1031,false
+MK00307,Кичево,Kichevo,MK003,1520,false
+MK00308,Македонски Брод,Makedonski Brod,MK003,1759,false
+MK00310,Охрид,Ohrid,MK003,1899,false
+MK00311,Пласница,Plasnitsa,MK003,1937,false
+MK00312,Струга,Struga,MK003,2135,false
+MK00313,Центар Жупа,Centar Zhupa,MK003,2208,false
+MK00401,Богданци,Bogdantsi,MK004,1082,false
+MK00402,Босилово,Bosilovo,MK004,1139,false
+MK00403,Валандово,Valandovo,MK004,1155,false
+MK00404,Василево,Vasilevo,MK004,1163,false
+MK00405,Гевгелија,Gevgelija,MK004,1279,false
+MK00406,Дојран,Dojran,MK004,2097,false
+MK00407,Конче,Konche,MK004,1562,false
+MK00408,Ново Село,Novo Selo,MK004,1830,false
+MK00409,Радовиш,Radovish,MK004,1970,false
+MK00410,Струмица,Strumitsa,MK004,2143,false
+MK00501,Битола,Bitola,MK005,1066,false
+MK00502,Демир Хисар,Demir Hisar,MK005,1341,false
+MK00503,Долнени,Dolneni,MK005,1376,false
+MK00504,Кривогаштани,Krivogashtani,MK005,1635,false
+MK00505,Крушево,Krushevo,MK005,1643,false
+MK00506,Могила,Mogila,MK005,1783,false
+MK00507,Новаци,Novatsi,MK005,1821,false
+MK00508,Прилеп,Prilep,MK005,1953,false
+MK00509,Ресен,Resen,MK005,1996,false
+MK00601,Боговиње,Bogovinje,MK006,1104,false
+MK00602,Брвеница,Brvenitsa,MK006,1147,false
+MK00603,Врапчиште,Vrapchishte,MK006,1236,false
+MK00604,Гостивар,Gostivar,MK006,1287,false
+MK00605,Желино,Zhelino,MK006,1392,false
+MK00606,Јегуновце,Jegunovtse,MK006,1481,false
+MK00607,Маврово и Ростуша,Mavrovo i Rostusha,MK006,1724,false
+MK00608,Теарце,Teartse,MK006,2160,false
+MK00609,Тетово,Tetovo,MK006,2178,false
+MK00701,Кратово,Kratovo,MK007,1619,false
+MK00702,Крива Паланка,Kriva Palanka,MK007,1627,false
+MK00703,Куманово,Kumanovo,MK007,1678,false
+MK00704,Липково,Lipkovo,MK007,1694,false
+MK00705,Ранковце,Rankovtse,MK007,1988,false
+MK00706,Старо Нагоричане,Staro Nagorichane,MK007,2127,false
+MK00801,Аеродром,Aerodrom,MK008,0094,true
+MK00802,Арачиново,Arachinovo,MK008,1015,false
+MK00803,Бутел,Butel,MK008,0108,true
+MK00804,Гази Баба,Gazi Baba,MK008,0027,true
+MK00805,Ѓорче Петров,Gjorche Petrov,MK008,0035,true
+MK00806,Зелениково,Zelenikovo,MK008,1422,false
+MK00807,Илинден,Ilinden,MK008,1473,false
+MK00808,Карпош,Karposh,MK008,0043,true
+MK00809,Кисела Вода,Kisela Voda,MK008,0051,true
+MK00810,Петровец,Petrovets,MK008,1902,false
+MK00811,Сарај,Saraj,MK008,0116,true
+MK00812,Сопиште,Sopishte,MK008,2054,false
+MK00813,Студеничани,Studenichani,MK008,2151,false
+MK00814,Центар,Centar,MK008,0060,true
+MK00815,Чаир,Chair,MK008,0078,true
+MK00816,Чучер - Сандево,Chucher - Sandevo,MK008,2259,false
+MK00817,Шуто Оризари,Shuto Orizari,MK008,0086,true

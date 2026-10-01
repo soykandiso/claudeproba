@@ -1,0 +1,39 @@
+call: skopje-call-12149
+criteria:
+  "Занаетчии со живеалиште во една од општините на Град Скопје":
+    default: &outside
+      verdict: not_satisfied
+      confidence: 0.9
+      quote: "Занаетчии, жители на град Скопје ( во општините: Аеродром, Гази Баба, Бутел, Чаир, Ѓорче Петров, Карпош,"
+      reasoning_mk: Повикот е само за жители на десетте општини на Град Скопје, а седиштето во профилот е надвор од Град Скопје.
+    p01_skopje_it_micro: &inside
+      verdict: satisfied
+      confidence: 0.8
+      quote: "Занаетчии, жители на град Скопје ( во општините: Аеродром, Гази Баба, Бутел, Чаир, Ѓорче Петров, Карпош,"
+      reasoning_mk: Седиштето е во Град Скопје; живеалиштето го потврдувате вие.
+    p06_ngo_skopje: *inside
+    p07_craftsman_skopje: *inside
+    p11_registered_craftsman_skopje: *inside
+  "Не користеле средства од Град Скопје во тековната година":
+    default:
+      verdict: unclear
+      confidence: 0.3
+      reasoning_mk: Ова го потврдува само апликантот со изјава.
+  "Занаетот е меѓу дефицитарните занаети во изумирање наведени во повикот":
+    default:
+      verdict: unclear
+      confidence: 0.5
+      reasoning_mk: Не е јасно дали дејноста во профилот одговара на некој од наведените занаети.
+    p01_skopje_it_micro: &not_listed
+      verdict: not_satisfied
+      confidence: 0.85
+      quote: "бележат намалување на активноста во континуитет, и тоа следните занаети: јорганџија, опинчар, јажар,"
+      reasoning_mk: Дејноста во профилот не е меѓу занаетите во изумирање што ги наведува повикот.
+    p06_ngo_skopje: *not_listed
+    p07_craftsman_skopje: &filigree
+      verdict: satisfied
+      confidence: 0.85
+      quote: изработка на филигран, накит и слични производи
+      reasoning_mk: Повикот изрично ја наведува изработката на филигран, накит и слични производи, а тоа е дејноста 32.12 во профилот.
+    p08_craftsman_bitola: *filigree
+    p11_registered_craftsman_skopje: *filigree

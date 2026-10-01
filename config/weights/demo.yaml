@@ -1,0 +1,12 @@
+# Ranking weights for the demo platform at /demo only (app/web/demo/engine.py).
+#
+# Not v1: config/weights/v1.yaml (P2 s27) is the real stage 2's, read by
+# app/matching/stage2.py. The demo has no co-financing answer and no embeddings,
+# so it ranks on four components.
+# Weights must sum to 1.0; the loader refuses anything else.
+version: demo-1
+weights:
+  sector_fit: 0.30
+  purpose_fit: 0.30
+  size_fit: 0.20
+  timeline_fit: 0.20

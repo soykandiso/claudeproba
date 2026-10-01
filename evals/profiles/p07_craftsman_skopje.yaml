@@ -1,0 +1,17 @@
+name: Филигранџија, трговец поединец во Чаир, основан 2013
+boundary: >
+  Занает од списокот на повикот на Град Скопје, со седиште во една од десетте
+  општини на градот. Местото и занаетот се токму двата услова што денес се
+  applicant_attest и narrative_verify, па системот не смее да каже „да“ сам.
+answers:
+  entity: tp
+  municipality: MK00815
+  founded: "2013"
+  employees: 0-1
+  nace: "32.12"
+  turnover: lt10
+  inv: [equipment]
+  amount: lt1
+  cofinancing: "10"
+  timeline_months: "3"
+  description: Алат за изработка на филигран

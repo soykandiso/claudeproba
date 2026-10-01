@@ -1,0 +1,57 @@
+{
+  "document_kind": "call",
+  "title_mk": {
+    "document": 1,
+    "quote": "до работодавачите за вклучување во мерката 4. Практикантство",
+    "value": "Јавен повик до работодавачите за вклучување во мерката 4. Практикантство"
+  },
+  "reference_code": null,
+  "published_on": {
+    "document": 1,
+    "quote": "на ден 05.08.2026 година, се објавува",
+    "value": "2026-08-05"
+  },
+  "opens_on": null,
+  "deadline": {
+    "document": 1,
+    "quote": "можат да аплицираат до 21.08.2026 година или до исполнување на предвидениот опфат на корисници",
+    "value": "2026-08-21",
+    "time": null
+  },
+  "total_budget": null,
+  "grant_min": null,
+  "grant_max": null,
+  "grant_share_pct": null,
+  "criteria": [
+    {
+      "document": 1,
+      "quote": "се од приватен и од граѓански сектор;",
+      "kind": "hard_structured",
+      "label_mk": "Работодавачи од приватен или граѓански сектор",
+      "applies_to_all_applicants": true,
+      "field": "entity_type",
+      "operator": "not_in",
+      "values": ["municipality"],
+      "minimum": null,
+      "maximum": null,
+      "confidence": 0.75
+    },
+    {
+      "document": 1,
+      "quote": "имаат најмалку едно вработено лице на неопределено време, најмалку 6 (шест) месеци пред аплицирањето, со исклучок на граѓанските организации",
+      "kind": "applicant_attest",
+      "label_mk": "Најмалку едно вработено лице на неопределено време, 6 месеци пред аплицирањето",
+      "applies_to_all_applicants": false,
+      "confidence": 0.9
+    },
+    {
+      "document": 1,
+      "quote": "ги имаат подмирено сите обврски врз основа на исплатени плати и придонеси од задолжително социјално осигурување.",
+      "kind": "applicant_attest",
+      "label_mk": "Подмирени обврски за плати и придонеси",
+      "applies_to_all_applicants": true,
+      "confidence": 0.95
+    }
+  ],
+  "notes_for_reviewer": "Support is 12.000,00 денари per month per trainee for up to 3 months, not a total grant."
+}

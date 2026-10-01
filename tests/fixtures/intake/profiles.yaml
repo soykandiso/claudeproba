@@ -1,0 +1,199 @@
+# Thirty intake answers and what stage 0 must make of them (P2 session 22 acceptance).
+#
+# Each case lists the answers a form would post and only the profile fields worth
+# asserting; the test checks exactly the keys present. A Range is written [lo, hi]
+# and a set is written as a sorted list.
+#
+# Add a case whenever a real intake surprises us. This table is the record of what
+# "normalises correctly" means, and it is cheaper to read than the code.
+
+today: 2026-09-22
+
+cases:
+  # -- the ordinary path ------------------------------------------------------
+  - name: a Skopje software company, every answer given
+    answers:
+      entity: dooel
+      nace: "62.01"
+      municipality: MK00814
+      founded: "2022"
+      employees: "2-9"
+      turnover: lt10
+      amount: "1-3"
+      cofinancing: "30"
+      timeline_months: "12"
+      description: Софтвер за управување со залихи
+    expect:
+      nace_code: "62.01"
+      nace_prefixes: ["62.01", "62.0", "62", "J"]
+      municipality_code: MK00814
+      region_code: MK008
+      in_city_of_skopje: true
+      entity_types: [micro]
+      size_band: micro
+      age_months: [44, 56]
+      headcount: [2, 9]
+      turnover_mkd: [0, 10000000]
+      investment_mkd: [1000000, 3000000]
+      cofinancing_pct: 30.0
+      timeline_months: 12
+
+  - name: the code with its name after it, as the picker leaves it
+    answers: {entity: dooel, nace: "62.01 Компјутерско програмирање", employees: "2-9"}
+    expect: {nace_code: "62.01"}
+
+  - name: a code with the whole name and stray spacing
+    answers: {nace: "  10.71   Производство на леб и свежи пецива  "}
+    expect: {nace_code: "10.71"}
+
+  # -- activities -------------------------------------------------------------
+  - name: a division on its own
+    answers: {nace: "62"}
+    expect: {nace_code: "62", nace_prefixes: ["62", "J"]}
+
+  - name: a group on its own
+    answers: {nace: "01.1"}
+    expect: {nace_code: "01.1", nace_prefixes: ["01.1", "01", "A"]}
+
+  - name: a Latin section letter
+    answers: {nace: "C"}
+    expect: {nace_code: "C", nace_prefixes: ["C"]}
+
+  - name: the Macedonian section letter for manufacturing is В, not B
+    answers: {nace: "В"}
+    expect: {nace_code: "C"}
+
+  - name: the Macedonian section letter for information is Ѕ, outside the Cyrillic block
+    answers: {nace: "Ѕ"}
+    expect: {nace_code: "J"}
+
+  - name: a Latin B is still mining
+    answers: {nace: "B"}
+    expect: {nace_code: "B"}
+
+  - name: a national subclass, which a lawyer is registered under
+    answers: {nace: "69.10/1"}
+    expect:
+      nace_code: "69.10/1"
+      nace_prefixes: ["69.10/1", "69.10", "69.1", "69", "M"]
+
+  - name: the exact name of an activity, with no code
+    answers: {nace: Одгледување на тутун}
+    expect: {nace_code: "01.15"}
+
+  - name: a name that no longer contains the Latin x the office published
+    answers: {nace: Производство на готова храна за домашни миленици}
+    expect: {nace_code: "10.92"}
+
+  - name: free text that is not an activity resolves to nothing, and asks
+    answers: {nace: правиме разни работи со компјутери}
+    expect: {nace_code: null, nace_prefixes: []}
+
+  - name: no activity given at all
+    answers: {entity: dooel, employees: "2-9"}
+    expect: {nace_code: null}
+
+  # -- geography --------------------------------------------------------------
+  - name: a municipality by its Macedonian name
+    answers: {municipality: Битола}
+    expect: {municipality_code: MK00501, region_code: MK005, in_city_of_skopje: false}
+
+  - name: a municipality by its English name
+    answers: {municipality: Kumanovo}
+    expect: {municipality_code: MK00703, region_code: MK007}
+
+  - name: a municipality by the statistical office's own number
+    answers: {municipality: "1180"}
+    expect: {municipality_code: MK00101, region_code: MK001}
+
+  - name: a two-part name typed without the spaces around the hyphen
+    answers: {municipality: Чешиново-Облешево}
+    expect: {municipality_code: MK00210, region_code: MK002}
+
+  - name: in the Skopje region but not in the City of Skopje
+    answers: {municipality: Илинден}
+    expect: {municipality_code: MK00807, region_code: MK008, in_city_of_skopje: false}
+
+  - name: a municipality that does not exist asks rather than guessing
+    answers: {municipality: Скопје}
+    expect: {municipality_code: null, region_code: null, in_city_of_skopje: false}
+
+  # -- legal form and size ----------------------------------------------------
+  - name: a sole trader is a sole trader and a size band
+    answers: {entity: tp, employees: "2-9"}
+    expect: {entity_types: [micro, sole_trader], size_band: micro}
+
+  - name: a registered craftsman is a craftsman and a size band, never a sole trader
+    answers: {entity: craft, employees: "0-1"}
+    expect: {entity_types: [craftsman, micro], size_band: micro}
+
+  - name: a farm is a farm, and no size band is claimed for it
+    answers: {entity: farm, employees: "2-9"}
+    expect: {entity_types: [farm], size_band: null}
+
+  - name: an association is an association
+    answers: {entity: ngo, employees: "10-49"}
+    expect: {entity_types: [ngo], size_band: null}
+
+  - name: ten to forty-nine employees is small
+    answers: {entity: doo, employees: "10-49"}
+    expect: {entity_types: [small], headcount: [10, 49]}
+
+  - name: fifty to two hundred and forty-nine is medium
+    answers: {entity: ad, employees: "50-249"}
+    expect: {entity_types: [medium]}
+
+  - name: two hundred and fifty and over is large
+    answers: {entity: ad, employees: "250+"}
+    expect: {entity_types: [large], headcount: [250, 1000000]}
+
+  - name: four people turning over more than 150 million МКД are past the micro ceiling
+    answers: {entity: dooel, employees: "2-9", turnover: gt150}
+    expect: {entity_types: [small], size_band: small}
+
+  - name: the band below it stays micro
+    answers: {entity: dooel, employees: "2-9", turnover: "50-150"}
+    expect: {entity_types: [micro]}
+
+  - name: without a headcount there is no size band to claim
+    answers: {entity: dooel, turnover: lt10}
+    expect: {entity_types: [], size_band: null, headcount: null}
+
+  - name: a legal form nobody offered
+    answers: {entity: zadruga, employees: "2-9"}
+    expect: {entity_types: []}
+
+  # -- age, and answers that are not answers ----------------------------------
+  - name: founded this year, so somewhere between nought and eight months old
+    answers: {founded: "2026"}
+    expect: {age_months: [0, 8]}
+
+  - name: a year that is not a year
+    answers: {founded: лани}
+    expect: {age_months: null}
+
+  - name: a year before the register existed
+    answers: {founded: "1899"}
+    expect: {age_months: null}
+
+  - name: a co-financing share typed with its sign and a decimal comma
+    answers: {cofinancing: "12,5 %"}
+    expect: {cofinancing_pct: 12.5}
+
+  - name: a co-financing share that cannot be one
+    answers: {cofinancing: "300"}
+    expect: {cofinancing_pct: null}
+
+  - name: an empty form still normalises
+    answers: {}
+    expect:
+      entity_types: []
+      nace_code: null
+      municipality_code: null
+      region_code: null
+      age_months: null
+      headcount: null
+      investment_mkd: null
+      cofinancing_pct: null
+      timeline_months: null
+      project_description: ""
