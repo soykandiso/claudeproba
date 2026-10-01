@@ -113,8 +113,19 @@ rule weight first, hue second**, so they survive both colour-blindness and a che
 |---|---|
 | Eligible | solid rule, filled marker |
 | Likely eligible | solid rule, hollow marker |
-| Needs verification | dashed rule, hollow marker — **neutral, never a warning colour** |
-| Not eligible | muted ink, struck rule |
+| Needs verification | dashed rule, **dotted** hollow marker — **neutral, never a warning colour** |
+| Not eligible | muted ink, struck rule, hollow marker struck through |
+
+The marker alone must tell the verdict (it is shown without the rule in legends, the admin and
+the PDF). Dotted, not dashed: a 12px dashed ring reads as solid. Check on `/stil?siv=1`.
+
+## Components
+
+Draw from `app/web/templates/_components.html` (verdict, deadline, date, amount, excerpt, submit,
+empty, error summary), never by copying markup. A new variant is a parameter there and a row on
+`/stil`. A passed deadline is ink, not `--seal`. Our own text shown as an excerpt is
+`own=true`, never in `--verified`. Submit buttons get their busy state from
+`app/web/static/js/submit.js` (`data-busy` says what is happening).
 
 ## Every screen showing a call
 

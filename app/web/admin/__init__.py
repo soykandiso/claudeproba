@@ -41,7 +41,7 @@ from app.models.enums import CriterionKind, ReviewState, TextSource, Verdict
 from app.reports import render
 from app.review import extraction as review
 from app.review import report as reports
-from app.web import csrf
+from app.web import csrf, format
 from app.web.format import SKOPJE, mkdate
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -91,24 +91,6 @@ CITED_FIELD_LABELS = {
     "grant_max": "Најмногу по барател",
     "grant_share_pct": "Удел во трошоците",
 }
-
-_DAYS_IN_WORDS = {
-    0: "истекува денес",
-    1: "уште еден ден",
-    2: "уште два дена",
-    3: "уште три дена",
-    4: "уште четири дена",
-    5: "уште пет дена",
-    6: "уште шест дена",
-    7: "уште седум дена",
-    8: "уште осум дена",
-    9: "уште девет дена",
-    10: "уште десет дена",
-    11: "уште единаесет дена",
-    12: "уште дванаесет дена",
-    13: "уште тринаесет дена",
-}
-
 
 # -- request plumbing ---------------------------------------------------------------------
 
@@ -165,12 +147,11 @@ def amount(value) -> str:
 
 
 def _days_left(deadline: dt.datetime | None) -> str | None:
+    """The customer's words for the same deadline (format.days_left), so the reviewer
+    reads exactly what the shortlist will say (docs/design.md F31)."""
     if deadline is None:
         return None
-    days = (deadline.astimezone(_tz()).date() - _now().astimezone(_tz()).date()).days
-    if days < 0:
-        return "рокот измина"
-    return _DAYS_IN_WORDS.get(days)
+    return format.days_left(deadline, today=_now().astimezone(_tz()).date())
 
 
 _BLANK_LINES = re.compile(r"\n[ \t]*(?:\n[ \t]*)+")

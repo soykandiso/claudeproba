@@ -660,6 +660,15 @@ customer page can use it before a person who reads Macedonian has looked at `/st
 forms are right (the roadmap's DS2 acceptance). Fira italic is never shipped, and
 `font-synthesis: none` stops a browser slanting the Russian forms instead.
 
+### The first JavaScript of our own is 21 lines that stop a double submit (01.10.2026, DS3)
+
+F25 offered two ways to give a submit button its loading state: `hx-boost` with
+`hx-disabled-elt`, or one small script. **The script**, `app/web/static/js/submit.js`: the admin
+does not load HTMX and would have to start, and boosting turns every form into an AJAX swap with
+its own failure modes (history, focus, flash messages), which is more moving parts than the
+problem. The script only adds a state: with JavaScript off every form posts exactly as before. It
+earns its place by one risk, a second tap of «Прифати и објави» on a slow connection.
+
 ---
 
 ## Summary — what to decide, and by when

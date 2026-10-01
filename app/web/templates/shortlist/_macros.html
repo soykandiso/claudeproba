@@ -1,28 +1,19 @@
 {# Pieces of the shortlist. Import with: {% import "shortlist/_macros.html" as ui with context %}
-   The treatments are the demo's, which the user approved (16.09.2026); the data is real. #}
+   The treatments are the demo's, which the user approved (16.09.2026); the data is real.
+   The pieces themselves are the component set (_components.html, DS3). #}
+{% import "_components.html" as c with context %}
 
-{% macro verdict(v) %}<span class="verdict verdict--{{ v }}">{{ verdict_labels[v] }}</span>{% endmacro %}
+{% macro verdict(v) %}{{ c.verdict(v) }}{% endmacro %}
 
-{% macro deadline(d) -%}
-{%- if d -%}
-<span class="deadline">{{ d|mkdate }}{% set left = days_left(d) %}{% if left %}, {{ left }}{% endif %}</span>
-{%- else -%}
-<span>Нема краен рок</span>
-{%- endif -%}
-{%- endmacro %}
+{% macro deadline(d) %}{{ c.deadline(d) }}{% endmacro %}
 
 {# Invariant 2 on the page: the words, the source, the date we read it, and where
    exactly in the stored text they are. #}
-{% macro excerpt(c) %}
-<figure class="excerpt excerpt--compact">
-  <blockquote>{{ c.quote }}</blockquote>
-  <figcaption>
-    <span><span class="cite-mark">Извор:</span> {{ c.source_url.split('/')[2] }}</span>
-    <span>Преземено {{ c.retrieved_at|mkdate }}</span>
-    <a href="{{ url_for('shortlist.passage', criterion_id=c.criterion_id) }}">Види го во текстот на повикот</a>
-    <span class="id" title="Снимка и позиција на цитатот во зачуваниот текст">{{ c.snapshot_id }} {{ c.char_start }}–{{ c.char_end }}</span>
-  </figcaption>
-</figure>
+{% macro excerpt(cite) %}
+{% call c.excerpt(cite.quote, source=cite.source_url.split('/')[2], retrieved=cite.retrieved_at,
+                  href=url_for('shortlist.passage', criterion_id=cite.criterion_id)) %}
+<span class="id" title="Снимка и позиција на цитатот во зачуваниот текст">{{ cite.snapshot_id }} {{ cite.char_start }}–{{ cite.char_end }}</span>
+{% endcall %}
 {% endmacro %}
 
 {% macro call_item(e) %}
@@ -45,15 +36,15 @@
   {% if outcome.outcomes %}
   <ul class="reasons" aria-label="Услови од повикот">
     {% for item in outcome.outcomes %}
-    {% set c = e.citation(item) %}
+    {% set cite = e.citation(item) %}
     <li>
       <span class="outcome">{{ criterion_labels[item.verdict] }}</span>
       <p>{{ item.criterion.label_mk }}</p>
       <p class="soft">{{ item.reason_mk }}</p>
-      {% if c %}
+      {% if cite %}
       <details class="cite">
         <summary>Цитат од повикот</summary>
-        {{ excerpt(c) }}
+        {{ excerpt(cite) }}
       </details>
       {% endif %}
     </li>

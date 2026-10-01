@@ -3,6 +3,7 @@
 
    One form in one place is the point of P2 s23 — the demo used to keep its own. #}
 {% import "intake/_macros.html" as f with context %}
+{% import "_components.html" as c with context %}
 
 <div class="report-head stack">
   <h1>Профил на фирмата</h1>
@@ -37,6 +38,6 @@
     Во автоматската анализа никогаш не се праќаат податоци по кои може да се препознае фирмата.</p>
 
   <div class="actions">
-    <button class="btn" type="submit">{{ submit_label }}</button>
+    {{ c.submit(submit_label, busy='Се зачувува') }}
   </div>
 </form>

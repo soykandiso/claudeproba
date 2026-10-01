@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_components.html" as c with context %}
 {% block title %}Што разбравме од одговорите{% endblock %}
 {% block main %}
 <div class="wrap">
@@ -25,10 +26,7 @@
     <h2>Опис на проектот</h2>
     <p>{{ profile.project_description }}</p>
     <h3>Ова стигнува до автоматската анализа</h3>
-    <figure class="excerpt excerpt--compact">
-      <blockquote>{{ scrubbed }}</blockquote>
-      <figcaption><span>Податоците по кои може да се препознае фирмата се заменети пред текстот да го напушти серверот.</span></figcaption>
-    </figure>
+    {% call c.excerpt(scrubbed, own=true) %}<span>Податоците по кои може да се препознае фирмата се заменети пред текстот да го напушти серверот.</span>{% endcall %}
   </section>
   {% endif %}
 

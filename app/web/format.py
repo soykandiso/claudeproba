@@ -79,9 +79,15 @@ def days_left(deadline, today: dt.date | None = None) -> str | None:
     return None
 
 
+def deadline_passed(deadline, today: dt.date | None = None) -> bool:
+    """A passed deadline stops wearing --seal: the seal means a clock is running."""
+    return _as_date(deadline) < (today or dt.date.today())
+
+
 def register(app: Flask) -> None:
     app.add_template_filter(mkdate, "mkdate")
     app.add_template_filter(thousands, "thousands")
     app.add_template_global(days_left, "days_left")
+    app.add_template_global(deadline_passed, "deadline_passed")
     app.add_template_global(VERDICT_LABELS, "verdict_labels")
     app.add_template_global(CRITERION_LABELS, "criterion_labels")

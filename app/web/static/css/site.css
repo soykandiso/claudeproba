@@ -109,19 +109,45 @@ section:first-of-type { border-top: 0; }
   text-decoration: none; cursor: pointer;
   transition: background-color 120ms ease-out;
 }
-.btn:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
-.btn:active { transform: translateY(var(--rule-w)); }
-.btn:focus-visible { outline: var(--mark-w) solid var(--ink); outline-offset: var(--s-4); }
+/* .is-hover, .is-focus and .is-active exist for /stil only: they hold a component in the
+   state a pointer or keyboard would put it in, so every state can be seen at once. */
+.btn:hover, .btn.is-hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+.btn:active, .btn.is-active { transform: translateY(var(--rule-w)); }
+.btn:focus-visible, .btn.is-focus { outline: var(--mark-w) solid var(--ink); outline-offset: var(--s-4); }
 .btn:disabled, .btn[aria-disabled="true"] {
   background: var(--paper-sunk); color: var(--ink-soft); border-color: var(--rule); cursor: not-allowed;
+  transform: none;
 }
-.btn[aria-busy="true"] { cursor: progress; color: transparent; position: relative; }
+/* Busy (app/web/static/js/submit.js): the button keeps its size and says what it is
+   doing, in its own words (data-busy), instead of its label. */
+/* submit.js also disables it; busy wins over the disabled look, or the label would be
+   paper on paper-sunk. */
+.btn[aria-busy="true"], .btn[aria-busy="true"]:disabled {
+  cursor: progress; color: transparent; position: relative;
+  background: var(--ink); border-color: var(--ink);
+}
+.btn--quiet[aria-busy="true"], .btn--quiet[aria-busy="true"]:disabled { background: transparent; border-color: var(--rule-strong); }
+.btn--destructive[aria-busy="true"], .btn--destructive[aria-busy="true"]:disabled { background: transparent; border-color: transparent; }
 .btn[aria-busy="true"]::after {
-  content: "Се подготвува"; color: var(--paper); position: absolute; inset: 0;
+  content: attr(data-busy) "…"; color: var(--paper); position: absolute; inset: 0;
   display: grid; place-items: center;
 }
 .btn--quiet { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
-.btn--quiet:hover { background: var(--paper-sunk); border-color: var(--ink); }
+.btn--quiet:hover, .btn--quiet.is-hover { background: var(--paper-sunk); border-color: var(--ink); }
+.btn--quiet[aria-busy="true"]::after { color: var(--ink); }
+/* Removes something. Deliberately not a button-shaped button: it must never be taken for
+   «Зачувај», which sits above it (docs/design.md F34). */
+.btn--destructive {
+  background: transparent; color: var(--ink); border-color: transparent;
+  padding-inline: 0; text-decoration: underline; text-decoration-color: var(--rule-strong);
+  text-underline-offset: var(--s-4);
+}
+.btn--destructive:hover, .btn--destructive.is-hover { background: transparent; border-color: transparent; text-decoration-color: var(--ink); text-decoration-thickness: var(--mark-w); }
+.btn--destructive[aria-busy="true"] { text-decoration: none; }
+.btn--destructive[aria-busy="true"]::after { color: var(--ink); justify-items: start; }
+.btn:disabled.btn--destructive { background: transparent; border-color: transparent; }
+/* Why a button is disabled, said beside it, not only in a list far up the page. */
+.why-not { display: block; color: var(--ink-soft); max-width: var(--measure); }
 
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
@@ -154,6 +180,11 @@ section:first-of-type { border-top: 0; }
   display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-16);
 }
 .cite-mark { color: var(--verified); font-weight: 500; }
+/* Our own text shown as an excerpt (the scrubbed description): recessed like a quote,
+   but never in the citation colour, because it cites nothing (docs/design.md F12). */
+.excerpt--own { border-left-color: var(--ink-soft); }
+/* A quote in English: English marks around it, as it is read in English. */
+.excerpt blockquote[lang="en"] { quotes: "“" "”"; }
 
 /* Numbered clauses, the way an official document reads */
 
@@ -181,7 +212,9 @@ section:first-of-type { border-top: 0; }
   .prices th, .prices td { border: 0; padding: 0 0 var(--s-4); white-space: normal; }
 }
 
-/* Verdicts: mark and rule weight first, hue never */
+/* Verdicts: mark and rule weight first, hue never. The mark alone must say which verdict
+   it is, because the legend, the admin and the PDF show it without the call's rule
+   (docs/design.md F10): filled, hollow, dashed, struck through. */
 
 .verdict {
   display: inline-flex; align-items: center; gap: var(--s-8);
@@ -189,13 +222,16 @@ section:first-of-type { border-top: 0; }
 }
 .verdict::before {
   content: ""; width: var(--mark); height: var(--mark); border-radius: 50%;
-  border: var(--mark-w) solid currentColor; flex: none;
+  border: var(--mark-w) solid currentColor; flex: none; box-sizing: border-box;
 }
 .verdict--eligible::before { background: currentColor; }
 .verdict--needs_verification { color: var(--ink-soft); }
+/* Dotted rather than dashed: at 12px a dashed circle draws as two or three arcs that read
+   as a solid ring on a cheap screen; dots stay dots. */
+.verdict--needs_verification::before { border-style: dotted; border-width: var(--mark-w); }
 .verdict--not_eligible { color: var(--ink-soft); }
 .verdict--not_eligible::before {
-  border-radius: 0; border: 0; height: var(--mark-w); width: var(--mark); background: currentColor;
+  background: linear-gradient(currentColor, currentColor) center / 100% var(--mark-w) no-repeat;
 }
 
 .legend { display: flex; flex-wrap: wrap; gap: var(--s-8) var(--s-24); padding: 0; list-style: none; }
@@ -224,6 +260,7 @@ section:first-of-type { border-top: 0; }
 .facts dd { margin: 0; }
 
 .deadline { color: var(--seal); font-weight: 500; }
+.deadline--passed { color: var(--ink); }
 
 /* Reasons with expandable citation */
 
@@ -238,9 +275,7 @@ details.cite > summary {
   list-style: none;
 }
 details.cite > summary::-webkit-details-marker { display: none; }
-details.cite > summary::before { content: "+"; font-family: var(--font-id); width: 1ch; }
-details.cite[open] > summary::before { content: "−"; }
-details.cite > summary:hover { text-decoration: underline; text-underline-offset: var(--s-4); }
+details.cite > summary:hover, details.cite > summary.is-hover { text-decoration: underline; text-underline-offset: var(--s-4); }
 details.cite[open] > .excerpt { animation: reveal 140ms ease-out; }
 @keyframes reveal { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { details.cite[open] > .excerpt { animation: none; } }
@@ -264,14 +299,23 @@ fieldset.field legend + * { clear: both; }
   background: var(--paper); border: var(--rule-w) solid var(--rule-strong); border-radius: var(--radius);
   padding: var(--s-12);
 }
-.input:hover, .select:hover, .textarea:hover { border-color: var(--ink); }
-.input:focus-visible, .select:focus-visible, .textarea:focus-visible { outline: var(--mark-w) solid var(--ink); outline-offset: 0; border-color: var(--ink); }
-.input:disabled, .select:disabled { background: var(--paper-sunk); color: var(--ink-soft); }
+.input:hover, .select:hover, .textarea:hover,
+.input.is-hover, .select.is-hover, .textarea.is-hover { border-color: var(--ink); }
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible,
+.input.is-focus, .select.is-focus, .textarea.is-focus { outline: var(--mark-w) solid var(--ink); outline-offset: var(--mark-w); border-color: var(--ink); }
+/* Offset, so focus is a ring around the field: an invalid field's heavy border sits on the
+   edge itself, and a focused invalid field shows both. */
+.input:disabled, .select:disabled, .textarea:disabled { background: var(--paper-sunk); color: var(--ink-soft); border-color: var(--rule); cursor: not-allowed; }
 .textarea { min-height: var(--s-96); resize: vertical; }
 
 .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(var(--col-choice), 1fr)); gap: var(--s-4) var(--s-16); }
 .choice { display: flex; align-items: center; gap: var(--s-12); min-height: var(--target); cursor: pointer; }
 .choice input { width: var(--check); height: var(--check); accent-color: var(--ink); margin: 0; flex: none; }
+/* The whole row is the target, so the whole row answers the pointer (docs/design.md F26). */
+.choice:hover input, .choice.is-hover input { outline: var(--rule-w) solid var(--ink); outline-offset: var(--rule-w); }
+.choice:active input, .choice.is-active input { outline-width: var(--mark-w); }
+.choice input:focus-visible, .choice.is-focus input { outline: var(--mark-w) solid var(--ink); outline-offset: var(--mark-w); }
+.choice:has(input:disabled) { color: var(--ink-soft); cursor: not-allowed; }
 
 .two-col { display: grid; gap: 0 var(--s-24); }
 @media (min-width: 600px) { .two-col { grid-template-columns: 1fr 1fr; } }
@@ -329,6 +373,11 @@ fieldset.field legend + * { clear: both; }
   background: var(--paper-sunk); max-width: var(--measure); margin-bottom: var(--s-24);
 }
 .notice:focus { outline: none; }
+.notice__list { margin: var(--s-8) 0 0; padding-left: var(--s-24); }
+.notice__list li { padding-block: var(--s-4); }
+
+/* Nothing to show yet: a heading, what to do, and the action that does it. */
+.empty { padding-block: var(--s-32); border-top: var(--rule-w) solid var(--rule); border-bottom: var(--rule-w) solid var(--rule); max-width: var(--measure); }
 .field-error { font-size: var(--text-14); font-weight: 500; padding-left: var(--s-8); border-left: var(--rule-w-strong) solid var(--ink); }
 .input[aria-invalid="true"], .select[aria-invalid="true"] { border: var(--mark-w) solid var(--ink); padding: calc(var(--s-12) - var(--mark-w) + var(--rule-w)); }
 .id-input { font-family: var(--font-id); letter-spacing: 0.02em; }
@@ -341,7 +390,7 @@ details.why > summary {
   display: inline-flex; align-items: center; min-height: var(--target); cursor: pointer;
   font-size: var(--text-14); font-weight: 500; color: var(--ink-soft);
 }
-details.why > summary:hover { color: var(--ink); text-decoration: underline; text-underline-offset: var(--s-4); }
+details.why > summary:hover, details.why > summary.is-hover { color: var(--ink); text-decoration: underline; text-underline-offset: var(--s-4); }
 .breakdown { display: grid; gap: var(--s-8); max-width: var(--measure); padding-block: var(--s-8); }
 .breakdown > div { display: grid; grid-template-columns: var(--col-label) 1fr; gap: var(--s-16); padding-top: var(--s-8); border-top: var(--rule-w) solid var(--rule); }
 .breakdown dt { font-size: var(--text-14); color: var(--ink-soft); }
@@ -474,8 +523,19 @@ mark {
 }
 details.why > summary { list-style: none; gap: var(--s-8); }
 details.why > summary::-webkit-details-marker { display: none; }
-details.why > summary::before { content: "+"; font-family: var(--font-id); width: 1ch; }
-details.why[open] > summary::before { content: "−"; }
+
+/* The open/closed mark of an expandable row: a cross drawn in the text colour, the
+   vertical bar gone when open. Drawn, not typed, so it needs no monospace to line up
+   (docs/design.md F04). */
+details.cite > summary::before, details.why > summary::before {
+  content: ""; width: var(--mark); height: var(--mark); flex: none;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% var(--mark-w) no-repeat,
+    linear-gradient(currentColor, currentColor) center / var(--mark-w) 100% no-repeat;
+}
+details.cite[open] > summary::before, details.why[open] > summary::before {
+  background: linear-gradient(currentColor, currentColor) center / 100% var(--mark-w) no-repeat;
+}
 
 /* ------------------------------------------------------------------ intake form */
 
@@ -514,7 +574,9 @@ details.why[open] > summary::before { content: "−"; }
 .picker__row:hover { background: var(--paper-sunk); }
 .picker__row:focus-visible { outline: var(--mark-w) solid var(--ink); outline-offset: calc(-1 * var(--mark-w)); }
 .picker__row .id { color: var(--ink-soft); margin-right: var(--s-8); }
-.chosen { font-size: var(--text-14); color: var(--verified); font-weight: 500; }
+/* What a typed activity was read as. Ink, not the citation colour: it is our reading,
+   not a quote (docs/design.md F12). */
+.chosen { font-size: var(--text-14); color: var(--ink); font-weight: 500; }
 
 /* HTMX loading state, on the element that was actioned (design system: Interaction) */
 .htmx-indicator { display: none; }

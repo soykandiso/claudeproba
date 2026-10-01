@@ -1,15 +1,19 @@
-{# /stil: every token in tokens.css, rendered (DS2). Development only. The lists come
-   from the file itself (app/web/style), so nothing here can drift from it. #}
+{# /stil: every token in tokens.css and every component in _components.html, in every
+   state (DS2, DS3). Development only. The token lists come from the file itself
+   (app/web/style), so nothing here can drift from it. #}
 {% extends "base.html" %}
-{% import "shortlist/_macros.html" as ui with context %}
-{% block title %}Дизајн-систем: токени{% endblock %}
+{% import "_components.html" as c with context %}
+{% block title %}Дизајн-систем{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/stil.css') }}">{% endblock %}
 {% block main %}
-<div class="wrap">
+<div class="wrap{% if grey %} stil--grey{% endif %}">
   <div class="report-head stack">
-    <h1>Токени на дизајн-системот</h1>
-    <p class="soft">Секоја вредност од <span class="id">tokens.css</span>, прочитана при секое отворање на страницата. Правилата се во <span class="id">.claude/skills/design-system</span>.</p>
+    <h1>Дизајн-систем</h1>
+    <p class="soft">Секоја вредност од <span class="id">tokens.css</span>, прочитана при секое отворање на страницата, и секоја компонента од <span class="id">_components.html</span> во секоја состојба. Правилата се во <span class="id">.claude/skills/design-system</span>.</p>
+    <p>{% if grey %}<a href="{{ url_for('stil.index') }}">Прикажи во боја</a>{% else %}<a href="{{ url_for('stil.index', siv=1) }}">Прикажи во сиви тонови</a>{% endif %}</p>
   </div>
+
+  {% include "stil/_components.html" %}
 
   <section class="stack" aria-labelledby="colour-h">
     <h2 id="colour-h">Бои</h2>
@@ -116,25 +120,6 @@
       <div class="specimen"><span class="id">--{{ t.name }}: {{ t.value }}</span><span class="span span--{{ t.name }}"></span></div>
       {% endfor %}
     </div>
-  </section>
-
-  <section class="stack" aria-labelledby="verdict-h">
-    <h2 id="verdict-h">Четирите оценки</h2>
-    <p class="soft">Ознака и тежина на линијата пред бојата. Се проверуваат и во сиви тонови (DS3).</p>
-    <ul class="legend">
-      {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
-    </ul>
-    <ul class="calls">
-      {% for key in verdict_labels %}
-      <li class="call call--{{ key }} stack">
-        {{ ui.verdict(key) }}
-        <div class="stack--tight">
-          <h3>Јавен повик за поддршка на микро и мали претпријатија</h3>
-          <p class="soft small">Пример, не е вистински повик</p>
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
   </section>
 
   <section class="stack" aria-labelledby="all-h">

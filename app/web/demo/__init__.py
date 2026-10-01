@@ -43,8 +43,10 @@ SCORE_LABELS = {
 def demo_helpers():
     today = date.today()
 
-    def days_left(deadline) -> str | None:
-        return _days_left(deadline, today)
+    # This processor is app-wide outside production, so it shadows format.days_left in
+    # every template, the components included: it must take the same arguments.
+    def days_left(deadline, on: date | None = None) -> str | None:
+        return _days_left(deadline, on or today)
 
     from app.matching import intake
     from app.web.demo import store

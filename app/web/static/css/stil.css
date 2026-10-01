@@ -76,5 +76,8 @@
 .span--col-choice { width: var(--col-choice); }
 .span--col-meta { width: var(--col-meta); }
 
+/* ?siv=1: the page as a colour-blind reader or a washed-out phone sees it. */
+.stil--grey { filter: grayscale(1); }
+
 .pass { font-weight: 500; }
 .fail { font-weight: 500; text-decoration: underline var(--mark-w) var(--ink); text-underline-offset: var(--s-4); }

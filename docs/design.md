@@ -78,6 +78,30 @@ unnoticed:
 - **F27**: every prose block that was capped at 40rem takes `--measure`.
 - **F11, `/stil` half**: `/stil` renders the four verdicts on a call block. The live check with an
   excluded call stays with DS5.
+Closed in **DS3, 01.10.2026**, held by `tests/test_components.py`. The component set is
+`app/web/templates/_components.html` (verdict, deadline, date, amount, excerpt, submit, empty,
+error summary); `/stil` shows each in each state, hover/focus/active held by `.is-*` classes, and
+`/stil?siv=1` in greyscale.
+
+- **F10**: the mark alone tells the verdict: filled, hollow, **dotted** (not dashed: at 12px a
+  dashed ring draws as two or three arcs that read solid), and a hollow disc struck through. Seen
+  in greyscale on `/stil?siv=1` at 375. Same marks in `report.css` (the PDF not rendered on this
+  host, see handoff).
+- **F04**: the +/− of an expandable row is a drawn cross, no monospace.
+- **F11**: `/stil` shows all four verdicts on a call block.
+- **F12**: `.excerpt--own` (an `--ink-soft` rule, no «Извор:») for the scrubbed description;
+  `.chosen` in ink.
+- **F25**: `app/web/static/js/submit.js`, the site's only JavaScript of its own (21 lines with comments, both
+  shells): the pressed button goes busy, says what it is doing (`data-busy`) and is disabled. Found
+  in the live check: disabled would have drawn the busy label paper-on-paper-sunk; busy now wins.
+- **F26**: a checkbox row answers hover, active and focus on the box.
+- **F31**: the admin uses `format.days_left`; «рокот помина» on both sides.
+- Also: a **passed deadline drops `--seal`** (ink, «рокот помина»), since the seal means a clock
+  is running; a disabled submit can carry its reason beside it (`.why-not`, for DS7's F33); input
+  focus is a ring with a gap, so it no longer looks like the invalid state's heavy border; an
+  English quote gets `lang="en"` and English marks (the component half of F18; DS5 passes the
+  snapshot's language).
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -163,7 +187,7 @@ issue.
 | Session | Findings |
 |---|---|
 | DS2 | ~~F01, F02, F03, F05, F06, F27~~ closed 01.10.2026 (§2); the italic sign-off is open |
-| DS3 | F04, F10, ~~F11 (`/stil`)~~, F12, F25, F26, F31 |
+| DS3 | ~~F04, F10, F11 (`/stil`), F12, F25, F26, F31~~ closed 01.10.2026 (§2) |
 | DS4 | F19, F21, F22, F23, F24 |
 | DS5 | F11 (live check), F13, F14, F15, F16, F17, F18 |
 | DS6 | F07, F23 (report and PDF half), F28, F29, F30 |

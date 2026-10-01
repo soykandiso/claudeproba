@@ -1,4 +1,4 @@
-"""`/stil`: every design token, rendered (design phase DS2).
+"""`/stil`: every design token and every component in every state (DS2, DS3).
 
 Development only, like `/demo`: it is a page for the person building screens, not a
 customer screen. It reads `tokens.css` on every request rather than keeping its own
@@ -10,11 +10,12 @@ changed colour shows its new ratio the moment it is saved (WCAG 2.1 relative
 luminance; 4.5:1 for text, 3:1 for a control's boundary).
 """
 
+import datetime as dt
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 
 bp = Blueprint("stil", __name__, url_prefix="/stil")
 
@@ -84,6 +85,18 @@ def _ratio(value: float) -> str:
     return f"{value:.1f}".replace(".", ",")
 
 
+def _deadlines(today: dt.date) -> list[tuple[str, dt.date | None]]:
+    """One deadline in each state the component has, counted from today."""
+    return [
+        ("Нема рок", None),
+        ("За месец", today + dt.timedelta(days=30)),
+        ("За девет дена", today + dt.timedelta(days=9)),
+        ("Утре", today + dt.timedelta(days=1)),
+        ("Денес", today),
+        ("Поминал", today - dt.timedelta(days=3)),
+    ]
+
+
 @bp.get("/")
 def index():
     all_tokens = tokens()
@@ -121,4 +134,8 @@ def index():
         all_names=[t.name for t in all_tokens],
         mk_letters=MK_LETTERS,
         mk_italic=MK_ITALIC,
+        today=dt.date.today(),
+        deadlines=_deadlines(dt.date.today()),
+        # ?siv=1 shows the components in greyscale: the verdicts must still tell apart.
+        grey=request.args.get("siv") == "1",
     )

@@ -256,7 +256,9 @@ def test_the_picker_degrades_to_a_plain_text_input(client):
     body = client.get("/profil/").get_data(as_text=True)
     scripts = re.findall(r"<script[^>]*src=\"([^\"]+)\"", body)
 
-    assert scripts == ["/static/js/htmx.min.js"]
+    # The whole script budget: HTMX, and the submit state (DS3, decisions.md). Adding a
+    # third is a decision, not a change to this line.
+    assert scripts == ["/static/js/htmx.min.js", "/static/js/submit.js"]
     assert "<script>" not in body
     assert '<input class="input" id="nace" name="nace" type="text"' in body
 

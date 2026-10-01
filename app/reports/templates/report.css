@@ -56,7 +56,11 @@ section { margin-top: 8mm; }
 }
 .verdict--eligible::before { background: currentColor; }
 .verdict--needs_verification, .verdict--not_eligible { color: var(--ink-soft); }
-.verdict--not_eligible::before { border: 0; border-radius: 0; height: 1.5pt; width: 10pt; background: currentColor; vertical-align: 2pt; }
+/* The same four marks as the site (docs/design.md F10): filled, hollow, dotted, struck. */
+.verdict--needs_verification::before { border-style: dotted; }
+.verdict--not_eligible::before {
+  background: linear-gradient(currentColor, currentColor) center / 100% 1.5pt no-repeat;
+}
 
 .call { border-left: 2.5pt solid var(--ink); padding-left: 5mm; }
 .call--likely_eligible { border-left-width: 0.75pt; padding-left: calc(5mm + 1.75pt); }

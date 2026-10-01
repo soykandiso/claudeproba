@@ -1,0 +1,82 @@
+{# The component set (design phase DS3). Every screen draws these pieces from here, and
+   /stil shows each one in each state, so a change is seen everywhere it lands.
+   Import with: {% import "_components.html" as c with context %}
+
+   The rules behind them are .claude/skills/design-system; the values are tokens.css.
+   A macro here takes data, never a style: if a screen needs a variant, it is a
+   parameter and it is on /stil. #}
+
+{# A verdict: the mark carries it on its own, so the label can be read in greyscale
+   or with the mark alone (docs/design.md F10). Filled, hollow, dashed, struck. #}
+{% macro verdict(v) -%}
+<span class="verdict verdict--{{ v }}">{{ verdict_labels[v] }}</span>
+{%- endmacro %}
+
+{# A deadline: the seal colour means a clock is running. Under 14 days it also says the
+   days in words; a passed deadline says so, in ink, because no clock runs any more. #}
+{% macro deadline(d, today=none) -%}
+{%- if d -%}
+<span class="deadline{% if deadline_passed(d, today) %} deadline--passed{% endif %}">{{ d|mkdate }}{% set left = days_left(d, today) %}{% if left %}, {{ left }}{% endif %}</span>
+{%- else -%}
+<span>Нема краен рок</span>
+{%- endif -%}
+{%- endmacro %}
+
+{% macro date(d) -%}{{ d|mkdate }}{%- endmacro %}
+
+{# Amounts as Macedonian writes them, with the currency after: 12.000 МКД. #}
+{% macro amount(value, currency='МКД') -%}
+<span class="amount">{{ value|thousands }} {{ currency }}</span>
+{%- endmacro %}
+
+{# The cited passage, the one bold element. `source` is the host, `retrieved` the date
+   we read it, `href` the passage page. `lang` is the language of the quote itself:
+   an English quote is read by an English voice and gets English quotation marks.
+   `own` is for our own text shown as an excerpt (the scrubbed description): it is not
+   a citation, so it never wears the citation colour (docs/design.md F12). #}
+{% macro excerpt(quote, source=none, retrieved=none, href=none, link_label='Види го во текстот на повикот', lang='mk', own=false, compact=true) -%}
+<figure class="excerpt{% if compact %} excerpt--compact{% endif %}{% if own %} excerpt--own{% endif %}">
+  <blockquote lang="{{ lang }}">{{ quote }}</blockquote>
+  {%- if source or retrieved or href or caller is defined %}
+  <figcaption>
+    {% if source %}<span>{% if not own %}<span class="cite-mark">Извор:</span> {% endif %}{{ source }}</span>{% endif %}
+    {% if retrieved %}<span>Преземено {{ retrieved|mkdate }}</span>{% endif %}
+    {% if href %}<a href="{{ href }}">{{ link_label }}</a>{% endif %}
+    {% if caller is defined %}{{ caller() }}{% endif %}
+  </figcaption>
+  {%- endif %}
+</figure>
+{%- endmacro %}
+
+{# A button that submits. `kind` is primary, quiet or destructive. `busy` is what it
+   says while the request is out (app/web/static/js/submit.js sets the state). A
+   disabled button says why beside it, never only in a tooltip. #}
+{% macro submit(label, kind='primary', busy='Се обработува', disabled_reason=none, id=none, name=none, value=none) -%}
+<button class="btn{% if kind != 'primary' %} btn--{{ kind }}{% endif %}" type="submit" data-busy="{{ busy }}"
+  {%- if id %} id="{{ id }}"{% endif %}{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}
+  {%- if disabled_reason %} disabled aria-describedby="{{ id }}-why"{% endif %}>{{ label }}</button>
+{%- if disabled_reason %}<span class="why-not" id="{{ id }}-why">{{ disabled_reason }}</span>{% endif %}
+{%- endmacro %}
+
+{# Nothing to show: say what to do next, with the one action that does it. #}
+{% macro empty(title, text, href=none, action=none) -%}
+<div class="empty stack">
+  <h2>{{ title }}</h2>
+  <p class="soft">{{ text }}</p>
+  {% if href %}<div class="actions"><a class="btn btn--quiet" href="{{ href }}">{{ action }}</a></div>{% endif %}
+</div>
+{%- endmacro %}
+
+{# Something went wrong: what happened and how to fix it, never an apology. Takes
+   focus on arrival (tabindex) so a screen reader starts here. `items` are
+   (field id, message) pairs, each a link to its field. #}
+{% macro error_summary(title, text=none, items=()) -%}
+<div class="notice" role="alert" tabindex="-1" id="form-errors">
+  <p><strong>{{ title }}</strong>{% if text %} {{ text }}{% endif %}</p>
+  {% if items %}
+  <ul class="notice__list">
+    {% for field_id, message in items %}<li><a href="#{{ field_id }}">{{ message }}</a></li>{% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{%- endmacro %}

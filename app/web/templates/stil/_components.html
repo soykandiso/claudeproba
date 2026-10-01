@@ -1,0 +1,147 @@
+{# The component set on /stil (DS3): each macro of _components.html, in each state.
+   Hover, focus and active are held with the .is-* classes site.css defines for this page;
+   everything else is the real markup the screens use. Sample text only, no real call. #}
+
+<section class="stack" aria-labelledby="verdict-h">
+  <h2 id="verdict-h">Оценки</h2>
+  <p class="soft">Ознаката сама ја кажува оценката: полна, празна, точкеста, прецртана. Мора да се разликуваат и во сиви тонови, и без линијата на повикот.</p>
+  <ul class="legend legend--column">
+    {% for key in verdict_labels %}<li>{{ c.verdict(key) }}</li>{% endfor %}
+  </ul>
+  <ul class="calls">
+    {% for key in verdict_labels %}
+    <li class="call call--{{ key }} stack">
+      {{ c.verdict(key) }}
+      <div class="stack--tight">
+        <h3>Јавен повик за поддршка на микро и мали претпријатија</h3>
+        <p class="soft small">Пример, не е вистински повик</p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="stack" aria-labelledby="excerpt-h">
+  <h2 id="excerpt-h">Цитиран пасус</h2>
+  <div class="specimen">
+    <span class="small soft">Цитат од повикот, со изворна линија</span>
+    {% call c.excerpt('Право на учество имаат микро и мали претпријатија регистрирани најмалку една година пред објавувањето на повикот.', source='economy.gov.mk', retrieved=today, href='#excerpt-h') %}<span class="id">12 1332–1436</span>{% endcall %}
+  </div>
+  <div class="specimen">
+    <span class="small soft">Цитат на англиски (повик на ЕУ): англиски наводници и глас</span>
+    {{ c.excerpt('Applicants must demonstrate financial and operational capacity.', source='ec.europa.eu', retrieved=today, href='#excerpt-h', lang='en') }}
+  </div>
+  <div class="specimen">
+    <span class="small soft">Наш текст, не цитат: без боја на цитат</span>
+    {% call c.excerpt('Мала фирма за [ИМЕ] од [ОПШТИНА] сака да купи машина за сечење.', own=true) %}<span>Податоците по кои може да се препознае фирмата се заменети.</span>{% endcall %}
+  </div>
+</section>
+
+<section class="stack" aria-labelledby="deadline-h">
+  <h2 id="deadline-h">Рок, датум, износ</h2>
+  <dl class="breakdown">
+    {% for label, d in deadlines %}
+    <div><dt>{{ label }}</dt><dd>{{ c.deadline(d) }}</dd></div>
+    {% endfor %}
+    <div><dt>Датум</dt><dd>{{ c.date(today) }}</dd></div>
+    <div><dt>Износ</dt><dd>{{ c.amount(1200000) }}, {{ c.amount(19500, 'EUR') }}</dd></div>
+  </dl>
+</section>
+
+<section class="stack" aria-labelledby="button-h">
+  <h2 id="button-h">Копчиња</h2>
+  <p class="soft">Секое копче има состојба за покажувач, фокус, притискање, оневозможено и додека работи.</p>
+  {% for kind, label in [('primary', 'Побарај извештај'), ('quiet', 'Измени го профилот'), ('destructive', 'Отстрани го условот')] %}
+  <div class="specimen">
+    <span class="small soft">{{ {'primary': 'Главно', 'quiet': 'Споредно', 'destructive': 'Отстранува нешто'}[kind] }}</span>
+    <div class="specimen__row">
+      {% set cls = 'btn' ~ ('' if kind == 'primary' else ' btn--' ~ kind) %}
+      <button class="{{ cls }}" type="button">{{ label }}</button>
+      <button class="{{ cls }} is-hover" type="button">Покажувач</button>
+      <button class="{{ cls }} is-focus" type="button">Фокус</button>
+      <button class="{{ cls }} is-active" type="button">Притиснато</button>
+      <button class="{{ cls }}" type="button" disabled>Оневозможено</button>
+      {# Disabled as well, as submit.js leaves it. #}
+      <button class="{{ cls }}" type="button" aria-busy="true" data-busy="Се праќа" disabled>{{ label }}</button>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="specimen">
+    <span class="small soft">Оневозможено, со причината до него</span>
+    <form class="stack" action="#">
+      {{ c.submit('Прифати и објави', disabled_reason='Два цитати не се пронајдени во документот. Поправете ги условите погоре.', id='stil-approve') }}
+    </form>
+  </div>
+</section>
+
+<section class="stack" aria-labelledby="control-h">
+  <h2 id="control-h">Полиња</h2>
+  <div class="two-col">
+    {% for state, extra in [('Обично', ''), ('Покажувач', 'is-hover'), ('Фокус', 'is-focus'), ('Оневозможено', 'disabled'), ('Погрешно', 'invalid')] %}
+    <div class="field">
+      <label for="stil-in-{{ loop.index }}">Година на основање, {{ state|lower }}</label>
+      <input class="input {% if extra.startswith('is-') %}{{ extra }}{% endif %}" id="stil-in-{{ loop.index }}" value="2018"
+        {%- if extra == 'disabled' %} disabled{% endif %}{% if extra == 'invalid' %} aria-invalid="true" aria-describedby="stil-in-{{ loop.index }}-error"{% endif %}>
+      {% if extra == 'invalid' %}<span class="field-error" id="stil-in-{{ loop.index }}-error">Годината треба да има четири бројки, на пример 2018.</span>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="field">
+      <label for="stil-sel">Вид на субјект</label>
+      <select class="select" id="stil-sel"><option>ДОО</option><option>ДООЕЛ</option></select>
+    </div>
+    <div class="field">
+      <label for="stil-sel-bad">Вид на субјект, погрешно</label>
+      <select class="select" id="stil-sel-bad" aria-invalid="true"><option>Изберете</option></select>
+    </div>
+  </div>
+  <div class="field">
+    <label for="stil-ta">Опис на проектот <span class="optional">(по избор)</span></label>
+    <textarea class="textarea" id="stil-ta">Набавка на машина за сечење метал.</textarea>
+    <span class="hint">Една или две реченици. Не пишувајте име, адреса или ЕМБС.</span>
+  </div>
+  <fieldset class="field">
+    <legend>Намена на средствата</legend>
+    <div class="choices">
+      <label class="choice"><input type="checkbox"> Опрема и машини</label>
+      <label class="choice is-hover"><input type="checkbox"> Покажувач</label>
+      <label class="choice"><input type="checkbox" checked> Обележано</label>
+      <label class="choice is-focus"><input type="checkbox"> Фокус</label>
+      <label class="choice"><input type="checkbox" disabled> Оневозможено</label>
+    </div>
+  </fieldset>
+</section>
+
+<section class="stack" aria-labelledby="list-h">
+  <h2 id="list-h">Листи со тенки линии</h2>
+  <ul class="reasons">
+    <li>
+      <span class="outcome">{{ criterion_labels['likely_eligible'] }}</span>
+      <p>Регистрирани најмалку една година</p>
+      <p class="soft">Го потврдувате вие при пријавата.</p>
+      <details class="cite"><summary>Цитат од повикот</summary>
+        {{ c.excerpt('Право на учество имаат претпријатија регистрирани најмалку една година.', source='economy.gov.mk', retrieved=today) }}
+      </details>
+    </li>
+    <li>
+      <span class="outcome">{{ criterion_labels['needs_verification'] }}</span>
+      <p>Дејноста е во преработувачката индустрија</p>
+      <p class="soft">Ќе се провери според текстот на повикот.</p>
+      <details class="cite" open><summary>Цитат од повикот, отворен</summary>
+        {{ c.excerpt('Прифатливи се барателите од секторот C, преработувачка индустрија.', source='economy.gov.mk', retrieved=today) }}
+      </details>
+    </li>
+  </ul>
+  <details class="why"><summary>Зошто е на ова место во листата</summary>
+    <dl class="breakdown"><div><dt>Рок</dt><dd>Рокот е за месец.</dd></div></dl>
+  </details>
+  <ul class="rows">
+    <li><div class="stack"><a href="#list-h">Јавен повик за дигитализација</a><span class="small soft">Нов повик, чека преглед</span></div><div class="rows__meta small"><span>{{ c.date(today) }}</span></div></li>
+    <li><div class="stack"><a href="#list-h">Поддршка за занаетчии</a><span class="small soft">Објавен</span></div><div class="rows__meta small"><span>{{ c.date(today) }}</span></div></li>
+  </ul>
+</section>
+
+<section class="stack" aria-labelledby="state-h">
+  <h2 id="state-h">Празно и грешка</h2>
+  {{ c.empty('Нема отворен повик на кој можете да аплицирате', 'Ниту еден отворен повик не одговара на овој профил. Проверете дали дејноста и видот на субјект се точни.', '#state-h', 'Измени го профилот') }}
+  {{ c.error_summary('Профилот не е зачуван.', 'Две полиња треба да се поправат:', [('stil-sel-bad', 'Изберете вид на субјект.'), ('stil-in-5', 'Годината треба да има четири бројки.')]) }}
+</section>
