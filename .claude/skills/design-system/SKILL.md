@@ -60,7 +60,16 @@ over sans (1.5).
 - **Verify any italic Macedonian visually before shipping it.** If a face lacks the Macedonian
   locale forms, do not use italic at all — reach for weight or the recessed-excerpt treatment
   instead. Wrong letterforms read as sloppiness in exactly the market this product must be trusted in.
-- Check every font subset covers **Ѓѓ Ќќ Љљ Њњ Џџ Ss Јј** before shipping it.
+- Check every font subset covers **Ѓѓ Ќќ Љљ Њњ Џџ Ѕѕ Јј** before shipping it.
+- **Fira Sans has no Macedonian forms at all** (no `cyrl` language systems upstream). Never set
+  Fira in italic; `font-synthesis: none` stops the browser faking one. Italic, when it is signed
+  off, is Source Serif 4 only (`ops/dev/cut_fonts.py`, specimen on `/stil`).
+- Sizes: **14 is for labels** (a `dt`, a verdict label, a source line). A sentence the reader must
+  read is 16, `--ink-soft` if secondary.
+
+`/stil` (development only) renders every token in `tokens.css`. Look there before adding one.
+Line weights, marker size, control sizes and named widths are tokens too; `site.css` has no raw
+px or rem outside media queries (`tests/test_design_foundation.py`).
 
 ## Color
 
@@ -73,8 +82,9 @@ over sans (1.5).
     --seal        #A8321E   deadlines ONLY
     --verified    #35635A   the citation mark ONLY
 
-Measured against `--paper`: ink 15.1:1 · ink-soft 6.1:1 · seal 6.2:1 · verified 6.3:1 ·
-rule-strong 3.3:1. All pass. `--rule` is 1.6:1, which is fine for a divider and **not** fine as the
+Measured against `--paper`: ink 15.1:1 · ink-soft 6.0:1 · seal 6.2:1 · verified 6.3:1 ·
+rule-strong 3.3:1. All pass. `/stil` re-measures every pair from the token values on each load,
+also against `--paper-sunk`; trust it over this list. `--rule` is 1.6:1, which is fine for a divider and **not** fine as the
 only boundary of a form control — with shadows banned, a 1px border is doing that job alone, so
 controls take `--rule-strong` (WCAG 1.4.11 wants 3:1 for non-text contrast). Re-measure if you
 change any value.

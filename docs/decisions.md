@@ -645,6 +645,21 @@ a PDF is read days later, and "уште три дена" printed on the 30th is 
 keeps `--seal`. **Not stored**: rendered on demand, reproducible from the stored draft and
 `RENDERER_VERSION`; which bytes were delivered is P4 s53's to record.
 
+### The upright fonts are not re-cut; the only italic is the serif's, and it waits for a reader (01.10.2026, DS2)
+
+DS1 (F05) asked for the subsets to be re-cut keeping Macedonian `locl`. Opened with fontTools,
+the upstream files said otherwise: **Fira Sans has no Cyrillic language systems at all**, so a
+re-cut keeps nothing; the shipped **Source Serif 4 subsets already keep `cyrl/MKD`**. Re-cutting
+would only change bytes the PDF merges and prints (s35) for no gain, so the eight upright files
+stay as they are and a test now proves what they hold (letters, MKD, ≤ 40 KB).
+
+The one face where Macedonian differs from Russian is **italic б г д п т**, and only Source Serif
+4 Italic carries those forms. It is cut by `ops/dev/cut_fonts.py` from a hash-pinned upstream
+file, without hinting (the uprights have none either), and declared in `stil.css` alone, so no
+customer page can use it before a person who reads Macedonian has looked at `/stil` and said the
+forms are right (the roadmap's DS2 acceptance). Fira italic is never shipped, and
+`font-synthesis: none` stops a browser slanting the Russian forms instead.
+
 ---
 
 ## Summary — what to decide, and by when

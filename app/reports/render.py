@@ -147,10 +147,14 @@ def token_values() -> str:
 
 @cache
 def covered_characters() -> frozenset[str]:
-    """Every character the shipped fonts can draw: the union of their character maps."""
+    """Every character the PDF's faces can draw: the union of their character maps.
+
+    FACES, not every file in the folder: the italic shipped for /stil (DS2) is not
+    used on paper, and a character only it covered would pass here and print wrong."""
     chars: set[str] = set()
-    for path in sorted(FONTS.glob("*.woff2")):
-        chars |= {chr(code) for code in TTFont(path).getBestCmap()}
+    for _family, _weight, pattern in FACES:
+        for subset in SUBSETS:
+            chars |= {chr(code) for code in TTFont(FONTS / pattern.format(subset)).getBestCmap()}
     return frozenset(chars)
 
 

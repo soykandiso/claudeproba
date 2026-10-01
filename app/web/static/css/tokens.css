@@ -41,6 +41,10 @@
   --text-40: 2.5rem;
   --text-64: 4rem;
 
+  /* 12 is for identifiers. 14 is for labels: a dt, a verdict label, an excerpt's
+     source line, a field's "optional". Never for a sentence the reader must read:
+     that is 16 at least, --ink-soft if it is secondary (docs/design.md F06). */
+
   --measure: 68ch;
 
   --paper: #F7F6F3;
@@ -63,4 +67,30 @@
   --s-96: 96px;
 
   --radius: 2px;
+
+  /* Line weights. 1px separates; 2px is focus and the outline of a mark; 3px is the
+     heavy rule a verdict or an error draws down the left of a block. */
+  --rule-w: 1px;
+  --mark-w: 2px;
+  --rule-w-strong: 3px;
+
+  /* A verdict, step or check marker. */
+  --mark: 12px;
+
+  /* Controls. 44px is the smallest touch target; a text control or button is 48px. */
+  --target: 44px;
+  --control: 48px;
+  --check: 20px;
+
+  /* Widths. Anything that reads as prose takes --measure. These are for what does
+     not: the page column, wide lists and tables, and the label columns inside them. */
+  --width-page: 64rem;
+  --width-wide: 56rem;
+  --width-mid: 48rem;
+  --width-narrow: 20rem;
+  --col-label: 7.5rem;
+  --col-fact: 8.5rem;
+  --col-fact-wide: 11rem;
+  --col-choice: 12rem;
+  --col-meta: 14rem;
 }

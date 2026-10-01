@@ -9,15 +9,15 @@
     <p class="small"><a href="{{ url_for('intake.form') }}">Измени го профилот</a></p>
   </div>
 
-  <section class="stack" aria-labelledby="legend-h" style="padding-block: 24px;">
+  <section class="stack section--tight" aria-labelledby="legend-h">
     <h2 id="legend-h" class="label-heading">Што значат ознаките</h2>
     <ul class="legend">
       {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
     </ul>
-    <p class="small soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
+    <p class="soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
   </section>
 
-  <section aria-labelledby="open-h" style="padding-top: 32px;">
+  <section class="section--lead-in" aria-labelledby="open-h">
     {% if result.open %}
     <div class="stack">
       <h2 id="open-h">{{ result.open_total }} {{ 'отворен повик' if result.open_total == 1 else 'отворени повици' }}, подредени според тоа колку одговараат</h2>
@@ -51,6 +51,6 @@
   </section>
   {% endif %}
 
-  <p class="small soft">Редоследот е според тежините <span class="id">{{ result.weights_version }}</span>.</p>
+  <p class="soft">Редоследот е според тежините <span class="id">{{ result.weights_version }}</span>.</p>
 </div>
 {% endblock %}

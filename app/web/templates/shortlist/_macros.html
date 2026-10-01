@@ -30,13 +30,13 @@
 {% set outcome = e.outcome %}
 <li class="call call--{{ outcome.verdict }} stack">
   {{ verdict(outcome.verdict) }}
-  <div class="stack" style="--gap: 4px">
+  <div class="stack--tight">
     <h3>{{ call.title_mk }}</h3>
     {% if e.institution %}<p class="soft small">{{ e.institution }}</p>{% endif %}
   </div>
   {# Said whenever it is true, not only when it lowered a verdict: the customer is
      reading conditions, and should know some are still in a document nobody has read. #}
-  {% if call.eligibility_gap %}<p class="small">{{ call.eligibility_gap }}</p>{% endif %}
+  {% if call.eligibility_gap %}<p>{{ call.eligibility_gap }}</p>{% endif %}
   <dl class="facts">
     <div><dt>Рок за пријава</dt><dd>{{ deadline(call.deadline_at) }}</dd></div>
     {% if call.grant_max_mkd %}<div><dt>Најмногу по барател</dt><dd>{{ call.grant_max_mkd|thousands }} МКД</dd></div>{% endif %}
@@ -49,7 +49,7 @@
     <li>
       <span class="outcome">{{ criterion_labels[item.verdict] }}</span>
       <p>{{ item.criterion.label_mk }}</p>
-      <p class="small soft">{{ item.reason_mk }}</p>
+      <p class="soft">{{ item.reason_mk }}</p>
       {% if c %}
       <details class="cite">
         <summary>Цитат од повикот</summary>
@@ -60,7 +60,7 @@
     {% endfor %}
   </ul>
   {% else %}
-  <p class="small soft">Условите на овој повик сè уште не се одобрени од уредник, па ниеден не е проверен.</p>
+  <p class="soft">Условите на овој повик сè уште не се одобрени од уредник, па ниеден не е проверен.</p>
   {% endif %}
   {% if not e.scored.excluded %}
   <details class="why">

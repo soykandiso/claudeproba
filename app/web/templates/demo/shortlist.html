@@ -6,7 +6,7 @@
 {% set call = m.call %}
 <li class="call call--{{ m.verdict }} stack">
   {{ ui.verdict(m.verdict) }}
-  <div class="stack" style="--gap: 4px">
+  <div class="stack--tight">
     <h3><a href="{{ url_for('demo.report', slug=call.slug) }}">{{ call.title }}</a></h3>
     <p class="soft small">{{ call.institution }}</p>
   </div>
@@ -51,7 +51,7 @@
     <p class="small"><a href="{{ url_for('demo.intake') }}">Измени го профилот</a></p>
   </div>
 
-  <section class="stack" aria-labelledby="legend-h" style="padding-block: 24px;">
+  <section class="stack section--tight" aria-labelledby="legend-h">
     <h2 id="legend-h" class="label-heading">Што значат ознаките</h2>
     <ul class="legend">
       {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
@@ -59,7 +59,7 @@
     <p class="small soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
   </section>
 
-  <section aria-labelledby="open-h" style="padding-top: 32px;">
+  <section class="section--lead-in" aria-labelledby="open-h">
     {% if open_matches %}
     <h2 id="open-h">{{ open_matches|length }} {{ 'повик' if open_matches|length == 1 else 'повици' }}, подредени според тоа колку одговараат</h2>
     <ol class="calls">

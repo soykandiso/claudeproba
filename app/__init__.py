@@ -52,6 +52,12 @@ def create_app(settings: Settings | None = None) -> Flask:
 
         app.register_blueprint(demo_bp)
 
+    # Every design token rendered, for whoever builds screens (DS2). Not a customer page.
+    if not settings.is_production:
+        from app.web.style import bp as stil_bp
+
+        app.register_blueprint(stil_bp)
+
     # Publishes calls, and there is no operator sign-in yet (docs/decisions.md D11).
     if not settings.is_production:
         from app.web.admin import bp as admin_bp

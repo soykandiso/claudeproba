@@ -33,7 +33,7 @@
     <ul class="rows">
       {% for o in orders %}
       <li>
-        <div class="stack" style="--gap: 4px">
+        <div class="stack--tight">
           <a href="{{ url_for('demo.order_detail', no=o.no) }}"><strong>{{ products[o.product][0] }}</strong>, {{ calls[o.slug].reference }}</a>
           <span class="small soft">{{ calls[o.slug].title }}</span>
         </div>

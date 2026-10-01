@@ -15,7 +15,7 @@
       {% for i in items %}
       {% set r = reviews[i.id] %}
       <li{% if not i.open %} class="rows--closed"{% endif %}>
-        <div class="stack" style="--gap: 4px">
+        <div class="stack--tight">
           <span class="small soft">{{ i.kind }}</span>
           <a href="{{ i.url }}"><strong>{{ i.title }}</strong></a>
           {% if i.flag and i.open %}<span class="small">{{ i.flag }}</span>{% endif %}

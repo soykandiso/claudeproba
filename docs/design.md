@@ -55,6 +55,32 @@ No need to re-check these until something changes them:
 - Banned words: none on the customer screens. The blocked report shows «гарантирано» to the
   reviewer, which is its job.
 
+Closed in **DS2, 01.10.2026**, each held by `tests/test_design_foundation.py` so it cannot come back
+unnoticed:
+
+- **F01, F02**: no colour value outside `tokens.css` in any stylesheet or template (the demo and
+  the PDF's included), no `style=` and no `<style>` in a site template. `/` extends `base.html`.
+  `.stack--tight` replaces the `--gap` that did nothing; the paddings are `.section--tight`,
+  `.section--lead-in`, `.actions--after`.
+- **F03**: `site.css` takes every size from a token; only media-query breakpoints are literal
+  (`var()` cannot go there). New tokens: line weights (`--rule-w`, `--mark-w`, `--rule-w-strong`),
+  `--mark`, the control sizes (`--target`, `--control`, `--check`) and named widths. Markers that
+  were 14px are now 12px (`--mark`), aligned to the line with `calc(… 1.5em …)`, not offsets.
+- **F05**: `font-synthesis: none` on `body`. **No re-cut of the upright subsets**, because the
+  premise did not hold: upstream Fira Sans has *no* Cyrillic language systems, so there was no
+  `locl` to keep, and the Source Serif subsets already keep `cyrl/MKD`. Source Serif 4 **Italic**
+  is cut (`ops/dev/cut_fonts.py`, hash-pinned) with the MKD `locl` for б г д п т, 13 KB + 19 KB,
+  and loaded **on `/stil` only** until a native reader signs the forms off. Fira italic is never
+  shipped.
+- **F06, customer screens**: 14px is for labels (the comment in `tokens.css`). The condition's
+  reason, the legend's explanation, the eligibility gap, the hints, the privacy note, the passage
+  note and the nav are 16px. Admin sentences still at 14px are carried by **DS7** (F06b).
+- **F27**: every prose block that was capped at 40rem takes `--measure`.
+- **F11, `/stil` half**: `/stil` renders the four verdicts on a call block. The live check with an
+  excluded call stays with DS5.
+- `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
+  is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
+
 ## 3. Findings
 
 Severity: **A** breaks a rule the skill states as absolute, or a promise the brief makes to the
@@ -136,12 +162,12 @@ issue.
 
 | Session | Findings |
 |---|---|
-| DS2 | F01, F02, F03, F05, F06, F27 |
-| DS3 | F04, F10, F11 (`/stil`), F12, F25, F26, F31 |
+| DS2 | ~~F01, F02, F03, F05, F06, F27~~ closed 01.10.2026 (§2); the italic sign-off is open |
+| DS3 | F04, F10, ~~F11 (`/stil`)~~, F12, F25, F26, F31 |
 | DS4 | F19, F21, F22, F23, F24 |
 | DS5 | F11 (live check), F13, F14, F15, F16, F17, F18 |
 | DS6 | F07, F23 (report and PDF half), F28, F29, F30 |
-| DS7 | F08, F09, F32, F33, F34, F35, F36 |
+| DS7 | F06b (admin sentences at 14px), F08, F09, F32, F33, F34, F35, F36 |
 | DS9 | F37 |
 
 Three are **A**: F10, F13 and F29. F13 and F29 break a promise to the customer (a date on every

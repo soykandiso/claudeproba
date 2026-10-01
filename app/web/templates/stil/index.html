@@ -1,0 +1,145 @@
+{# /stil: every token in tokens.css, rendered (DS2). Development only. The lists come
+   from the file itself (app/web/style), so nothing here can drift from it. #}
+{% extends "base.html" %}
+{% import "shortlist/_macros.html" as ui with context %}
+{% block title %}Дизајн-систем: токени{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/stil.css') }}">{% endblock %}
+{% block main %}
+<div class="wrap">
+  <div class="report-head stack">
+    <h1>Токени на дизајн-системот</h1>
+    <p class="soft">Секоја вредност од <span class="id">tokens.css</span>, прочитана при секое отворање на страницата. Правилата се во <span class="id">.claude/skills/design-system</span>.</p>
+  </div>
+
+  <section class="stack" aria-labelledby="colour-h">
+    <h2 id="colour-h">Бои</h2>
+    <div>
+      {% for t in colours %}
+      <div class="specimen">
+        <div class="specimen__row">
+          <span class="sw sw--{{ t.name }}"></span>
+          <span class="specimen__name"><span class="id">--{{ t.name }}</span><br><span class="id">{{ t.value }}</span></span>
+          <span>{{ colour_jobs.get(t.name, '') }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <h3>Контраст, измерен од вредностите</h3>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr><th>Боја</th><th>Подлога</th><th class="num">Однос</th><th class="num">Потребно</th><th>Резултат</th></tr></thead>
+        <tbody>
+          {% for p in pairs %}
+          <tr>
+            <td><span class="id">--{{ p.fg }}</span></td>
+            <td><span class="id">--{{ p.ground }}</span></td>
+            <td class="num">{{ p.ratio }}:1</td>
+            <td class="num">{% if p.fg == 'rule' %}само делител{% else %}{{ p.need }}:1{% endif %}</td>
+            <td>{% if p.ok %}<span class="pass">Поминува</span>{% else %}<span class="fail">Не поминува</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="type-h">
+    <h2 id="type-h">Писма и големини</h2>
+    <div>
+      {% for t in fonts %}
+      <div class="specimen">
+        <span class="id">--{{ t.name }}: {{ t.value }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div>
+      {% for t in text %}
+      <div class="specimen">
+        <span class="small soft"><span class="id">--{{ t.name }}</span>, {{ t.value }}. {{ type_jobs.get(t.name, '') }}</span>
+        <p class="size--{{ t.name }} face--display-600">Јавен повик за прифатливи трошоци</p>
+        <p class="size--{{ t.name }} face--body">Барателот приложува потврда од Централниот регистар.</p>
+      </div>
+      {% endfor %}
+    </div>
+    <h3>Мерка: <span class="id">--measure</span></h3>
+    <p class="document">Секој услов што го прикажуваме носи цитат од повикот, извор и датум кога го прочитавме. Ако условот не може да се потврди од профилот, повикот останува со оценка „Потребна е проверка“, а не се исклучува. Ова е ширината на текст што се чита: најмногу 68 знаци во ред.</p>
+  </section>
+
+  <section class="stack" aria-labelledby="mk-h">
+    <h2 id="mk-h">Македонски букви</h2>
+    <p class="soft">Секое писмо мора да ги има буквите што ги нема во руски подмножество.</p>
+    <div>
+      <div class="specimen"><span class="small soft">Source Serif 4, 400 и 600</span><p class="size--text-28 face--display">{{ mk_letters }}</p><p class="size--text-28 face--display-600">{{ mk_letters }}</p></div>
+      <div class="specimen"><span class="small soft">Fira Sans, 400 и 500</span><p class="size--text-28 face--body">{{ mk_letters }}</p><p class="size--text-28 face--body-500">{{ mk_letters }}</p></div>
+    </div>
+    <h3>Курзив: за потпис од човек што го чита македонскиот</h3>
+    <p>Во македонскиот курзив буквите <strong>б г д п т</strong> имаат други форми од рускиот. Лево е како ги пишуваме ние (<span class="id">lang="mk"</span>), десно како би изгледале на руски. Ако левите не се точни, курзивот не смее да се користи на сајтот.</p>
+    <div class="specimen">
+      <div class="specimen__row">
+        <span class="specimen__name small soft">македонски</span>
+        <span class="face--italic" lang="mk">{{ mk_italic }}</span>
+      </div>
+      <div class="specimen__row">
+        <span class="specimen__name small soft">руски, за споредба</span>
+        <span class="face--italic" lang="ru">{{ mk_italic }}</span>
+      </div>
+      <p class="face--italic size--text-20" lang="mk">Годишниот буџет предвидува подобрување на патната мрежа во градот.</p>
+    </div>
+    <p class="soft">Fira Sans нема македонски форми, па курзив во Fira не постои, ниту вештачки (<span class="id">font-synthesis: none</span>).</p>
+  </section>
+
+  <section class="stack" aria-labelledby="space-h">
+    <h2 id="space-h">Простор</h2>
+    <div>
+      {% for t in space %}
+      <div class="specimen"><div class="specimen__row"><span class="specimen__name id">--{{ t.name }}: {{ t.value }}</span><span class="bar bar--{{ t.name }}"></span></div></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="line-h">
+    <h2 id="line-h">Линии, ознаки, контроли</h2>
+    <div>
+      {% for t in lines %}
+      <div class="specimen"><div class="specimen__row"><span class="specimen__name id">--{{ t.name }}: {{ t.value }}</span><hr class="line line--{{ t.name }}"></div></div>
+      {% endfor %}
+      {% for t in controls %}
+      <div class="specimen"><div class="specimen__row"><span class="specimen__name id">--{{ t.name }}: {{ t.value }}</span><span class="box box--{{ t.name }}"></span></div></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="width-h">
+    <h2 id="width-h">Ширини</h2>
+    <div>
+      {% for t in widths %}
+      <div class="specimen"><span class="id">--{{ t.name }}: {{ t.value }}</span><span class="span span--{{ t.name }}"></span></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="verdict-h">
+    <h2 id="verdict-h">Четирите оценки</h2>
+    <p class="soft">Ознака и тежина на линијата пред бојата. Се проверуваат и во сиви тонови (DS3).</p>
+    <ul class="legend">
+      {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
+    </ul>
+    <ul class="calls">
+      {% for key in verdict_labels %}
+      <li class="call call--{{ key }} stack">
+        {{ ui.verdict(key) }}
+        <div class="stack--tight">
+          <h3>Јавен повик за поддршка на микро и мали претпријатија</h3>
+          <p class="soft small">Пример, не е вистински повик</p>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="stack" aria-labelledby="all-h">
+    <h2 id="all-h">Сите имиња</h2>
+    <p class="break"><span class="id">{% for n in all_names %}--{{ n }}{{ ", " if not loop.last }}{% endfor %}</span></p>
+  </section>
+</div>
+{% endblock %}
