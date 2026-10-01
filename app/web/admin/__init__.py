@@ -588,6 +588,34 @@ def report_pdf(item_id: int):
     )
 
 
+@bp.get("/izveshtaj/<int:item_id>/dokument")
+def report_document(item_id: int):
+    """The report as a document on screen: the PDF's own template (DS6).
+
+    So the reviewer reads what the customer will read, in that order, at any state of
+    the draft; the checks are on the review page beside it, and the PDF route still runs
+    all of them before printing. Nothing here is stored.
+    """
+    with _sessions()() as db:
+        item = _report_or_404(db, item_id)
+        html = render.html_of(
+            reports.draft_of(item),
+            issued=_now().astimezone(SKOPJE).date(),
+            reference=f"И-{item.id}",
+            screen=(
+                url_for("static", filename="css/tokens.css"),
+                url_for("admin.report_stylesheet"),
+            ),
+        )
+    return Response(html, mimetype="text/html")
+
+
+@bp.get("/izveshtaj/report.css")
+def report_stylesheet():
+    """report.css lives beside the template WeasyPrint reads, not in static/."""
+    return Response(render.report_css(), mimetype="text/css")
+
+
 def _render_report(db, item, *, error=None, open_form=None, typed=None):
     pending = item.state == ReviewState.PENDING
     if pending:

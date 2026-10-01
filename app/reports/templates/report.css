@@ -5,10 +5,10 @@
 @page {
   size: A4;
   margin: 22mm 20mm 24mm;
-  @bottom-left { font-family: var(--font-body); font-size: 8pt; color: var(--ink-soft); }
+  @bottom-left { font-family: var(--font-body); font-size: var(--print-8); color: var(--ink-soft); }
   @bottom-right {
     content: "Страница " counter(page) " од " counter(pages);
-    font-family: "Fira Sans"; font-size: 8pt; color: var(--ink-soft);
+    font-family: "Fira Sans"; font-size: var(--print-8); color: var(--ink-soft);
   }
 }
 
@@ -16,16 +16,18 @@ html { font-feature-settings: "locl"; }
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 10.5pt;
+  font-size: var(--print-10-5);
   line-height: 1.5;
   color: var(--ink);
   background: white;
 }
 
 h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.25; margin: 0; }
-h1 { font-size: 22pt; max-width: 16em; }
-h2 { font-size: 14pt; margin-top: 6mm; }
-h3 { font-size: 10.5pt; font-weight: 500; margin: 5mm 0 2mm; }
+h1 { font-size: var(--print-22); max-width: 16em; }
+h2 { font-size: var(--print-14); margin-top: 6mm; }
+h3 { font-size: var(--print-10-5); font-weight: 500; margin: 5mm 0 2mm; }
+/* A heading never ends a page alone. */
+h2, h3 { break-after: avoid; }
 p { margin: 1.5mm 0; }
 .soft, .outcome, .source, dt { color: var(--ink-soft); }
 .id { font-variant-numeric: tabular-nums; }
@@ -35,18 +37,19 @@ section { margin-top: 8mm; }
 
 .facts { display: block; margin: 4mm 0 0; }
 .facts div { display: inline-block; vertical-align: top; width: 48%; margin: 0 0 3mm; }
-.facts dt { font-size: 8.5pt; }
+.facts dt { font-size: var(--print-8-5); }
 .facts dd { margin: 0; }
-.url { font-size: 8.5pt; word-break: break-all; }
+.url { font-size: var(--print-8-5); word-break: break-all; }
 
 .profile div { display: block; padding: 1mm 0; border-top: 1px solid var(--rule); }
 .profile div:first-child { border-top: 0; }
 .profile dt { display: inline-block; width: 42%; vertical-align: top; }
 .profile dd { display: inline-block; width: 56%; margin: 0; }
 
-.legend { list-style: none; padding: 0; margin: 3mm 0 0; }
-.legend li { margin: 1.5mm 0; }
-.legend .verdict { display: inline-block; width: 78mm; }
+/* A table: the label column is as wide as its longest label and never wraps (F28). */
+.legend { border-collapse: collapse; margin: 3mm 0 0; }
+.legend th, .legend td { text-align: left; vertical-align: top; padding: 1mm 6mm 1mm 0; }
+.legend th { white-space: nowrap; font-weight: 500; }
 
 /* Verdicts: mark and rule weight, as on the site (design system, "The verdict system") */
 .verdict { font-weight: 500; }
@@ -56,23 +59,34 @@ section { margin-top: 8mm; }
 }
 .verdict--eligible::before { background: currentColor; }
 .verdict--needs_verification, .verdict--not_eligible { color: var(--ink-soft); }
-/* The same four marks as the site (docs/design.md F10): filled, hollow, dotted, struck. */
-.verdict--needs_verification::before { border-style: dotted; }
+/* The site's four marks (docs/design.md F10): filled, hollow, broken, struck. Broken is
+   dashed here, not dotted as on screen: WeasyPrint draws a dotted 8pt ring as eight specks
+   that vanish on paper, a dashed one as four clear arcs (compared in DS6). */
+.verdict--needs_verification::before { border-style: dashed; }
+/* Struck: a hollow ring with a bar through it. Not the site's sized gradient: WeasyPrint 70
+   ignores background-size there and fills the disc, which then reads as «Можете да
+   аплицирате», the opposite verdict (found in DS6). Nor currentColor or transparent: a
+   gradient with either and more than two stops crashes it. Hard stops of the token and
+   the page's white draw the bar. */
 .verdict--not_eligible::before {
-  background: linear-gradient(currentColor, currentColor) center / 100% 1.5pt no-repeat;
+  background: linear-gradient(white 41%, var(--ink-soft) 41%, var(--ink-soft) 59%, white 59%);
 }
 
 .call { border-left: 2.5pt solid var(--ink); padding-left: 5mm; }
 .call--likely_eligible { border-left-width: 0.75pt; padding-left: calc(5mm + 1.75pt); }
 .call--needs_verification { border-left: 2.5pt dashed var(--rule-strong); }
 .call--not_eligible { border-left: 2.5pt double var(--rule); color: var(--ink-soft); margin-top: 5mm; }
-section.call { break-before: page; margin-top: 0; }
-.call-number { font-size: 8.5pt; color: var(--ink-soft); margin: 0; }
+/* Calls flow one after another; a page each left most of three pages empty. The head
+   (number, title, verdict, deadline) never splits and never ends a page alone. */
+section.call { margin-top: 10mm; }
+.call-head { break-inside: avoid; break-after: avoid; }
+.call-number { font-size: var(--print-8-5); color: var(--ink-soft); margin: 0; }
 .deadline { color: var(--seal); font-weight: 500; }
+.deadline--passed { color: var(--ink); }
 
 .statements { padding-left: 5mm; margin: 0; }
 .statements li { margin: 1.5mm 0; max-width: 42em; }
-.cites { color: var(--ink-soft); font-size: 8.5pt; white-space: nowrap; }
+.cites { color: var(--ink-soft); font-size: var(--print-8-5); white-space: nowrap; }
 
 /* Numbered clauses, the way an official document reads */
 .clauses { list-style: none; padding: 0; margin: 0; }
@@ -80,7 +94,7 @@ section.call { break-before: page; margin-top: 0; }
 .clauses > li:first-child { border-top: 0; }
 .ref {
   float: left; width: 11mm;
-  font-family: var(--font-display); font-size: 12pt; color: var(--ink-soft);
+  font-family: var(--font-display); font-size: var(--print-12); color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
 }
 .clause { margin-left: 11mm; }
@@ -93,17 +107,51 @@ section.call { break-before: page; margin-top: 0; }
   background: var(--paper-sunk); border-left: 2pt solid var(--verified);
   break-inside: avoid;
 }
-.excerpt-label { font-size: 8.5pt; color: var(--ink-soft); }
+.excerpt-label { font-size: var(--print-8-5); color: var(--ink-soft); }
 .excerpt blockquote {
-  margin: 1mm 0 0; font-family: var(--font-display); font-size: 10.5pt; line-height: 1.6;
+  margin: 1mm 0 0; font-family: var(--font-display); font-size: var(--print-10-5); line-height: 1.6;
   quotes: "„" "“";
 }
 .excerpt blockquote[lang="en"] { quotes: "“" "”"; }
 .excerpt blockquote::before { content: open-quote; }
 .excerpt blockquote::after { content: close-quote; }
-.source { font-size: 8pt; margin: 2mm 0 0; padding-top: 1.5mm; border-top: 1px solid var(--rule); }
+.source { font-size: var(--print-8); margin: 2mm 0 0; padding-top: 1.5mm; border-top: 1px solid var(--rule); }
 .source span { margin-right: 4mm; }
 .cite-mark { color: var(--verified); font-weight: 500; }
 
 .excluded { break-before: page; }
 .closing { border-top: 1px solid var(--rule); padding-top: 3mm; }
+
+/* The same document on a screen (DS6, the admin's «Види како документ»; the customer's
+   later). Nothing about what it says changes: only the print scale gets the site's sizes,
+   and the page gets the site's ground and a reading column. */
+@media screen {
+  :root {
+    --print-8: var(--text-12);
+    --print-8-5: var(--text-14);
+    --print-10-5: var(--text-16);
+    --print-12: var(--text-20);
+    --print-14: var(--text-20);
+    --print-22: var(--text-28);
+  }
+  html, body { background: var(--paper); }
+  body {
+    max-width: var(--width-mid); margin: 0 auto; padding: var(--s-32) var(--s-16) var(--s-96);
+    font-feature-settings: "locl"; font-synthesis: none;
+  }
+  /* The hollow ring's inside is the ground it sits on, not paper-white. */
+  .verdict--not_eligible::before {
+    background: linear-gradient(var(--paper) 41%, var(--ink-soft) 41%, var(--ink-soft) 59%, var(--paper) 59%);
+  }
+  .url, .source, .cites { overflow-wrap: anywhere; }
+  /* On a phone the legend stacks: the label, then what it means under it. */
+  @media (max-width: 600px) {
+    .legend, .legend tbody, .legend tr, .legend th, .legend td { display: block; }
+    .legend tr { padding-block: var(--s-8); }
+    .legend td { padding: var(--s-4) 0 0 var(--s-24); }
+  }
+  .facts div { width: auto; display: block; }
+  @media (min-width: 600px) { .facts div { display: inline-block; width: 48%; } }
+  .profile dt, .profile dd { display: block; width: auto; }
+  @media (min-width: 600px) { .profile dt { display: inline-block; width: 42%; } .profile dd { display: inline-block; width: 56%; } }
+}

@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% import "_components.html" as ui with context %}
 {% block title %}Извештај, ставка {{ item.id }}{% endblock %}
 
 {# One statement of the model's prose: its words, the conditions it rests on as links
@@ -94,6 +95,8 @@
     {% if draft %}
     <h1>Извештај од {{ draft.run_date|iso_mkdate }}</h1>
     <p class="soft">{{ draft.calls|length }} {{ 'повик' if draft.calls|length == 1 else 'повици' }} со проверка, {{ draft.excluded|length }} {{ 'исклучен' if draft.excluded|length == 1 else 'исклучени' }} по правило, од {{ draft.candidates_considered }} {{ 'разгледан' if draft.candidates_considered == 1 else 'разгледани' }}.</p>
+    {# The PDF's own template on screen: what the customer will read, in that order (DS6). #}
+    <p><a href="{{ url_for('admin.report_document', item_id=item.id) }}">Види го извештајот како документ</a></p>
     {% else %}
     <h1>Извештај без нацрт</h1>
     {% endif %}
@@ -167,7 +170,7 @@
       <h2 id="povik-{{ call.number }}-h" class="break">{{ call.number }}. {{ call.title }}</h2>
       <dl class="facts">
         <div><dt>Институција</dt><dd>{{ call.institution }}</dd></div>
-        <div><dt>Рок</dt><dd>{% if call.deadline %}<span class="deadline">{{ call.deadline|iso_mkdate }}</span>{% else %}не е објавен{% endif %}</dd></div>
+        <div><dt>Рок</dt><dd>{# The component: a passed deadline says «рокот помина» (F29). #}{% if call.deadline %}{{ ui.deadline(call.deadline|instant) }}{% else %}не е објавен{% endif %}</dd></div>
       </dl>
       <p class="small break"><a href="{{ call.url }}" rel="noopener noreferrer" target="_blank">{{ call.url }}</a></p>
       {% for detail in problems_at.get('povik-' ~ call.number, []) %}<p class="field-error">{{ detail }}</p>{% endfor %}

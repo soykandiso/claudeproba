@@ -65,11 +65,13 @@ from fontTools.ttLib import TTFont
 from markupsafe import Markup
 from sqlalchemy.orm import Session
 
+from app.matching import intake
+from app.matching.hard_filter import Range
 from app.models import ReviewQueueItem
 from app.models.enums import ReviewKind, ReviewState, Verdict
 from app.reports import compose
 from app.reports.lint import find_banned
-from app.web.format import CRITERION_LABELS, VERDICT_LABELS, lang_of, mkdate
+from app.web.format import CRITERION_LABELS, SKOPJE, VERDICT_LABELS, lang_of, mkdate
 
 RENDERER_VERSION = "2026-09-30.1"
 
@@ -187,6 +189,21 @@ def _instant(value: str | None) -> str | None:
     return mkdate(dt.datetime.fromisoformat(value)) if value else None
 
 
+_MONTHS = re.compile(r"^(\d+)–(\d+) месеци$")
+
+
+def _for_reader(label: str, value: str) -> str:
+    """A line of the applicant's shape as a person reads it (docs/design.md F23).
+
+    The draft keeps what the model was shown, «81–93 месеци», because calls state their
+    limits in months; on paper a company's age is said in years, as everywhere else.
+    """
+    match = _MONTHS.match(value) if label == "Старост" else None
+    if match is None:
+        return value
+    return intake.age_words(Range(int(match[1]), int(match[2]))) or value
+
+
 def _host(url: str | None) -> str:
     return url.split("/")[2] if url and "//" in url else (url or "")
 
@@ -204,14 +221,34 @@ def _environment() -> jinja2.Environment:
     env.filters["lang_of"] = lang_of
     env.filters["instant"] = _instant
     env.filters["host"] = _host
+    env.globals["for_reader"] = _for_reader
+    env.globals["deadline_day"] = compose.deadline_day
     env.globals["verdict_labels"] = {v.value: label for v, label in VERDICT_LABELS.items()}
     env.globals["criterion_labels"] = {v.value: label for v, label in CRITERION_LABELS.items()}
     env.globals["decided_by"] = compose.DECIDED_BY_MK
     return env
 
 
-def html_of(draft: dict, *, issued: dt.date, reference: str) -> str:
-    """The report as HTML, for WeasyPrint and for tests that read what it says."""
+def html_of(
+    draft: dict,
+    *,
+    issued: dt.date,
+    reference: str,
+    screen: tuple[str, str] | None = None,
+) -> str:
+    """The report as HTML, for WeasyPrint, for tests that read what it says, and for the
+    screen.
+
+    `screen` is (tokens.css URL, report.css URL) when the page goes to a browser rather
+    than to WeasyPrint (DS6): the same template, so the screen and the paper say the same
+    things in the same order by construction. The browser takes the site's fonts and
+    token values from tokens.css; report.css's `@media screen` gives the print scale its
+    screen sizes. For paper, both are inlined and the fonts are the merged files.
+    """
+    if screen is None:
+        faces, tokens, css = font_faces(), token_values(), (TEMPLATES / "report.css").as_uri()
+    else:
+        faces, tokens, css = f'@import url("{screen[0]}");', "", screen[1]
     return (
         _environment()
         .get_template("report.html")
@@ -219,13 +256,18 @@ def html_of(draft: dict, *, issued: dt.date, reference: str) -> str:
             draft=draft,
             issued=issued,
             reference=reference,
-            font_faces=Markup(font_faces()),
-            tokens=Markup(token_values()),
-            report_css=Markup((TEMPLATES / "report.css").as_uri()),
+            font_faces=Markup(faces),
+            tokens=Markup(tokens),
+            report_css=Markup(css),
             renderer_version=RENDERER_VERSION,
             not_eligible=Verdict.NOT_ELIGIBLE.value,
         )
     )
+
+
+def report_css() -> str:
+    """The stylesheet itself, for the admin to serve beside the screen view."""
+    return (TEMPLATES / "report.css").read_text(encoding="utf-8")
 
 
 class _Text(HTMLParser):
@@ -283,12 +325,14 @@ def render(session: Session, item: ReviewQueueItem, *, issued: dt.date | None = 
     draft = report.draft_of(item)
     if draft.get("version") != compose.DRAFT_VERSION:
         raise RenderRefused(f"report {item.id}: draft version {draft.get('version')!r} unknown")
-    problems = compose.blockers(session, item)
+    issued = issued or dt.datetime.now(SKOPJE).date()
+    # Against the issue date: a call that closed since approval stops the print (F29).
+    problems = compose.blockers(session, item, today=issued)
     if problems:
         details = "; ".join(f"{p['check']} at {p['where']}: {p['detail']}" for p in problems)
         raise RenderRefused(f"report {item.id} no longer passes its checks: {details}")
 
-    html = html_of(draft, issued=issued or dt.date.today(), reference=f"И-{item.id}")
+    html = html_of(draft, issued=issued, reference=f"И-{item.id}")
     banned = find_banned(own_voice(html))
     if banned:
         raise RenderRefused(f"report {item.id}: banned phrase in the printed text: {banned}")

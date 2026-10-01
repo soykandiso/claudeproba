@@ -46,6 +46,11 @@ def mkdate(value) -> str:
     return _as_date(value).strftime("%d.%m.%Y")
 
 
+def instant(value: str | None) -> dt.datetime | None:
+    """A stored ISO instant (a report draft keeps deadlines so) as a datetime."""
+    return dt.datetime.fromisoformat(value) if value else None
+
+
 def thousands(value) -> str:
     """12.000, as Macedonian writes it."""
     return f"{int(value):,}".replace(",", ".")
@@ -113,6 +118,7 @@ def lang_of(text: str | None) -> str:
 def register(app: Flask) -> None:
     app.add_template_filter(mkdate, "mkdate")
     app.add_template_filter(thousands, "thousands")
+    app.add_template_filter(instant, "instant")
     app.add_template_filter(lang_of, "lang_of")
     app.add_template_global(condition_counts, "condition_counts")
     app.add_template_global(days_left, "days_left")

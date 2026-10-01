@@ -668,6 +668,20 @@ does not load HTMX and would have to start, and boosting turns every form into a
 its own failure modes (history, focus, flash messages), which is more moving parts than the
 problem. The script only adds a state: with JavaScript off every form posts exactly as before. It
 earns its place by one risk, a second tap of «Прифати и објави» on a slow connection.
+### A call that closed after the run blocks the report; the screen shows the PDF's own template (01.10.2026, DS6)
+
+**Blocked, not warned.** A report that recommends a call which has since closed tells the customer
+something false. The reviewer cannot remove a call from a draft (only the model's prose is
+editable, s33), so the honest remedies are to close the report and run the analysis again. The
+check runs at approval against that moment and at printing against the issue date; composition
+checks against the run's own day. A report is approved and printed within days of its run, so
+in practice this bites only when a call closes in that window, which is exactly when it matters.
+
+**One template for screen and paper.** The roadmap asked for a web view and a PDF "sharing one set
+of components". The cheapest way to make them say the same thing in the same order is for them to
+be the same document: `html_of(screen=...)` renders `report.html` for a browser, with the site's
+fonts and an `@media screen` block in `report.css`. A test compares their text. The customer's
+view (P4) is this same route behind sign-in.
 
 ---
 

@@ -113,7 +113,7 @@ rule weight first, hue second**, so they survive both colour-blindness and a che
 |---|---|
 | Eligible | solid rule, filled marker |
 | Likely eligible | solid rule, hollow marker |
-| Needs verification | dashed rule, **dotted** hollow marker — **neutral, never a warning colour** |
+| Needs verification | dashed rule, **dotted** hollow marker on screen, **dashed** on paper — **neutral, never a warning colour** |
 | Not eligible | muted ink, struck rule, hollow marker struck through |
 
 The marker alone must tell the verdict (it is shown without the rule in legends, the admin and

@@ -40,6 +40,7 @@ from app.models import ReviewQueueItem
 from app.models.enums import ReviewKind, ReviewState
 from app.reports import compose
 from app.review.extraction import ReviewError
+from app.web.format import SKOPJE
 
 SUMMARY, EXPLANATION, NEXT_STEPS = "summary", "explanation", "next_steps"
 PARTS = (SUMMARY, EXPLANATION, NEXT_STEPS)
@@ -108,18 +109,20 @@ def where(part: str, call: int | None, n: int) -> str:
     return f"summary {n}" if part == SUMMARY else f"call {call} {part} {n}"
 
 
-def approval_problems(session: Session, item: ReviewQueueItem) -> list[dict]:
+def approval_problems(
+    session: Session, item: ReviewQueueItem, *, today: dt.date | None = None
+) -> list[dict]:
     """Everything that stops this report being released, as `compose` words it."""
     if item.state != ReviewState.PENDING:
         return [{"check": "state", "where": "item", "detail": "already decided"}]
     if not is_draft(item):
         return [{"check": "version", "where": "draft", "detail": "not a draft"}]
-    return compose.blockers(session, item)
+    return compose.blockers(session, item, today=today)
 
 
 def approve(session: Session, item: ReviewQueueItem, *, note: str, now: dt.datetime) -> None:
     """Release the report for rendering (s35). Refused while anything blocks it."""
-    problems = approval_problems(session, item)
+    problems = approval_problems(session, item, today=now.astimezone(SKOPJE).date())
     if problems:
         raise ReviewError(
             f"Извештајот не може да се одобри: {len(problems)} проблем(и) се уште стојат."
@@ -210,6 +213,11 @@ _DETAILS = (
     ("there is no such call", "моделот напиша дел за повик што го нема во извештајот"),
     ("no explanation", "повикот нема објаснување"),
     ("already decided", "ставката е веќе решена"),
+    (
+        "the deadline passed on ",
+        "повикот се затвори по анализата; затворете го извештајот и повторете ја анализата. "
+        "Рокот за пријава беше ",
+    ),
     ("not a draft", "ставката не содржи нацрт на извештај"),
 )
 

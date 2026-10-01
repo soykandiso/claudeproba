@@ -47,6 +47,15 @@
 
   --measure: 68ch;
 
+  /* The PDF's scale, in points, used only by app/reports/templates/report.css: paper is
+     not a screen, and 16px body text would print at 12pt (docs/design.md F07). */
+  --print-8: 8pt;
+  --print-8-5: 8.5pt;
+  --print-10-5: 10.5pt;
+  --print-12: 12pt;
+  --print-14: 14pt;
+  --print-22: 22pt;
+
   --paper: #F7F6F3;
   --paper-sunk: #EDEBE6;
   --ink: #22201B;

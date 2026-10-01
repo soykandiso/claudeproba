@@ -64,7 +64,7 @@ from app.models import (
 )
 from app.models.enums import ReviewKind, Verdict
 from app.reports.lint import find_banned
-from app.web.format import CRITERION_LABELS, VERDICT_LABELS, mkdate
+from app.web.format import CRITERION_LABELS, SKOPJE, VERDICT_LABELS, mkdate
 
 TASK = "compose_report"
 
@@ -358,25 +358,53 @@ def citations(session: Session, draft: dict) -> list[dict]:
     return problems
 
 
-def check(session: Session, draft: dict) -> list[dict]:
+def deadline_day(value: str | None) -> dt.date | None:
+    """The day a stored deadline instant falls on, in Skopje."""
+    if not value:
+        return None
+    return dt.datetime.fromisoformat(value).astimezone(SKOPJE).date()
+
+
+def deadlines(draft: dict, today: dt.date) -> list[dict]:
+    """A call whose deadline passed after the run (docs/design.md F29, severity A).
+
+    Stage 1 never shortlists a closed call, but a report is approved and printed days
+    after its run, and a call can close in between. A report that recommends applying
+    to a call that has closed is a broken promise, so it blocks: the reviewer closes
+    the report and the analysis is run again. The PDF can then never carry a passed
+    deadline, which is why paper still says a deadline as a date only.
+    """
+    return [
+        _problem("deadline", f"call {call['number']}", f"the deadline passed on {day:%d.%m.%Y}")
+        for call in draft["calls"]
+        if (day := deadline_day(call["deadline"])) is not None and day < today
+    ]
+
+
+def check(session: Session, draft: dict, *, today: dt.date | None = None) -> list[dict]:
     """Every reason this draft cannot be delivered; empty when it can go to a customer
-    after a person has approved it."""
+    after a person has approved it. `today` is the day it would go out (Skopje)."""
     if draft.get("version") != DRAFT_VERSION:
         return [_problem("version", "draft", f"unknown draft version {draft.get('version')}")]
-    return lint(draft) + citations(session, draft)
+    today = today or dt.datetime.now(SKOPJE).date()
+    return lint(draft) + citations(session, draft) + deadlines(draft, today)
 
 
-def blockers(session: Session, item: ReviewQueueItem) -> list[dict]:
+def blockers(
+    session: Session, item: ReviewQueueItem, *, today: dt.date | None = None
+) -> list[dict]:
     """The checks again, over what a reviewer's edit left (or the draft as composed)."""
     if item.kind != ReviewKind.REPORT:
         raise ValueError(f"review item {item.id} is not a report")
-    return check(session, item.corrected_payload or item.payload)
+    return check(session, item.corrected_payload or item.payload, today=today)
 
 
 # ------------------------------------------------------------------ composing
 
 
-def compose(session_factory, gateway: Gateway, match_run_id: uuid.UUID) -> int:
+def compose(
+    session_factory, gateway: Gateway, match_run_id: uuid.UUID, *, today: dt.date | None = None
+) -> int:
     """Draft one run's report and queue it for review. Returns the review item's id.
 
     Output the gateway cannot validate twice is already a `report` review item
@@ -403,7 +431,9 @@ def compose(session_factory, gateway: Gateway, match_run_id: uuid.UUID) -> int:
     draft["model_call_id"] = model_call_id
 
     with session_factory() as session:
-        problems = check(session, draft)
+        # At composition the day is the run's own (or the caller's clock, in tests and
+        # replays): the draft is written from that run.
+        problems = check(session, draft, today=today or dt.date.fromisoformat(draft["run_date"]))
         draft["problems"] = problems
         blocked = sorted({p["check"] for p in problems})
         item = ReviewQueueItem(

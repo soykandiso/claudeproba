@@ -24,6 +24,7 @@
 <html lang="mk">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Извештај {{ reference }}</title>
 <meta name="generator" content="app/reports/render.py {{ renderer_version }}">
 <style>
@@ -42,7 +43,8 @@
   <dl class="facts">
     <div><dt>Број на извештајот</dt><dd class="id">{{ reference }}</dd></div>
     <div><dt>Издаден на</dt><dd>{{ issued|mkdate }}</dd></div>
-    <div><dt>Состојба на повиците на</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
+    {# One label for this date everywhere (F30). #}
+    <div><dt>Последна проверка на повиците</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
     <div><dt>Разгледани отворени повици</dt><dd>{{ draft.candidates_considered or draft.calls|length }}</dd></div>
   </dl>
 </header>
@@ -50,12 +52,14 @@
 <section>
   <h2>Како да го читате</h2>
   <p>Секој услов подолу е пренесен со зборовите на самиот повик, со изворот и датумот кога текстот е преземен. Оценката е наша проценка врз основа на тој текст и на податоците што ги внесовте. Одлуката за секоја пријава ја носи институцијата што го објавила повикот.</p>
-  <ul class="legend">
-    <li>{{ verdict("eligible") }} сите услови се исполнети според текстот на повикот</li>
-    <li>{{ verdict("likely_eligible") }} остануваат само изјави што ги давате вие при пријавата</li>
-    <li>{{ verdict("needs_verification") }} барем еден услов треба да се провери пред пријавата</li>
-    <li>{{ verdict("not_eligible") }} услов од повикот јасно не е исполнет</li>
-  </ul>
+  {# A table, so the label column is as wide as its longest label and never wraps into
+     the description (F28); WeasyPrint lays a table out exactly. #}
+  <table class="legend">
+    <tr><th>{{ verdict("eligible") }}</th><td>сите услови се исполнети според текстот на повикот</td></tr>
+    <tr><th>{{ verdict("likely_eligible") }}</th><td>остануваат само изјави што ги давате вие при пријавата</td></tr>
+    <tr><th>{{ verdict("needs_verification") }}</th><td>барем еден услов треба да се провери пред пријавата</td></tr>
+    <tr><th>{{ verdict("not_eligible") }}</th><td>услов од повикот јасно не е исполнет</td></tr>
+  </table>
 </section>
 
 <section>
@@ -63,7 +67,7 @@
   <dl class="profile">
     {% for line in draft.applicant.splitlines() if line.strip() %}
     {% set label, _, value = line.lstrip("- ").partition(": ") %}
-    <div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+    <div><dt>{{ label }}</dt><dd>{{ for_reader(label, value) }}</dd></div>
     {% endfor %}
   </dl>
 </section>
@@ -77,15 +81,22 @@
 
 {% for call in draft.calls %}
 <section class="call call--{{ call.verdict }}">
+  {# The head stays together and with what follows; the calls themselves flow, a page
+     each left most of three pages empty (DS6). #}
+  <div class="call-head">
   <p class="call-number">Повик {{ call.number }}</p>
   <h2 data-theirs lang="{{ call.title|lang_of }}">{{ call.title }}</h2>
   <p class="soft">{{ call.institution }}</p>
   <p>{{ verdict(call.verdict) }}</p>
   <dl class="facts">
-    <div><dt>Рок за пријава</dt><dd>{% if call.deadline %}<span class="deadline">{{ call.deadline|instant }}</span>{% else %}Нема објавен рок{% endif %}</dd></div>
-    <div><dt>Состојба на</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
+    {# A passed deadline never reaches paper (compose.deadlines blocks the print, F29); the
+     screen preview can show one, and then says so, in ink. #}
+    {% set day = deadline_day(call.deadline) %}
+    <div><dt>Рок за пријава</dt><dd>{% if day and day < issued %}<span class="deadline deadline--passed">{{ call.deadline|instant }}, рокот помина</span>{% elif call.deadline %}<span class="deadline">{{ call.deadline|instant }}</span>{% else %}Нема објавен рок{% endif %}</dd></div>
+    <div><dt>Последна проверка</dt><dd>{{ draft.run_date|mkdate }}</dd></div>
     <div><dt>Повикот на страницата на институцијата</dt><dd class="url">{{ call.url }}</dd></div>
   </dl>
+  </div>
 
   {% if call.explanation %}
   <h3>Што значи оценката</h3>

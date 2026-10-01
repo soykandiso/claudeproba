@@ -159,6 +159,36 @@ for the sentence. Either the sentence says "some", or 1a's discards are judged b
 excluded list (cheap at today's sizes, `matching.md` §3). **The user decides**; until then the
 sentence stays.
 
+Closed in **DS6, 01.10.2026**, held by `tests/test_report_render.py` (the DS6 block). The PDF was
+rendered and looked at on this host for the first time (conda-forge Pango, handoff §5):
+
+- **F29 (A)**: `compose.deadlines` blocks a report whose call's deadline passed after the run,
+  at approval (against the moment of approval) and at print (against the issue date). The
+  reviewer is told in Macedonian that the call closed and the analysis must run again. The admin
+  review page says the deadline with `c.deadline` («рокот помина», in ink); the screen view of
+  the document says it too. Paper never can: the print is refused first.
+- **F30**: «Последна проверка» on the cover and on every call.
+- **F28**: the legend is a table; the label column never wraps. On a phone screen it stacks.
+- **F23, the report's half**: «6–7 години» on paper (`render._for_reader`). The draft keeps the
+  months the model was shown, and the admin's «Барателот, како што го виде моделот» shows them
+  as they were.
+- **F07**: the print scale is tokens (`--print-8` … `--print-22` in `tokens.css`); `report.css`
+  has no font size of its own.
+- **Calls flow** instead of a page each: 11 pages became 10 with no half-empty pages; a call's
+  head never splits or ends a page, nor does a heading.
+- **The screen view** (`/admin/izveshtaj/<id>/dokument`) is the PDF's own template: same text,
+  same order, proven by a test that compares the two. `@media screen` maps the print scale to
+  the site's sizes and takes the site's fonts.
+
+**Found on paper, fixed:**
+- **The struck mark printed as a filled disc**, the mark of «Можете да аплицирате», since DS3:
+  WeasyPrint 70 ignores `background-size` in that gradient, and crashes on `currentColor` or
+  `transparent` in a multi-stop one. Now hard stops of `--ink-soft` and white. No report has
+  been delivered, so nothing went out wrong. A pixel test prints each mark alone, rasterises it
+  and checks its shape; it fails on the old rule.
+- **The dotted ring printed as eight specks.** Paper uses a dashed ring (four clear arcs); the
+  screen keeps dotted. Same idea, broken ring, drawn the way each renderer shows it.
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -247,7 +277,7 @@ issue.
 | DS3 | ~~F04, F10, F11 (`/stil`), F12, F25, F26, F31~~ closed 01.10.2026 (§2) |
 | DS4 | ~~F19, F21, F22, F23 (review page), F24~~ closed 01.10.2026 (§2); the timed run is open |
 | DS5 | ~~F11 (live check), F13, F14, F15, F16, F17, F18~~ closed 01.10.2026 (§2); F38 waits for the user; the first-time-user test is open |
-| DS6 | F07, F23 (report and PDF half: `verify.applicant_shape` says months), F28, F29, F30 |
+| DS6 | ~~F07, F23 (report half), F28, F29, F30~~ closed 01.10.2026 (§2) |
 | DS7 | F06b (admin sentences at 14px), F08, F09, F32, F33, F34, F35, F36 |
 | DS9 | F37 |
 

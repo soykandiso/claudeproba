@@ -264,3 +264,181 @@ def test_the_command_says_when_there_is_no_such_item(tmp_path):
             args=["review", "render-report", "0", "--out", str(tmp_path / "r.pdf")]
         )
     assert result.exit_code != 0 and "no review item 0" in result.output
+
+
+# ------------------------------------------------------------- DS6: the marks on paper
+
+
+def _mark_pixels(verdict: str, tmp_path):
+    """The verdict mark alone on a small page, rasterised: (image, centre x, y, radius)."""
+    from PIL import Image
+
+    page = (
+        "<!doctype html><html><head><style>"
+        + render.font_faces()
+        + render.token_values()
+        + "</style>"
+        + f'<link rel="stylesheet" href="{(render.TEMPLATES / "report.css").as_uri()}">'
+        + "<style>@page { size: 30mm 20mm; margin: 5mm;"
+        + " @bottom-left { content: none; } @bottom-right { content: none; } }"
+        + "</style></head><body>"
+        + f'<p><span class="verdict verdict--{verdict}"></span></p></body></html>'
+    )
+    (tmp_path / "m.pdf").write_bytes(render._pdf(page))
+    subprocess.run(
+        ["pdftoppm", "-r", "600", "-gray", "-png", "-singlefile", "m.pdf", "m"],
+        cwd=tmp_path,
+        check=True,
+    )
+    image = Image.open(tmp_path / "m.png").convert("L")
+    dark = [
+        (x, y)
+        for y in range(image.height)
+        for x in range(image.width)
+        if image.getpixel((x, y)) < 160
+    ]
+    xs, ys = [p[0] for p in dark], [p[1] for p in dark]
+    cx, cy = (min(xs) + max(xs)) // 2, (min(ys) + max(ys)) // 2
+    return image, cx, cy, (max(xs) - min(xs)) // 2
+
+
+def _is_dark(image, x, y) -> bool:
+    return image.getpixel((x, y)) < 160
+
+
+@pytest.mark.skipif(not shutil.which("pdftoppm"), reason="pdftoppm is not installed")
+def test_the_four_marks_print_as_four_shapes(tmp_path):
+    """F10 on paper. Found in DS6: WeasyPrint ignored the site's sized gradient and printed
+    «Не можете да аплицирате» as a filled disc, the mark of the opposite verdict."""
+    import math
+
+    def ring(image, cx, cy, r):
+        return [
+            _is_dark(
+                image,
+                round(cx + r * math.cos(a / 36 * 2 * math.pi)),
+                round(cy + r * math.sin(a / 36 * 2 * math.pi)),
+            )
+            for a in range(36)
+        ]
+
+    image, cx, cy, r = _mark_pixels("eligible", tmp_path)
+    assert _is_dark(image, cx, cy)  # filled
+
+    image, cx, cy, r = _mark_pixels("likely_eligible", tmp_path)
+    assert not _is_dark(image, cx, cy) and all(ring(image, cx, cy, r - 3))  # hollow, whole
+
+    image, cx, cy, r = _mark_pixels("needs_verification", tmp_path)
+    edge = ring(image, cx, cy, r - 3)
+    assert not _is_dark(image, cx, cy) and not all(edge) and any(edge)  # hollow, broken
+
+    image, cx, cy, r = _mark_pixels("not_eligible", tmp_path)
+    assert _is_dark(image, cx, cy)  # the bar
+    assert not _is_dark(image, cx, cy - r // 2)  # but not filled
+
+
+# ------------------------------------------------------------- DS6: the report, F29 and the rest
+
+
+def test_a_passed_deadline_blocks_delivery_and_says_when():
+    """F29 (severity A): a call that closed after the run blocks approval and print."""
+    from app.reports import compose
+
+    d = draft()  # the call's deadline is 21.08.2026, 23:59 in Skopje
+    assert compose.deadlines(d, dt.date(2026, 8, 21)) == []
+    problems = compose.deadlines(d, dt.date(2026, 8, 22))
+    assert problems == [
+        {"check": "deadline", "where": "call 1", "detail": "the deadline passed on 21.08.2026"}
+    ]
+    assert "повикот се затвори" in reports.describe(problems[0]["detail"])
+    assert compose.deadlines(draft(calls=[{**d["calls"][0], "deadline": None}]), ISSUED) == []
+
+
+@needs_db
+def test_a_report_whose_call_has_since_closed_is_not_printed(world):
+    factory, item_id = approved(world)
+    with factory() as s:
+        item = s.get(ReviewQueueItem, item_id)
+        with pytest.raises(render.RenderRefused, match="deadline"):
+            render.render(s, item, issued=dt.date(2099, 1, 1))
+
+
+@needs_db
+def test_a_report_whose_call_has_since_closed_is_not_approved(world):
+    factory, run_id = tc.verified_run(world)
+    item, _ = tc.composed(factory, run_id, tc.prose())
+    with factory() as s, pytest.raises(reports.ReviewError):
+        reports.approve(
+            s,
+            s.get(ReviewQueueItem, item.id),
+            note="",
+            now=dt.datetime(2099, 1, 1, tzinfo=dt.UTC),
+        )
+
+
+def test_the_screen_preview_says_a_passed_deadline_in_ink():
+    page = html()  # issued 30.09.2026, the deadline 21.08.2026
+    assert '<span class="deadline deadline--passed">21.08.2026, рокот помина</span>' in page
+    later = render.html_of(draft(), issued=dt.date(2026, 8, 1), reference="И-1")
+    assert "рокот помина" not in later
+
+
+def test_one_label_for_the_date_of_the_check():
+    """F30: «Последна проверка» everywhere, never «Состојба на»."""
+    text = render.visible_text(html())
+    assert "Последна проверка" in text and "Состојба на" not in text
+
+
+def test_the_legend_is_a_table_so_a_label_never_wraps_into_its_meaning():
+    """F28."""
+    page = html()
+    assert '<table class="legend">' in page
+    assert ".legend th { white-space: nowrap;" in render.report_css()
+
+
+@pytest.mark.parametrize(
+    ("line", "said"),
+    [
+        ("- Старост: 81–93 месеци", "6–7 години"),
+        ("- Старост: 0–5 месеци", "помалку од една година"),
+        ("- Вработени: 10–49", "10–49"),
+    ],
+)
+def test_the_applicant_is_said_to_a_reader_in_years(line, said):
+    """F23, the report's half: the draft keeps the model's months, paper says years."""
+    text = render.visible_text(html(draft(applicant=line)))
+    assert said in text and "месеци" not in text
+
+
+def test_the_print_scale_is_tokens():
+    """F07: report.css has no font size of its own; tokens.css holds the print scale."""
+    import re
+
+    css = render.report_css()
+    assert not re.search(r"font-size:\s*\d", css)
+    assert "--print-10-5: 10.5pt" in render.token_values()
+
+
+def test_the_screen_view_is_the_same_document():
+    """The roadmap's DS6 acceptance: the screen and the paper say the same things in the
+    same order, because they are one template."""
+    paper = render.html_of(draft(), issued=ISSUED, reference="И-1")
+    screen = render.html_of(draft(), issued=ISSUED, reference="И-1", screen=("/t.css", "/r.css"))
+    assert render.visible_text(paper) == render.visible_text(screen)
+    assert '@import url("/t.css");' in screen and 'href="/r.css"' in screen
+    assert "file://" not in screen  # a browser cannot load the merged font files
+
+
+@needs_db
+def test_the_admin_shows_the_report_as_a_document(world, admin):
+    factory, run_id = tc.verified_run(world)
+    item, _ = tc.composed(factory, run_id, tc.prose())
+
+    page = admin.get(f"/admin/izveshtaj/{item.id}").get_data(as_text=True)
+    assert f"/admin/izveshtaj/{item.id}/dokument" in page
+    document = admin.get(f"/admin/izveshtaj/{item.id}/dokument")
+    assert document.status_code == 200 and "Извештај за подобност" in document.get_data(
+        as_text=True
+    )
+    css = admin.get("/admin/izveshtaj/report.css")
+    assert css.mimetype == "text/css" and "@media screen" in css.get_data(as_text=True)

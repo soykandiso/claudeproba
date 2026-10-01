@@ -69,9 +69,9 @@ def verified_run(world) -> tuple:
     return factory, report.match_run_id
 
 
-def composed(factory, run_id, *replies) -> tuple[ReviewQueueItem, ScriptedProvider]:
+def composed(factory, run_id, *replies, today=None) -> tuple[ReviewQueueItem, ScriptedProvider]:
     provider = ScriptedProvider(*replies)
-    item_id = compose.compose(factory, Gateway(factory, provider), run_id)
+    item_id = compose.compose(factory, Gateway(factory, provider), run_id, today=today)
     with factory() as s:
         return s.get(ReviewQueueItem, item_id), provider
 
@@ -296,7 +296,8 @@ def test_a_report_over_the_frozen_calls_resolves_every_citation(frozen):
         ],
     )
 
-    item, _ = composed(factory, report.match_run_id, written)
+    # The suite's clock, not the real one: the frozen calls were open on that day.
+    item, _ = composed(factory, report.match_run_id, written, today=as_of.date())
 
     assert item.payload["problems"] == []
     # Every condition in the draft carries a citation that was found in the stored text.
