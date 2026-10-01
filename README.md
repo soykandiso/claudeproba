@@ -9,7 +9,7 @@ the application documents. North Macedonia first, international programmes along
   risks, open decisions
 - **Rules that must not be broken:** [`CLAUDE.md`](CLAUDE.md)
 
-Status: **P2 session 35** — container stack, schema, backups, source reconnaissance, LLM gateway,
+Status: **Design phase DS1** (after P2 session 35) — container stack, schema, backups, source reconnaissance, LLM gateway,
 snapshot store, fetcher base class, the normaliser (HTML, DOCX, PDF, OCR), call extraction with
 citations located in code, the AV, EU Funding & Tenders, Economy ministry, City of Skopje and IPARD fetchers end to end, chunking, local
 embeddings and hybrid retrieval, source health alerts through healthchecks.io, and the admin review
@@ -55,7 +55,9 @@ model's own), and cannot approve it while either check still finds anything. Eve
 extraction a reviewer rejects or edits becomes an evaluation case the night after
 (`flask review export-cases`, `app/review/cases.py`), with nothing identifying in it. An approved
 report prints as a PDF in the project's own fonts (`app/reports/render.py`) after every check runs
-once more; a character those fonts cannot draw, or any other font, stops it.
+once more; a character those fonts cannot draw, or any other font, stops it. The design phase
+has begun with an audit of every screen against the design system ([`docs/design.md`](docs/design.md)):
+36 findings, each owned by a session DS2–DS9.
 See [`docs/roadmap.md`](docs/roadmap.md).
 
 **Demo stage (16.09.2026):** the whole journey can be tried at `/demo` on invented calls, with no
