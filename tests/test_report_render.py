@@ -118,7 +118,9 @@ def test_what_is_printed_reads_back_as_what_was_meant(tmp_path):
 
 def test_the_pdf_takes_the_token_values_and_not_the_sites_split_fonts():
     page = html()
-    assert "--ink: #22201B" in page and "--seal:" in page
+    assert "--label: #1D1D1F" in page and "--deadline:" in page
+    # Paper takes the light theme only: the dark block is not part of :root.
+    assert "#000000" not in page.split("</style>")[0].split(":root")[1]
     assert "fira-sans-cyrillic" not in page and "fira-sans-all-400-normal.ttf" in page
 
 
@@ -214,7 +216,9 @@ def test_a_character_the_fonts_cannot_draw_is_refused_not_printed(world):
 @needs_db
 def test_a_font_we_do_not_ship_is_refused(world, monkeypatch):
     factory, item_id = approved(world)
-    values = render.token_values().replace('--font-body: "Fira Sans"', "--font-body: monospace")
+    values = render.token_values().replace(
+        '--font-print-body: "Fira Sans"', "--font-print-body: monospace"
+    )
     monkeypatch.setattr(render, "token_values", lambda: values)
     with factory() as s, pytest.raises(render.RenderRefused, match="a font we do not ship"):
         render.render(s, s.get(ReviewQueueItem, item_id))

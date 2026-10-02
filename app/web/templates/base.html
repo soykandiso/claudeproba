@@ -4,15 +4,15 @@
    The wordmark is descriptive on purpose — the name and the domain are docs/decisions.md
    D2, and nothing here should quietly decide them. #}
 <!doctype html>
-<html lang="mk">
+<html lang="mk"{% if theme is defined and theme %} data-theme="{{ theme }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <link rel="icon" href="data:,">
   <title>{% block title %}Платформа за грантови и субвенции{% endblock %}</title>
-  <link rel="preload" href="{{ url_for('static', filename='fonts/fira-sans-cyrillic-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{{ url_for('static', filename='fonts/source-serif-4-cyrillic-600-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  {# No font preloads (DL1): Apple devices render in their own SF and would fetch Inter for
+     nothing; everyone else gets Inter with font-display: swap, text first. #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
   {% block head %}{% endblock %}

@@ -1,28 +1,22 @@
-"""Cut the Source Serif 4 italic subsets from the upstream font (design phase DS2).
+"""Cut the web fonts this site serves from their upstream files (DS2, DL1).
 
     uv run python ops/dev/cut_fonts.py --src DIR
 
-DIR holds `SourceSerif4-Italic[opsz,wght].ttf` from google/fonts (URL below). It is
-not downloaded here: the run is once a year at most, and a dev host behind a
-TLS-inspecting proxy fetches it more easily with a browser or curl than Python
-does. The file is hash-pinned; a different upstream build must be looked at, not
-silently subset (`--accept-new-hash`).
+DIR holds `Inter[opsz,wght].ttf` from google/fonts (the URL is in FACES). It is not
+downloaded here: the run is once a year at most, and a dev host behind a TLS-inspecting
+proxy fetches it more easily with a browser or curl than Python does. Each source is
+hash-pinned; a different upstream build must be looked at, not silently subset
+(`--accept-new-hash`).
 
-Why only the italic. The DS1 audit (docs/design.md F05) asked for the subsets to be
-re-cut keeping the Macedonian `locl` lookups. Opening the upstream files settled it:
+Inter is the design language's one family (DL1, docs/design-language.md). Variable
+subsets with both axes are over the 40 KB budget, so each weight is a static instance
+at the optical size it is used at. The ranges are the ones tokens.css declares, so every
+weight splits into one Cyrillic and one Latin file.
 
-- **Fira Sans has no Cyrillic language systems at all** upstream, so there is no
-  `locl` to keep. Its upright forms are correct for Macedonian; a Fira italic never
-  would be, so none is shipped and `font-synthesis: none` stops a browser faking one.
-- **The Source Serif 4 subsets already keep `cyrl/MKD`.** Re-cutting them would change
-  shipped bytes (and the PDF's merged faces, app/reports/render.py) for nothing.
-
-So the one new cut is the italic, the only face in which Macedonian б г д п т differ
-from Russian. It is used on `/stil` alone until a native reader signs the forms off
-(roadmap DS2); tests/test_design_foundation.py proves the substitution is in the file.
-
-The ranges are the ones tokens.css declares for every other face, so the italic
-splits the same way: one Cyrillic and one Latin file per weight.
+History: DS2 cut a Source Serif 4 italic for a Macedonian reader to sign off. The
+design language has no italic (Inter and SF have no Macedonian italic forms), so DL1
+removed it. The Fira Sans and Source Serif 4 uprights stay for the PDF until DL5; they
+were never cut here (decisions.md, DS2).
 """
 
 import argparse
@@ -37,12 +31,22 @@ from fontTools.varLib import instancer
 ROOT = Path(__file__).resolve().parents[2]
 FONTS = ROOT / "app" / "web" / "static" / "fonts"
 
-SOURCE = "SourceSerif4-Italic[opsz,wght].ttf"
-SOURCE_URL = (
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/sourceserif4/"
-    "SourceSerif4-Italic%5Bopsz%2Cwght%5D.ttf"
+# (file in --src, where it comes from, its pinned sha256, output name, cuts). A cut is
+# (weight, optical size): a static instance, because a variable subset of Inter with both
+# axes is over the 40 KB budget per file.
+FACES = (
+    # The design language's one family (DL1, docs/design-language.md): Inter, the free face
+    # nearest to SF Pro, which may not be served on the web. Each weight is cut at the
+    # optical size it is used at, as SF Text and SF Display are: 400 for reading (14), 600
+    # for headlines and controls (20), 700 for the large titles (28).
+    (
+        "Inter[opsz,wght].ttf",
+        "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+        "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+        "inter-{part}-{weight}-normal.woff2",
+        ((400, 14), (600, 20), (700, 28)),
+    ),
 )
-SOURCE_SHA256 = "15fbc7e4679489a501998c3669272637a6646388ef7e4bd77eebb5bf967a1f42"
 
 # The same unicode-range strings as tokens.css, so a face never covers a character
 # its @font-face does not claim.
@@ -54,10 +58,6 @@ RANGES = {
     ),
 }
 
-# Text sizes; the optical size the upstream file defaults to as well.
-OPSZ = 20
-WEIGHTS = (400,)
-
 
 def unicodes(spec: str) -> list[int]:
     out: list[int] = []
@@ -67,8 +67,8 @@ def unicodes(spec: str) -> list[int]:
     return out
 
 
-def cut(src: Path, weight: int, part: str) -> Path:
-    font = instancer.instantiateVariableFont(TTFont(src), {"wght": weight, "opsz": OPSZ})
+def cut(src: Path, weight: int, opsz: int, part: str, name: str) -> Path:
+    font = instancer.instantiateVariableFont(TTFont(src), {"wght": weight, "opsz": opsz})
     options = subset.Options()
     # Default features already include locl; say it, so a future default cannot drop it.
     options.layout_features = [*options.layout_features, "locl"]
@@ -81,7 +81,7 @@ def cut(src: Path, weight: int, part: str) -> Path:
     sub = subset.Subsetter(options)
     sub.populate(unicodes=unicodes(RANGES[part]))
     sub.subset(font)
-    out = FONTS / f"source-serif-4-{part}-{weight}-italic.woff2"
+    out = FONTS / name.format(part=part, weight=weight)
     # On the font, not on subset.Options: Options.flavor is read only by subset.main's
     # own save, and without this the file is a plain TTF with a .woff2 name.
     font.flavor = "woff2"
@@ -95,22 +95,22 @@ def main() -> int:
     parser.add_argument("--accept-new-hash", action="store_true")
     args = parser.parse_args()
 
-    src = args.src / SOURCE
-    if not src.exists():
-        print(f"missing {src}\ndownload it from {SOURCE_URL}", file=sys.stderr)
-        return 1
-    digest = hashlib.sha256(src.read_bytes()).hexdigest()
-    if digest != SOURCE_SHA256 and not args.accept_new_hash:
-        print(
-            f"{SOURCE} is {digest}, pinned {SOURCE_SHA256}; look, then --accept-new-hash",
-            file=sys.stderr,
-        )
-        return 1
-
-    for weight in WEIGHTS:
-        for part in RANGES:
-            out = cut(src, weight, part)
-            print(f"{out.relative_to(ROOT)}  {out.stat().st_size:,} bytes")
+    for source, url, pinned, name, cuts in FACES:
+        src = args.src / source
+        if not src.exists():
+            print(f"missing {src}; download it from {url}", file=sys.stderr)
+            return 1
+        digest = hashlib.sha256(src.read_bytes()).hexdigest()
+        if digest != pinned and not args.accept_new_hash:
+            print(
+                f"{source} is {digest}, pinned {pinned}; look, then --accept-new-hash",
+                file=sys.stderr,
+            )
+            return 1
+        for weight, opsz in cuts:
+            for part in RANGES:
+                out = cut(src, weight, opsz, part, name)
+                print(f"{out.relative_to(ROOT)}  {out.stat().st_size:,} bytes")
     return 0
 
 

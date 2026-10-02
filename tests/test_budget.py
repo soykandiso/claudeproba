@@ -30,8 +30,9 @@ def test_the_javascript_is_htmx_and_one_small_file():
 
 def test_a_first_visit_stays_under_the_budget():
     """Everything a customer page can load, gzipped as Caddy serves it (woff2 is already
-    compressed). The italic is /stil's alone and not counted."""
-    fonts = [p for p in (STATIC / "fonts").glob("*.woff2") if "italic" not in p.name]
+    compressed). Since DL1 the site serves Inter only; Fira and Source Serif are the PDF's
+    (read from disk by render.py), and Apple devices fetch no font at all."""
+    fonts = list((STATIC / "fonts").glob("inter-*.woff2"))
     total = (
         _gz(STATIC / "css" / "tokens.css")
         + _gz(STATIC / "css" / "site.css")

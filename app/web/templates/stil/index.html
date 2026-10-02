@@ -1,5 +1,5 @@
 {# /stil: every token in tokens.css and every component in _components.html, in every
-   state (DS2, DS3). Development only. The token lists come from the file itself
+   state, in both themes (DS2, DS3, DL1). Development only. The token lists come from the file itself
    (app/web/style), so nothing here can drift from it. #}
 {% extends "base.html" %}
 {% import "_components.html" as c with context %}
@@ -10,7 +10,12 @@
   <div class="report-head stack">
     <h1>Дизајн-систем</h1>
     <p class="soft">Секоја вредност од <span class="id">tokens.css</span>, прочитана при секое отворање на страницата, и секоја компонента од <span class="id">_components.html</span> во секоја состојба. Правилата се во <span class="id">.claude/skills/design-system</span>.</p>
-    <p>{% if grey %}<a href="{{ url_for('stil.index') }}">Прикажи во боја</a>{% else %}<a href="{{ url_for('stil.index', siv=1) }}">Прикажи во сиви тонови</a>{% endif %}</p>
+    <ul class="stil-switch">
+      <li>{% if theme == 'light' %}<strong>Светла</strong>{% else %}<a href="{{ url_for('stil.index', tema='svetla') }}">Светла</a>{% endif %}</li>
+      <li>{% if theme == 'dark' %}<strong>Темна</strong>{% else %}<a href="{{ url_for('stil.index', tema='temna') }}">Темна</a>{% endif %}</li>
+      <li>{% if not theme %}<strong>Како уредот</strong>{% else %}<a href="{{ url_for('stil.index') }}">Како уредот</a>{% endif %}</li>
+      <li>{% if grey %}<a href="{{ url_for('stil.index') }}">Во боја</a>{% else %}<a href="{{ url_for('stil.index', siv=1) }}">Во сиви тонови</a>{% endif %}</li>
+    </ul>
   </div>
 
   {% include "stil/_components.html" %}
@@ -22,7 +27,7 @@
       <div class="specimen">
         <div class="specimen__row">
           <span class="sw sw--{{ t.name }}"></span>
-          <span class="specimen__name"><span class="id">--{{ t.name }}</span><br><span class="id">{{ t.value }}</span></span>
+          <span class="specimen__name"><span class="id">--{{ t.name }}</span><br><span class="id">{{ t.value }}</span>{% if dark.get(t.name) %}<span class="id"> / {{ dark[t.name] }}</span>{% endif %}</span>
           <span>{{ colour_jobs.get(t.name, '') }}</span>
         </div>
       </div>
@@ -32,19 +37,36 @@
     {# A table wider than a phone scrolls; the keyboard has to reach it (WCAG 2.1.1). #}
     <div class="table-wrap" tabindex="0" role="region" aria-label="Контраст на боите">
       <table class="ledger">
-        <thead><tr><th>Боја</th><th>Подлога</th><th class="num">Однос</th><th class="num">Потребно</th><th>Резултат</th></tr></thead>
+        <thead><tr><th>Тема</th><th>Боја</th><th>Подлога</th><th class="num">Однос</th><th class="num">Потребно</th><th>Резултат</th></tr></thead>
         <tbody>
           {% for p in pairs %}
           <tr>
+            <td>{{ 'светла' if p.theme == 'light' else 'темна' }}</td>
             <td><span class="id">--{{ p.fg }}</span></td>
             <td><span class="id">--{{ p.ground }}</span></td>
             <td class="num">{{ p.ratio }}:1</td>
-            <td class="num">{% if p.fg == 'rule' %}само делител{% else %}{{ p.need }}:1{% endif %}</td>
+            <td class="num">{{ p.need }}:1</td>
             <td>{% if p.ok %}<span class="pass">Поминува</span>{% else %}<span class="fail">Не поминува</span>{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section class="stack" aria-labelledby="material-h">
+    <h2 id="material-h">Материјали и движење</h2>
+    <p class="soft">Стаклото е само за слојот што лебди над содржината: лента за навигација, копче, лист. Содржината секогаш стои на цврста подлога.</p>
+    <div class="stil-backdrop">
+      <div class="stil-backdrop__content surface stack">
+        <h3>Содржина на цврста подлога</h3>
+        <p>Јавен повик за финансиска поддршка на микро, мали и средни претпријатија. Рок за пријава 30.11.2026.</p>
+      </div>
+      <nav class="stil-backdrop__bar glass" aria-label="Пример за стаклена лента">Стаклена лента над содржината</nav>
+    </div>
+    <div>
+      {% for t in materials %}<div class="specimen"><span class="id">--{{ t.name }}: {{ t.value }}{% if dark.get(t.name) %} / {{ dark[t.name] }}{% endif %}</span></div>{% endfor %}
+      {% for t in motion %}<div class="specimen"><span class="id">--{{ t.name }}: {{ t.value }}</span></div>{% endfor %}
     </div>
   </section>
 
@@ -61,8 +83,8 @@
       {% for t in text %}
       <div class="specimen">
         <span class="small soft"><span class="id">--{{ t.name }}</span>, {{ t.value }}. {{ type_jobs.get(t.name, '') }}</span>
-        <p class="size--{{ t.name }} face--display-600">Јавен повик за прифатливи трошоци</p>
-        <p class="size--{{ t.name }} face--body">Барателот приложува потврда од Централниот регистар.</p>
+        <p class="size--{{ t.name }} face--700">Јавен повик за прифатливи трошоци</p>
+        <p class="size--{{ t.name }} face--400">Барателот приложува потврда од Централниот регистар.</p>
       </div>
       {% endfor %}
     </div>
@@ -72,25 +94,13 @@
 
   <section class="stack" aria-labelledby="mk-h">
     <h2 id="mk-h">Македонски букви</h2>
-    <p class="soft">Секое писмо мора да ги има буквите што ги нема во руски подмножество.</p>
+    <p class="soft">Секоја тежина мора да ги има буквите што ги нема во руско подмножество. На уредите на Apple се гледа SF, на сите други Inter.</p>
     <div>
-      <div class="specimen"><span class="small soft">Source Serif 4, 400 и 600</span><p class="size--text-28 face--display">{{ mk_letters }}</p><p class="size--text-28 face--display-600">{{ mk_letters }}</p></div>
-      <div class="specimen"><span class="small soft">Fira Sans, 400 и 500</span><p class="size--text-28 face--body">{{ mk_letters }}</p><p class="size--text-28 face--body-500">{{ mk_letters }}</p></div>
+      <div class="specimen"><span class="small soft">400, текст</span><p class="size--text-title1 face--400">{{ mk_letters }}</p></div>
+      <div class="specimen"><span class="small soft">600, наслови и контроли</span><p class="size--text-title1 face--600">{{ mk_letters }}</p></div>
+      <div class="specimen"><span class="small soft">700, големи наслови</span><p class="size--text-title1 face--700">{{ mk_letters }}</p></div>
     </div>
-    <h3>Курзив: за потпис од човек што го чита македонскиот</h3>
-    <p>Во македонскиот курзив буквите <strong>б г д п т</strong> имаат други форми од рускиот. Лево е како ги пишуваме ние (<span class="id">lang="mk"</span>), десно како би изгледале на руски. Ако левите не се точни, курзивот не смее да се користи на сајтот.</p>
-    <div class="specimen">
-      <div class="specimen__row">
-        <span class="specimen__name small soft">македонски</span>
-        <span class="face--italic" lang="mk">{{ mk_italic }}</span>
-      </div>
-      <div class="specimen__row">
-        <span class="specimen__name small soft">руски, за споредба</span>
-        <span class="face--italic" lang="ru">{{ mk_italic }}</span>
-      </div>
-      <p class="face--italic size--text-20" lang="mk">Годишниот буџет предвидува подобрување на патната мрежа во градот.</p>
-    </div>
-    <p class="soft">Fira Sans нема македонски форми, па курзив во Fira не постои, ниту вештачки (<span class="id">font-synthesis: none</span>).</p>
+    <p class="soft">Курзив нема. Ни Inter ни SF немаат македонски курзивни форми на б г д п т; нагласувањето е со тежина, како на iOS.</p>
   </section>
 
   <section class="stack" aria-labelledby="space-h">

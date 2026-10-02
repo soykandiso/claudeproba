@@ -683,6 +683,24 @@ be the same document: `html_of(screen=...)` renders `report.html` for a browser,
 fonts and an `@media screen` block in `report.css`. A test compares their text. The customer's
 view (P4) is this same route behind sign-in.
 
+### The design language is iOS's, and the dossier is retired (02.10.2026, DL1)
+
+**The user's decision**, after DS9: "a radical design improvement … everything; inspired by Apple
+iOS design, glass", then Inter, Apple-faithful glass, light and dark following the phone, a deep
+blue tint. It replaces the dossier direction of DS1–DS9 (paper, ink, serif, hairlines, no
+shadows, no glass). `docs/design-language.md` holds the reasons.
+
+**What Claude held to while carrying it out**, because the product's promises outrank its look:
+glass only on the floating navigation layer (Apple's HIG says the same, and `backdrop-filter`
+costs frames on the cheap Android the brief targets); iOS's own secondary label and `systemBlue`
+deepened until every pair passes WCAG in both themes; SF Pro not served (licensed for Apple
+platforms only), so the stack asks for the device's SF and falls back to Inter; no italic,
+which retires DS2's italic sign-off. The verdict grammar, every citation and the budget stay.
+
+**The DS acceptances owed by people move to the new design**: the timed intake run (DS4), the
+first-time user (DS5), the 45-minute review (DS7) and DS8's usability test are taken once DL3,
+DL4 and DL6 have rebuilt those screens, not on the old ones.
+
 ---
 
 ## Summary — what to decide, and by when

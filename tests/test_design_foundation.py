@@ -91,6 +91,10 @@ def test_site_css_takes_every_size_from_a_token():
         # Comments may name a size ("a 64px word"); blank them, keeping line numbers.
         text = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
         for n, line in enumerate(text.splitlines(), 1):
+            # Safari cannot resolve var() inside -webkit-backdrop-filter, so the glass's
+            # blur is written out (site.css, materials); and @supports tests a literal.
+            if "backdrop-filter" in line:
+                continue
             scan = re.sub(r"@media\s*\([^)]*\)", "", line)
             scan = re.sub(r"url\([^)]*\)|unicode-range:[^;]*;", "", scan)
             for m in re.finditer(r"(?<![\w-])-?\d*\.?\d+(px|rem|pt|em)\b", scan):
@@ -100,10 +104,24 @@ def test_site_css_takes_every_size_from_a_token():
     assert not found, "raw size:\n" + "\n".join(found)
 
 
+IOS_SCALE = {
+    "caption": 12,
+    "footnote": 13,
+    "subhead": 15,
+    "body": 17,
+    "title3": 20,
+    "title2": 22,
+    "title1": 28,
+    "large": 34,
+    "display": 48,
+}
+
+
 def test_text_sizes_are_the_scale():
-    """The skill's scale is 12/14/16/20/28/40/64 and nothing else."""
+    """The iOS text styles (DL1) and nothing else: body 17, nothing a reader must read
+    below subhead 15."""
     sizes = {t.name: t.value for t in style.tokens() if t.name.startswith("text-")}
-    assert sizes == {f"text-{px}": f"{px / 16:g}rem" for px in (12, 14, 16, 20, 28, 40, 64)}
+    assert sizes == {f"text-{n}": f"{px / 16:g}rem" for n, px in IOS_SCALE.items()}
 
 
 def test_space_is_the_scale():
@@ -111,14 +129,32 @@ def test_space_is_the_scale():
     assert space == [f"s-{n}" for n in (4, 8, 12, 16, 24, 32, 48, 64, 96)]
 
 
-def test_every_colour_has_one_job_and_passes_contrast():
+def test_every_colour_has_one_job_and_passes_contrast_in_both_themes():
     by_name = {t.name: t.value for t in style.tokens()}
     colours = {n for n, v in by_name.items() if v.startswith("#")}
     assert colours == set(style.COLOUR_JOBS)
-    for fg in style.TEXT_COLOURS:
-        for ground in style.GROUNDS:
-            assert style.contrast(by_name[fg], by_name[ground]) >= 4.5, (fg, ground)
-    assert style.contrast(by_name["rule-strong"], by_name["paper"]) >= 3.0
+    pairs = style.pairs()
+    assert {p["theme"] for p in pairs} == {"light", "dark"}
+    assert [(p["theme"], p["fg"], p["ground"], p["ratio"]) for p in pairs if not p["ok"]] == []
+
+
+def _dark_blocks(css: str) -> tuple[str, str]:
+    by_system = css[css.index(':root:not([data-theme="light"]) {') :]
+    by_system = by_system[by_system.index("{") + 1 : by_system.index("}")]
+    explicit = css[css.index(':root[data-theme="dark"] {') :]
+    explicit = explicit[explicit.index("{") + 1 : explicit.index("}")]
+    return by_system, explicit
+
+
+def test_the_dark_theme_is_written_once_in_effect():
+    """tokens.css repeats the dark values (the system setting, and data-theme for /stil):
+    the two copies must say exactly the same."""
+    by_system, explicit = _dark_blocks(TOKENS.read_text(encoding="utf-8"))
+    norm = lambda b: [line.strip() for line in b.strip().splitlines()]  # noqa: E731
+    assert norm(by_system) == norm(explicit)
+    # Every colour that has a job is given in dark too, or dark is half a theme.
+    dark = style.dark_tokens()
+    assert [c for c in style.COLOUR_JOBS if c not in dark] == []
 
 
 @pytest.mark.parametrize("path", sorted(FONTS.glob("*.woff2")), ids=lambda p: p.name)
@@ -130,27 +166,6 @@ def test_font_within_budget(path):
 def test_cyrillic_subset_has_every_macedonian_letter(path):
     cmap = TTFont(path).getBestCmap()
     assert [ch for ch in MK_LETTERS if ord(ch) not in cmap] == []
-
-
-def _mkd_locl(font: TTFont) -> dict[str, str]:
-    """Glyph substitutions the font makes for Macedonian (cyrl/MKD, feature locl)."""
-    gsub = font["GSUB"].table
-    out: dict[str, str] = {}
-    for sr in gsub.ScriptList.ScriptRecord:
-        if sr.ScriptTag != "cyrl":
-            continue
-        for lang in sr.Script.LangSysRecord:
-            if lang.LangSysTag != "MKD ":
-                continue
-            for fi in lang.LangSys.FeatureIndex:
-                record = gsub.FeatureList.FeatureRecord[fi]
-                if record.FeatureTag != "locl":
-                    continue
-                for li in record.Feature.LookupListIndex:
-                    for st in gsub.LookupList.Lookup[li].SubTable:
-                        st = getattr(st, "ExtSubTable", st)
-                        out.update(getattr(st, "mapping", {}) or {})
-    return out
 
 
 @pytest.mark.parametrize(
@@ -168,18 +183,10 @@ def test_serif_keeps_the_macedonian_language_system(path):
     assert "MKD " in langs
 
 
-def test_the_italic_substitutes_the_five_macedonian_forms():
-    """б г д п т are the letters whose italic differs from Russian. The substitution
-    has to be in the file, or lang="mk" can do nothing (ops/dev/cut_fonts.py)."""
-    font = TTFont(FONTS / "source-serif-4-cyrillic-400-italic.woff2")
-    cmap = font.getBestCmap()
-    locl = _mkd_locl(font)
-    assert [ch for ch in "бгдпт" if cmap[ord(ch)] not in locl] == []
-
-
-def test_no_sans_italic_is_shipped():
-    """Fira has no Macedonian forms; its italic would always be the Russian ones."""
-    assert not list(FONTS.glob("fira-sans-*italic*"))
+def test_no_italic_is_shipped():
+    """Neither Inter nor SF has Macedonian italic forms, so the language has no italic
+    (DL1); emphasis is weight, as on iOS."""
+    assert not list(FONTS.glob("*italic*"))
     css = TOKENS.read_text(encoding="utf-8") + (WEB / "static" / "css" / "site.css").read_text(
         encoding="utf-8"
     )
@@ -200,12 +207,27 @@ def test_stil_has_a_sample_class_for_every_sampled_token():
     for t in style.tokens():
         if t.value.startswith("#"):
             assert f".sw--{t.name} " in css, t.name
+        elif t.name.startswith("radius-"):
+            assert f".box--{t.name} " in css, t.name
         elif t.name.startswith("text-"):
             assert f".size--{t.name} " in css, t.name
         elif t.name.startswith("s-"):
             assert f".bar--{t.name} " in css, t.name
         elif t.name == "measure" or t.name.startswith(("width-", "col-")):
             assert f".span--{t.name} " in css, t.name
+
+
+def test_stil_holds_a_theme_when_asked(client):
+    assert 'data-theme="dark"' in client.get("/stil/?tema=temna").get_data(as_text=True)
+    assert 'data-theme="light"' in client.get("/stil/?tema=svetla").get_data(as_text=True)
+    assert "data-theme" not in client.get("/stil/").get_data(as_text=True).split(">", 2)[1]
+
+
+def test_inter_draws_every_macedonian_letter_in_every_weight():
+    for path in FONTS.glob("inter-cyrillic-*.woff2"):
+        cmap = TTFont(path).getBestCmap()
+        assert [ch for ch in MK_LETTERS if ord(ch) not in cmap] == [], path.name
+    assert len(list(FONTS.glob("inter-*.woff2"))) == 6
 
 
 def test_stil_is_not_registered_in_production():

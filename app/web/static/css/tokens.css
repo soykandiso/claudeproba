@@ -1,54 +1,62 @@
-/* Design tokens. The only place colour, type and space values are defined.
-   Source of truth for the rules: .claude/skills/design-system/SKILL.md */
+/* Design tokens. The only place colour, type, space, shape, material and motion values
+   are defined. The language: docs/design-language.md (DL1, 02.10.2026); the rules:
+   .claude/skills/design-system/SKILL.md. Light is :root; dark is the second block,
+   written twice below (the system setting, and an explicit data-theme for /stil) and
+   kept identical by tests/test_design_foundation.py. */
 
-@font-face { font-family: "Source Serif 4"; font-weight: 400; font-display: swap;
-  src: url("../fonts/source-serif-4-cyrillic-400-normal.woff2") format("woff2");
+/* Inter: the face nearest to SF Pro that may be served on the web. Each weight is a static
+   cut at the optical size it is used at (ops/dev/cut_fonts.py). Apple devices never fetch
+   it: the stack below asks for their own SF first. */
+@font-face { font-family: "Inter"; font-weight: 400; font-display: swap;
+  src: url("../fonts/inter-cyrillic-400-normal.woff2") format("woff2");
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
-@font-face { font-family: "Source Serif 4"; font-weight: 400; font-display: swap;
-  src: url("../fonts/source-serif-4-latin-400-normal.woff2") format("woff2");
+@font-face { font-family: "Inter"; font-weight: 400; font-display: swap;
+  src: url("../fonts/inter-latin-400-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Source Serif 4"; font-weight: 600; font-display: swap;
-  src: url("../fonts/source-serif-4-cyrillic-600-normal.woff2") format("woff2");
+@font-face { font-family: "Inter"; font-weight: 600; font-display: swap;
+  src: url("../fonts/inter-cyrillic-600-normal.woff2") format("woff2");
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
-@font-face { font-family: "Source Serif 4"; font-weight: 600; font-display: swap;
-  src: url("../fonts/source-serif-4-latin-600-normal.woff2") format("woff2");
+@font-face { font-family: "Inter"; font-weight: 600; font-display: swap;
+  src: url("../fonts/inter-latin-600-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Fira Sans"; font-weight: 400; font-display: swap;
-  src: url("../fonts/fira-sans-cyrillic-400-normal.woff2") format("woff2");
+@font-face { font-family: "Inter"; font-weight: 700; font-display: swap;
+  src: url("../fonts/inter-cyrillic-700-normal.woff2") format("woff2");
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
-@font-face { font-family: "Fira Sans"; font-weight: 400; font-display: swap;
-  src: url("../fonts/fira-sans-latin-400-normal.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: "Fira Sans"; font-weight: 500; font-display: swap;
-  src: url("../fonts/fira-sans-cyrillic-500-normal.woff2") format("woff2");
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
-@font-face { font-family: "Fira Sans"; font-weight: 500; font-display: swap;
-  src: url("../fonts/fira-sans-latin-500-normal.woff2") format("woff2");
+@font-face { font-family: "Inter"; font-weight: 700; font-display: swap;
+  src: url("../fonts/inter-latin-700-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
-  --font-display: "Source Serif 4", Georgia, serif;
-  --font-body: "Fira Sans", "Segoe UI", system-ui, sans-serif;
-  --font-id: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* One family, as iOS has one. SF on Apple devices, Inter everywhere else. */
+  --font-text: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-id: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* The PDF keeps the faces it merges and checks (app/reports/render.py) until DL5. */
+  --font-print-body: "Fira Sans";
+  --font-print-display: "Source Serif 4";
 
-  --text-12: 0.75rem;
-  --text-14: 0.875rem;
-  --text-16: 1rem;
-  --text-20: 1.25rem;
-  --text-28: 1.75rem;
-  --text-40: 2.5rem;
-  --text-64: 4rem;
-
-  /* 12 is for identifiers. 14 is for labels: a dt, a verdict label, an excerpt's
-     source line, a field's "optional". Never for a sentence the reader must read:
-     that is 16 at least, --ink-soft if it is secondary (docs/design.md F06). */
+  /* The iOS text styles. Body is 17, as on an iPhone. Secondary sentences are subhead
+     (15) at the least; footnote (13) is for labels; caption (12) for identifiers. */
+  --text-caption: 0.75rem;
+  --text-footnote: 0.8125rem;
+  --text-subhead: 0.9375rem;
+  --text-body: 1.0625rem;
+  --text-title3: 1.25rem;
+  --text-title2: 1.375rem;
+  --text-title1: 1.75rem;
+  --text-large: 2.125rem;
+  --text-display: 3rem;
+  --leading-body: 1.47;
+  --leading-title: 1.18;
+  /* Large type draws tighter, as SF Display does. */
+  --tracking-title: -0.022em;
+  --tracking-body: -0.011em;
 
   --measure: 68ch;
 
-  /* The PDF's scale, in points, used only by app/reports/templates/report.css: paper is
-     not a screen, and 16px body text would print at 12pt (docs/design.md F07). */
+  /* The PDF's scale, in points, used only by report.css (docs/design.md F07). */
   --print-8: 8pt;
   --print-8-5: 8.5pt;
   --print-10-5: 10.5pt;
@@ -56,14 +64,33 @@
   --print-14: 14pt;
   --print-22: 22pt;
 
-  --paper: #F7F6F3;
-  --paper-sunk: #EDEBE6;
-  --ink: #22201B;
-  --ink-soft: #625D54;
-  --rule: #C9C4B8;
-  --rule-strong: #8F887A;
-  --seal: #A8321E;
-  --verified: #35635A;
+  /* Colour, light. Grounds and labels after iOS's system colours, deepened where iOS's own
+     fail WCAG for small text on the web (its secondary label and systemBlue do). Each
+     colour has one job (app/web/style COLOUR_JOBS). */
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --fill: #EFEFF4;
+  --label: #1D1D1F;
+  --label-2: #56565C;
+  --label-3: #636368;
+  --separator: #C6C6C8;
+  --separator-strong: #8A8A8E;
+  --tint: #0A5BD3;
+  --tint-strong: #0A5BD3;
+  --on-tint: #FFFFFF;
+  --deadline: #C8341A;
+  --verified: #1F7A3A;
+
+  /* Materials. Glass is the floating navigation layer only, never content (Apple's HIG:
+     "use sparingly", "not in the content layer"). The solid colour is what a browser
+     without backdrop-filter, or a reader asking for less transparency, gets. */
+  --glass: rgba(249, 249, 251, 0.72);
+  --glass-solid: #F9F9FB;
+  --glass-edge: rgba(255, 255, 255, 0.65);
+  --glass-line: rgba(60, 60, 67, 0.18);
+  --tint-soft: rgba(10, 91, 211, 0.12);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
 
   --s-4: 4px;
   --s-8: 8px;
@@ -75,10 +102,21 @@
   --s-64: 64px;
   --s-96: 96px;
 
-  --radius: 2px;
+  /* Shape. Rounded as iOS is; continuous where the browser can (corner-shape). */
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
 
-  /* Line weights. 1px separates; 2px is focus and the outline of a mark; 3px is the
-     heavy rule a verdict or an error draws down the left of a block. */
+  /* Motion answers an action only. Apple's curves: quick out, and a soft spring. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-1: 160ms;
+  --dur-2: 280ms;
+
+  /* Line weights. 1px separates; 2px is the outline of a mark; 3px is a focus ring and the
+     heavy rule a verdict or an error draws. */
   --rule-w: 1px;
   --mark-w: 2px;
   --rule-w-strong: 3px;
@@ -86,13 +124,12 @@
   /* A verdict, step or check marker. */
   --mark: 12px;
 
-  /* Controls. 44px is the smallest touch target; a text control or button is 48px. */
+  /* Controls. 44px is the smallest touch target, as on iOS; a text control or button is 50. */
   --target: 44px;
-  --control: 48px;
-  --check: 20px;
+  --control: 50px;
+  --check: 22px;
 
-  /* Widths. Anything that reads as prose takes --measure. These are for what does
-     not: the page column, wide lists and tables, and the label columns inside them. */
+  /* Widths. Anything that reads as prose takes --measure. */
   --width-page: 64rem;
   --width-review: 90rem;
   --width-wide: 56rem;
@@ -104,3 +141,54 @@
   --col-choice: 12rem;
   --col-meta: 14rem;
 }
+
+/* Colour, dark: the phone's setting decides, as on iOS. The same block again for an
+   explicit data-theme="dark" (/stil shows both); a test keeps the two identical. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000;
+    --surface: #1C1C1E;
+    --fill: #2C2C2E;
+    --label: #F5F5F7;
+    --label-2: #AEAEB2;
+    --label-3: #98989D;
+    --separator: #38383A;
+    --separator-strong: #7C7C80;
+    --tint: #4D9BFF;
+    --tint-strong: #1E6FE6;
+    --on-tint: #FFFFFF;
+    --deadline: #FF7A66;
+    --verified: #3DCC6E;
+    --glass: rgba(30, 30, 32, 0.72);
+    --glass-solid: #1E1E20;
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-line: rgba(255, 255, 255, 0.12);
+    --tint-soft: rgba(77, 155, 255, 0.18);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root[data-theme="dark"] {
+    --bg: #000000;
+    --surface: #1C1C1E;
+    --fill: #2C2C2E;
+    --label: #F5F5F7;
+    --label-2: #AEAEB2;
+    --label-3: #98989D;
+    --separator: #38383A;
+    --separator-strong: #7C7C80;
+    --tint: #4D9BFF;
+    --tint-strong: #1E6FE6;
+    --on-tint: #FFFFFF;
+    --deadline: #FF7A66;
+    --verified: #3DCC6E;
+    --glass: rgba(30, 30, 32, 0.72);
+    --glass-solid: #1E1E20;
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-line: rgba(255, 255, 255, 0.12);
+    --tint-soft: rgba(77, 155, 255, 0.18);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }

@@ -132,7 +132,7 @@ def test_a_submit_says_what_it_is_doing(app):
     assert "attr(data-busy)" in SITE_CSS
     # submit.js disables the button too; the busy look must win over the disabled one,
     # or the label is paper on paper-sunk (found in DS3's live check).
-    assert "var(--ink)" in _rule('.btn[aria-busy="true"]:disabled')
+    assert "var(--label)" in _rule('.btn[aria-busy="true"]:disabled')
 
 
 @pytest.mark.parametrize("path", ["/profil/", "/", "/admin/"])

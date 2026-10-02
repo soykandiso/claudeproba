@@ -141,6 +141,32 @@ from the same components without adding new ones.
 
 ---
 
+## Design language · 7 sessions (DL1–DL7) · after DS9, before P3
+
+> **Added 02.10.2026 at the user's request:** "a phase before P3 about the design language: a
+> radical design improvement, font, colours, UI, elements, everything; inspired by Apple iOS
+> design, glass." It **replaces the direction** of `.claude/skills/design-system` ("the dossier,
+> not the dashboard": paper, iron-gall ink, serif, hairlines, no shadows, no glass) with an
+> iOS-inspired one, recorded in `docs/design-language.md`. The user chose (02.10): **Inter**,
+> **Apple-faithful glass** (the floating navigation layer only, never content), **light and dark
+> following the phone**, a **deep-blue tint**. What does not change: the five invariants, the
+> verdict grammar (a verdict told apart without colour), every cited claim, Macedonian first,
+> `dd.mm.yyyy`, the banned words, one source of values, zero WCAG AA violations, the budget.
+> The DS acceptances still owed by people (DS4's timed run, DS5's first-time user, DS7's 45
+> minutes, DS8) are taken on the new design, not the old one.
+
+| # | Task | Acceptance |
+|---|------|-----------|
+| DL1 | **Foundation**: `docs/design-language.md` and the skill rewritten; tokens for both themes (system grounds, label colours, separators, tint, the single-purpose colours), Inter subsets (Cyrillic + Latin, the weights used), the iOS type scale, continuous radii, soft elevation, the glass materials with their fallbacks and `prefers-reduced-transparency`, motion curves; `/stil` rebuilt to show both themes | Every token on `/stil` in light and dark; every contrast pair measured in both and passing; each font file ≤ 40 KB; the old checks updated, not deleted — *built 02.10.2026: 50 contrast pairs pass in both themes, Inter 7 KB per Cyrillic file, axe zero violations in both themes, italic retired, the PDF on its own print fonts until DL5* |
+| DL2 | **Components** on the new language: glass navigation bar, phone tab bar, the four iOS button styles, inset grouped lists, form rows and controls, segmented control, the verdict marks re-drawn as symbols, the cited excerpt, disclosure and sheet, empty and error | Every component in every state, both themes, on `/stil`; verdicts tell apart in greyscale in both themes |
+| DL3 | **Intake** on the new components | Both themes at 375/768/1440; DS4's checks hold |
+| DL4 | **Shortlist and passage** | DS5's checks hold; the citation still the one bold element |
+| DL5 | **The report**: the screen view in the new language, the PDF a print rendering of it (paper is not glass) | PDF and screen say the same thing; the pixel test of the marks passes |
+| DL6 | **Operator screens** | DS7's checks hold in both themes |
+| DL7 | **Audit**: axe in both themes at three widths, reduced transparency and reduced motion, keyboard, the budget with Inter and glass on a throttled phone | Zero AA violations in both themes; budget held; no glass where Apple's HIG says not to |
+
+---
+
 ## P3 — Public surface · 10 sessions · → ~27 Nov 2026
 
 | # | Task | Acceptance |
