@@ -19,10 +19,12 @@
   <script src="{{ url_for('static', filename='js/htmx.min.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/submit.js') }}" defer></script>
 </head>
-<body>
+<body class="has-tab-bar">
   <a class="skip" href="#main">Оди на содржината</a>
 
-  <header class="site-header">
+  {# The navigation bar floats on glass above the page (DL2); on a phone its sections move
+     to the tab bar at the bottom. #}
+  <header class="site-header glass glass--bar">
     <div class="wrap">
       <a class="wordmark" href="{{ url_for('intake.form') }}">Грантови и субвенции</a>
       <nav class="site-nav" aria-label="Главна навигација">
@@ -37,6 +39,21 @@
   <main id="main" tabindex="-1">
     {% block main %}{% endblock %}
   </main>
+
+  {# The tab bar (phones): the same two sections, where the thumb is. Symbols are drawn
+     inline in currentColor, so the tint marks the current one in both themes. #}
+  {% set in_intake = request.blueprint == 'intake' %}
+  {% set in_shortlist = request.blueprint == 'shortlist' %}
+  <nav class="tab-bar glass" aria-label="Делови">
+    <a href="{{ url_for('intake.form') }}" {% if in_intake %}aria-current="{{ 'page' if request.endpoint in ('intake.form', 'intake.save') else 'true' }}"{% endif %}>
+      <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2.5" width="14" height="15" rx="3"/><path d="M6.5 7h7M6.5 10.5h7M6.5 14h4"/></svg>
+      Профил
+    </a>
+    <a href="{{ url_for('shortlist.index') }}" {% if in_shortlist %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>
+      <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="5.5" r="1"/><circle cx="4.5" cy="10" r="1"/><circle cx="4.5" cy="14.5" r="1"/><path d="M8 5.5h8M8 10h8M8 14.5h8"/></svg>
+      Повици
+    </a>
+  </nav>
 
   <footer class="site-footer">
     <div class="wrap stack">

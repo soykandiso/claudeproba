@@ -81,3 +81,31 @@
   {% endif %}
 </div>
 {%- endmacro %}
+
+{# A segmented control (DL2): one of a few options, chosen in place. Radio inputs under it,
+   so it posts with no script and is a radio group to a screen reader. `options` are
+   (value, label) pairs. #}
+{% macro segmented(name, options, value=none, legend='', id=none) -%}
+<fieldset class="segmented" {% if id %}id="{{ id }}"{% endif %}>
+  {% if legend %}<legend class="visually-hidden">{{ legend }}</legend>{% endif %}
+  {% for v, label in options %}
+  <label><input class="visually-hidden" type="radio" name="{{ name }}" value="{{ v }}"{% if v == value %} checked{% endif %}>{{ label }}</label>
+  {% endfor %}
+</fieldset>
+{%- endmacro %}
+
+{# An inset grouped list (DL2): a footnote header, rows of label and value, an explanation
+   under it. `rows` are (label, value, href) triples; a row with an href is a link with
+   iOS's chevron. #}
+{% macro group(rows, header=none, footer=none) -%}
+<div class="group">
+  {% if header %}<p class="group__header">{{ header }}</p>{% endif %}
+  <ul class="group__rows">
+    {% for label, value, href in rows %}
+    <li>{% if href %}<a class="group__row" href="{{ href }}"><span>{{ label }}</span>{% if value %}<span class="group__value">{{ value }}</span>{% endif %}</a>
+      {%- else %}<div class="group__row"><span>{{ label }}</span>{% if value %}<span class="group__value">{{ value }}</span>{% endif %}</div>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% if footer %}<p class="group__footer">{{ footer }}</p>{% endif %}
+</div>
+{%- endmacro %}

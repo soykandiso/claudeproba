@@ -100,3 +100,6 @@
   padding: var(--s-12) var(--s-24); border-radius: var(--radius-pill);
   font-weight: 600; text-align: center; color: var(--label);
 }
+
+/* The sheet shown in place on /stil, not as a modal. */
+.stil-sheet { position: static; margin: 0; display: block; }

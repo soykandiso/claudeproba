@@ -89,6 +89,7 @@
   --glass-edge: rgba(255, 255, 255, 0.65);
   --glass-line: rgba(60, 60, 67, 0.18);
   --tint-soft: rgba(10, 91, 211, 0.12);
+  --scrim: rgba(0, 0, 0, 0.32);
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
 
@@ -123,6 +124,17 @@
 
   /* A verdict, step or check marker. */
   --mark: 12px;
+
+  /* Symbols, drawn as SF Symbols are and painted in currentColor through a mask (DL2).
+     The verdict's glyph says the verdict on its own, in greyscale and without its label:
+     a filled disc with a check, a whole ring with a check, a broken ring with a question,
+     a ring struck through. */
+  --symbol: 18px;
+  --sym-eligible: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cmask id='m'%3E%3Crect width='20' height='20' fill='white'/%3E%3Cpath d='M6.2 10.4l2.5 2.5 5.1-5.6' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/mask%3E%3Ccircle cx='10' cy='10' r='9' fill='black' mask='url(%23m)'/%3E%3C/svg%3E");
+  --sym-likely-eligible: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8.2' fill='none' stroke='black' stroke-width='1.6'/%3E%3Cpath d='M6.2 10.4l2.5 2.5 5.1-5.6' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --sym-needs-verification: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8.2' fill='none' stroke='black' stroke-width='1.6' stroke-dasharray='3.2 2.2'/%3E%3Cpath d='M7.9 7.7a2.2 2.2 0 1 1 3.2 2c-.7.4-1.1.8-1.1 1.5v.3' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='10' cy='14.1' r='1.05' fill='black'/%3E%3C/svg%3E");
+  --sym-not-eligible: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='8.2' fill='none' stroke='black' stroke-width='1.6'/%3E%3Cpath d='M5.8 10h8.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --sym-cite: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.8l2 1.5 2.5-.2.8 2.4 2.1 1.4-.8 2.4.8 2.4-2.1 1.4-.8 2.4-2.5-.2-2 1.5-2-1.5-2.5.2-.8-2.4-2.1-1.4.8-2.4-.8-2.4 2.1-1.4.8-2.4 2.5.2z' fill='black'/%3E%3Cpath d='M6.9 10.2l2.1 2.1 4.2-4.6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
   /* Controls. 44px is the smallest touch target, as on iOS; a text control or button is 50. */
   --target: 44px;
@@ -164,6 +176,7 @@
     --glass-edge: rgba(255, 255, 255, 0.14);
     --glass-line: rgba(255, 255, 255, 0.12);
     --tint-soft: rgba(77, 155, 255, 0.18);
+    --scrim: rgba(0, 0, 0, 0.56);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
   }
@@ -187,6 +200,7 @@
     --glass-edge: rgba(255, 255, 255, 0.14);
     --glass-line: rgba(255, 255, 255, 0.12);
     --tint-soft: rgba(77, 155, 255, 0.18);
+    --scrim: rgba(0, 0, 0, 0.56);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
 }

@@ -4,7 +4,7 @@
 
 <section class="stack" aria-labelledby="verdict-h">
   <h2 id="verdict-h">Оценки</h2>
-  <p class="soft">Ознаката сама ја кажува оценката: полна, празна, точкеста, прецртана. Мора да се разликуваат и во сиви тонови, и без линијата на повикот.</p>
+  <p class="soft">Знакот сам ја кажува оценката: полн круг со штиклирање, празен круг со штиклирање, испрекинат круг со прашалник, прецртан круг. Мора да се разликуваат и во сиви тонови.</p>
   <ul class="legend legend--column">
     {% for key in verdict_labels %}<li>{{ c.verdict(key) }}</li>{% endfor %}
   </ul>
@@ -51,9 +51,9 @@
 <section class="stack" aria-labelledby="button-h">
   <h2 id="button-h">Копчиња</h2>
   <p class="soft">Секое копче има состојба за покажувач, фокус, притискање, оневозможено и додека работи.</p>
-  {% for kind, label in [('primary', 'Побарај извештај'), ('quiet', 'Измени го профилот'), ('destructive', 'Отстрани го условот')] %}
+  {% for kind, label in [('primary', 'Побарај извештај'), ('quiet', 'Измени го профилот'), ('gray', 'Откажи'), ('plain', 'Види ги сите'), ('destructive', 'Отстрани го условот')] %}
   <div class="specimen">
-    <span class="small soft">{{ {'primary': 'Главно', 'quiet': 'Споредно', 'destructive': 'Отстранува нешто'}[kind] }}</span>
+    <span class="small soft">{{ {'primary': 'Пополнето: главното дејство', 'quiet': 'Обоено: споредно дејство', 'gray': 'Сиво: неутрален излез', 'plain': 'Обично: дејство што чита како врска', 'destructive': 'Отстранува нешто'}[kind] }}</span>
     <div class="specimen__row">
       {% set cls = 'btn' ~ ('' if kind == 'primary' else ' btn--' ~ kind) %}
       <button class="{{ cls }}" type="button">{{ label }}</button>
@@ -124,6 +124,31 @@
     <li><button type="button" class="picker__row is-hover"><span class="id">10.72</span> Производство на двопек и бисквити</button></li>
     <li><button type="button" class="picker__row is-busy" disabled><span class="id">47.24</span> Трговија на мало со леб, колачи и слатки</button></li>
   </ul>
+</section>
+
+<section class="stack" aria-labelledby="segment-h">
+  <h2 id="segment-h">Сегментирана контрола</h2>
+  <p class="soft">Една од неколку можности, избрана на место. Под неа се радио-копчиња: работи без скрипта.</p>
+  {{ c.segmented('stil-size', [('micro', 'Микро'), ('small', 'Мало'), ('medium', 'Средно')], 'small', legend='Големина на фирмата') }}
+  {{ c.segmented('stil-size-2', [('mk', 'МКД'), ('eur', 'EUR')], 'mk', legend='Валута') }}
+</section>
+
+<section class="stack" aria-labelledby="group-h">
+  <h2 id="group-h">Групирана листа</h2>
+  {{ c.group([('Вид на субјект', 'ДОО, мало претпријатие', none), ('Седиште', 'Центар, Скопски регион', none), ('Старост', '7–8 години', none), ('Измени го профилот', none, '#group-h')], header='Профил', footer='Неодговорено поле не исклучува ниту еден повик.') }}
+</section>
+
+<section class="stack" aria-labelledby="sheet-h">
+  <h2 id="sheet-h">Лист</h2>
+  <p class="soft">Стаклен лист што се крева од дното на телефон; на поширок екран стои во средина. Тука е прикажан на место, отворен.</p>
+  <dialog class="sheet glass stil-sheet" open aria-labelledby="stil-sheet-h">
+    <span class="sheet__grabber" aria-hidden="true"></span>
+    <div class="stack">
+      <h3 id="stil-sheet-h">Нарачајте извештај</h3>
+      <p class="soft">Проверен извештај за еден повик, прегледан од човек пред да ви стигне.</p>
+      <div class="actions"><button class="btn" type="button">Продолжи</button><button class="btn btn--gray" type="button">Откажи</button></div>
+    </div>
+  </dialog>
 </section>
 
 <section class="stack" aria-labelledby="list-h">

@@ -59,12 +59,24 @@ def test_stil_shows_every_verdict_and_both_colour_modes(client):
 
 
 def test_each_verdict_mark_differs_without_colour():
-    """F10: the mark alone tells the verdict, so it survives greyscale and the legend."""
-    assert "background: currentColor" in _rule(".verdict--eligible::before")
-    assert "border-style: dotted" in _rule(".verdict--needs_verification::before")
-    assert "linear-gradient" in _rule(".verdict--not_eligible::before")
-    # Likely eligible is the base mark: hollow and solid.
-    assert "solid" in _rule(".verdict::before")
+    """F10, redrawn in DL2: each verdict is its own symbol (tokens.css --sym-*), painted
+    through a mask in currentColor, so the glyph alone tells it, in greyscale too."""
+    tokens = (ROOT / "app" / "web" / "static" / "css" / "tokens.css").read_text(encoding="utf-8")
+    symbols = {}
+    for verdict, token in [
+        ("eligible", "sym-eligible"),
+        ("likely_eligible", "sym-likely-eligible"),
+        ("needs_verification", "sym-needs-verification"),
+        ("not_eligible", "sym-not-eligible"),
+    ]:
+        assert f"var(--{token})" in _rule(f".verdict--{verdict}")
+        symbols[verdict] = re.search(rf"--{token}: (url\([^;]+\));", tokens).group(1)
+    assert len(set(symbols.values())) == 4
+    # The shapes that carry the meaning: a cut-out disc, a broken ring, a struck ring.
+    assert "mask" in symbols["eligible"]
+    assert "stroke-dasharray" in symbols["needs_verification"]
+    assert "M5.8 10h8.4" in symbols["not_eligible"]
+    assert "mask: var(--verdict-symbol)" in _rule(".verdict::before")
 
 
 @pytest.mark.parametrize(
@@ -132,7 +144,7 @@ def test_a_submit_says_what_it_is_doing(app):
     assert "attr(data-busy)" in SITE_CSS
     # submit.js disables the button too; the busy look must win over the disabled one,
     # or the label is paper on paper-sunk (found in DS3's live check).
-    assert "var(--label)" in _rule('.btn[aria-busy="true"]:disabled')
+    assert "var(--tint-strong)" in _rule('.btn[aria-busy="true"]:disabled')
 
 
 @pytest.mark.parametrize("path", ["/profil/", "/", "/admin/"])
@@ -160,3 +172,54 @@ def test_expandable_marks_are_drawn_not_typed():
 def test_a_checkbox_row_answers_the_pointer():
     """F26."""
     assert "outline" in _rule(".choice:hover input")
+
+
+# ------------------------------------------------------------- DL2: the new components
+
+
+def test_glass_is_only_on_the_floating_layer():
+    """Apple's HIG and docs/design-language.md: glass for the navigation bar, the tab bar
+    and a sheet; never in the content layer. Any other template using it fails here."""
+    allowed = {
+        "base.html": {"site-header glass glass--bar", "tab-bar glass"},
+        "admin/base.html": {"site-header glass glass--bar"},
+        "stil/_components.html": {"sheet glass stil-sheet"},
+        "stil/index.html": {"stil-backdrop__bar glass"},
+    }
+    found = {}
+    for path in TEMPLATES.rglob("*.html"):
+        name = path.relative_to(TEMPLATES).as_posix()
+        for cls in re.findall(r'class="([^"]*\bglass\b[^"]*)"', path.read_text(encoding="utf-8")):
+            found.setdefault(name, set()).add(cls)
+    assert found == allowed
+
+
+def test_the_customer_shell_has_a_tab_bar_and_the_admin_does_not(client):
+    page = client.get("/profil/").get_data(as_text=True)
+    assert 'class="tab-bar glass"' in page and 'class="has-tab-bar"' in page
+    assert re.search(r'aria-current="page"[^>]*>\s*<svg', page)  # «Профил» is current
+    base = (TEMPLATES / "admin" / "base.html").read_text(encoding="utf-8")
+    assert "tab-bar" not in base
+
+
+def test_a_segmented_control_is_a_radio_group_that_posts_without_script(app):
+    html = _render(
+        app,
+        "{{ c.segmented('size', [('micro', 'Микро'), ('small', 'Мало')], 'small', "
+        "legend='Големина') }}",
+    )
+    assert '<fieldset class="segmented"' in html
+    assert html.count('type="radio" name="size"') == 2
+    assert 'value="small" checked' in html
+    assert '<legend class="visually-hidden">Големина</legend>' in html
+
+
+def test_a_grouped_list_links_a_row_and_says_a_value(app):
+    html = _render(
+        app,
+        "{{ c.group([('Седиште', 'Центар', none), ('Измени', none, '/profil/')], "
+        "header='Профил') }}",
+    )
+    assert '<p class="group__header">Профил</p>' in html
+    assert '<span class="group__value">Центар</span>' in html
+    assert '<a class="group__row" href="/profil/">' in html

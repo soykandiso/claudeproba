@@ -96,23 +96,38 @@ Four verdicts, and `needs_verification` is the **default and most common** resul
 traffic light would therefore render the normal case as a failure. Encode verdicts by **mark and
 rule weight first, hue second**, so they survive both colour-blindness and a cheap phone screen:
 
-| Verdict | Treatment |
-|---|---|
-| Eligible | solid rule, filled marker |
-| Likely eligible | solid rule, hollow marker |
-| Needs verification | dashed rule, **dotted** hollow marker on screen, **dashed** on paper — **neutral, never a warning colour** |
-| Not eligible | muted, struck rule, hollow marker struck through |
+| Verdict | Symbol (screen, `--sym-*`) | Paper (until DL5) |
+|---|---|---|
+| Eligible | filled disc with a check cut out | filled disc |
+| Likely eligible | whole ring with a check | hollow ring |
+| Needs verification | broken ring with a question — **neutral, never a warning colour** | dashed ring |
+| Not eligible | ring struck through, muted | ring struck through |
 
-The marker alone must tell the verdict (it is shown without the rule in legends, the admin and
-the PDF). Dotted, not dashed: a 12px dashed ring reads as solid. Check on `/stil?siv=1`.
+The symbol alone must tell the verdict (legends, the admin and the PDF show it without its
+label or card). Check on `/stil?siv=1` in both themes.
 
 ## Components
 
-Draw from `app/web/templates/_components.html` (verdict, deadline, date, amount, excerpt, submit,
-empty, error summary), never by copying markup. A new variant is a parameter there and a row on
-`/stil`. A passed deadline is `--label`, not `--deadline`. Our own text shown as an excerpt is
-`own=true`, never in `--verified`. Submit buttons get their busy state from
-`app/web/static/js/submit.js` (`data-busy` says what is happening).
+Draw from `app/web/templates/_components.html`, never by copying markup: verdict, deadline, date,
+amount, excerpt, submit, empty, error summary, **segmented**, **group** (DL2). A new variant is a
+parameter there and a row on `/stil`, in both themes.
+
+- **Navigation bar**: `site-header glass glass--bar`, sticky. On phones its sections move to the
+  **tab bar**, a floating glass capsule at the bottom (`has-tab-bar` on `body`). The current
+  section sits on a solid lens (`--surface`), so its tint never depends on what is under the glass.
+- **Buttons**: capsules in iOS's four styles. `.btn` filled (the one action a screen is for),
+  `--quiet` tinted (the others), `--gray` (the neutral way out), `--plain` (an action that reads
+  as a link). `--destructive` stays an underlined text button, apart from «Зачувај» (F34).
+- **Cards**: a call is a `.call` card on the grouped ground. Lists of settings-like rows are
+  `c.group(...)`: inset hairlines, a footnote header, an explanation under it.
+- **Disclosure**: iOS's chevron, turning on a spring. **Segmented control**: radio inputs under
+  `c.segmented(...)`, so it posts without script. **Sheet**: `dialog.sheet.glass`.
+- **The cited excerpt** stays the bold element: a recessed rounded block, the quote larger, a
+  green bar and the citation seal (`--sym-cite`). Our own text is `own=true`, never green.
+- A passed deadline is `--label`, not `--deadline`. Submit buttons get their busy state from
+  `app/web/static/js/submit.js` (`data-busy` says what is happening).
+- **Glass appears only where `tests/test_components.py` lists it** (the bars, a sheet). Adding it
+  anywhere else fails that test on purpose.
 
 ## Every screen showing a call
 

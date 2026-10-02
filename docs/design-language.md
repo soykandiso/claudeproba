@@ -77,6 +77,21 @@ inside a grouped list are iOS's inset hairlines.
 **Motion.** `--ease-out` and `--ease-spring` (Apple's), 160 and 280 ms. It answers an action.
 Everything collapses to 1 ms under `prefers-reduced-motion`.
 
+## The components (DL2, 02.10.2026)
+
+- **Navigation** is glass and floats: a sticky bar at the top, and on a phone a capsule tab bar
+  at the bottom where the thumb is, as in iOS 26. The current section sits on a solid lens, so
+  its contrast is measured against `--surface`, not against whatever passes under the glass
+  (axe caught the tinted pill at 4.46:1 in dark mode over a busy backdrop).
+- **Buttons** are capsules in iOS's four styles and press in on a spring.
+- **Calls are cards**; the verdict leads each card as a symbol drawn as SF Symbols are, painted
+  in `currentColor` through a mask, so no colour is written outside `tokens.css`. Each verdict
+  now carries a glyph as well as a shape (check, check, question, bar), which is stronger than
+  the dossier's marks were.
+- **Disclosures** turn a chevron; **settings-like rows** are inset grouped lists; a **segmented
+  control** and a **sheet** exist for DL3 onwards.
+- **Glass is fenced in by a test**: the templates may use it on the bars and a sheet only.
+
 ## What the PDF does
 
 Paper is not glass. Until DL5 the PDF keeps the faces it merges and checks (Fira Sans and
