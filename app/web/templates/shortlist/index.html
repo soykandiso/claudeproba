@@ -2,19 +2,22 @@
 {% import "shortlist/_macros.html" as ui with context %}
 {% block title %}Отворени повици за вашиот профил{% endblock %}
 {% block main %}
-<div class="wrap">
+{# The grouped ground (DL4): the page is cards on --bg, so its sections are spaced, not ruled. #}
+<div class="wrap grouped">
   <div class="report-head stack">
     <h1>Отворени повици за вашиот профил</h1>
     <p class="soft">{{ summary }}.</p>
     <p class="small"><a class="tap" href="{{ url_for('intake.form') }}">Измени го профилот</a></p>
   </div>
 
-  <section class="stack section--tight" aria-labelledby="legend-h">
-    <h2 id="legend-h" class="label-heading">Што значат ознаките</h2>
-    <ul class="legend">
+  {# The legend as an inset group: a footnote header, the four marks on one card, and what
+     the mark that worries people means as its footer (DL4). #}
+  <section class="group section--tight" aria-labelledby="legend-h">
+    <h2 id="legend-h" class="group__header">Што значат ознаките</h2>
+    <ul class="legend legend--card">
       {% for key in verdict_labels %}<li>{{ ui.verdict(key) }}</li>{% endfor %}
     </ul>
-    <p class="soft">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
+    <p class="group__footer">„Потребна е проверка“ значи дека условот не може да се потврди од профилот, не дека не можете да аплицирате.</p>
   </section>
 
   <section class="section--lead-in" aria-labelledby="open-h">
@@ -51,6 +54,6 @@
   </section>
   {% endif %}
 
-  <p class="soft">Редоследот е според тежините <span class="id">{{ result.weights_version }}</span>.</p>
+  <p class="soft small">Редоследот е според тежините <span class="id">{{ result.weights_version }}</span>.</p>
 </div>
 {% endblock %}

@@ -294,3 +294,32 @@ def test_condition_counts_lead_with_what_decides(verdicts, line):
 def test_a_quote_is_marked_with_its_language(text, lang):
     """F18: a screen reader reads an English quote with an English voice."""
     assert format.lang_of(text) == lang
+
+
+# ---------------------------------------------------------- DL4: the design language
+
+
+@db
+def test_the_passage_facts_are_a_group_and_the_text_a_card(client, served):
+    """DL4: the facts as an inset group (the source a row leading to the institution),
+    the stored text on a card, and the quote still the one marked element in it."""
+    factory, source, snapshot = served
+    with factory() as s:
+        call = make_call(s, source, snapshot, criteria=[FITS])
+        s.commit()
+        criterion_id = s.query(EligibilityCriterion.id).filter_by(call_id=call.id).scalar()
+
+    body = client.get(f"/povici/izvor/{criterion_id}").get_data(as_text=True)
+
+    assert 'class="group__rows"' in body and 'class="back"' in body
+    assert 'class="document document--card"' in body
+    assert body.count("<mark") == 1
+    assert '<a class="group__row" href="http' in body  # Извор leads to the source
+
+
+@db
+def test_the_legend_is_an_inset_group(client, served):
+    with_profile(client)
+    body = client.get("/povici/").get_data(as_text=True)
+    assert 'class="wrap grouped"' in body
+    assert 'class="legend legend--card"' in body and 'class="group__footer"' in body

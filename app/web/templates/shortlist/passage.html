@@ -3,7 +3,7 @@
 {% block title %}{{ criterion.label_mk }}{% endblock %}
 {% block main %}
 {% set quote_lang = quoted|lang_of %}
-<div class="wrap">
+<div class="wrap grouped">
   {# Back to the call the reader came from, not the top of the list (F14). #}
   <a class="back" href="{{ url_for('shortlist.index', _anchor='call-' ~ call.id) }}">Назад кон повиците</a>
   <div class="report-head stack">
@@ -14,17 +14,20 @@
       <p class="passage__call" lang="{{ call.title_mk|lang_of }}">{{ call.title_mk }}</p>
     </div>
     <h1>{{ criterion.label_mk }}</h1>
-    {# Every screen showing a call states when it was last checked and its deadline (F13). #}
-    <dl class="facts">
-      <div><dt>Институција</dt><dd>{{ institution }}</dd></div>
-      <div><dt>Рок за пријава</dt><dd>{{ c.deadline(call.deadline_at) }}</dd></div>
-      <div><dt>Последна проверка</dt><dd>{{ c.date(call.last_verified_at) }}</dd></div>
-      <div><dt>Преземено</dt><dd>{{ c.date(snapshot.fetched_at) }}</dd></div>
-      <div><dt>Извор</dt><dd class="break"><a class="tap" href="{{ source_url }}" rel="noopener">{{ source_url.split('/')[2] }}</a></dd></div>
-      <div><dt>Позиција на цитатот</dt><dd class="id id--14">{{ snapshot.id }} {{ criterion.quote_start }}–{{ criterion.quote_end }}</dd></div>
-    </dl>
-    <p class="soft">Означениот текст е точно од знак {{ criterion.quote_start }} до знак {{ criterion.quote_end }} во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.</p>
   </div>
-  <div class="document" lang="{{ quote_lang }}">{{ before }}<mark id="quote">{{ quoted }}</mark>{{ after }}</div>
+  {# Every screen showing a call states when it was last checked and its deadline (F13).
+     As an inset group (DL4): the source is a row that leads to the institution's page. #}
+  {% set position %}<span class="id id--14">{{ snapshot.id }} {{ criterion.quote_start }}–{{ criterion.quote_end }}</span>{% endset %}
+  {{ c.group([
+       ('Институција', institution, none),
+       ('Рок за пријава', c.deadline(call.deadline_at), none),
+       ('Последна проверка', c.date(call.last_verified_at), none),
+       ('Преземено', c.date(snapshot.fetched_at), none),
+       ('Извор', source_url.split('/')[2], source_url),
+       ('Позиција на цитатот', position, none),
+     ], footer='Означениот текст е точно од знак ' ~ criterion.quote_start ~ ' до знак ' ~ criterion.quote_end
+       ~ ' во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.') }}
+  {# The stored text on a card; the quote in it is still the one bold element. #}
+  <div class="document document--card" lang="{{ quote_lang }}">{{ before }}<mark id="quote">{{ quoted }}</mark>{{ after }}</div>
 </div>
 {% endblock %}

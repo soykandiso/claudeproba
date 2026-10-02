@@ -119,7 +119,12 @@ parameter there and a row on `/stil`, in both themes.
   `--quiet` tinted (the others), `--gray` (the neutral way out), `--plain` (an action that reads
   as a link). `--destructive` stays an underlined text button, apart from «Зачувај» (F34).
 - **Cards**: a call is a `.call` card on the grouped ground. Lists of settings-like rows are
-  `c.group(...)`: inset hairlines, a footnote header, an explanation under it.
+  `c.group(...)`: inset hairlines, a footnote header, an explanation under it. Every card is one
+  recipe, the `.surface` rule in `site.css`: add a new card's class to that selector rather than
+  writing the background, radius and shadow again. A page of cards is `.wrap.grouped`: its
+  sections are spaced, not ruled (DL4).
+- **Back**: `a.back` is iOS's back button, a drawn chevron and the way back in the tint. It
+  returns to the place the reader left (`#call-<id>`), not the top of the list.
 - **Disclosure**: iOS's chevron, turning on a spring. **Segmented control**: radio inputs under
   `c.segmented(...)`, so it posts without script. **Sheet**: `dialog.sheet.glass`.
 - **The cited excerpt** stays the bold element: a recessed rounded block, the quote larger, a
@@ -160,7 +165,8 @@ parameter there and a row on `/stil`, in both themes.
 
 Target a mid-range Android on mobile data. Fonts subsetted, no webfont over 40KB, no preload (Apple
 devices would fetch Inter for nothing). Glass blur costs frames: keep it to the navigation layer.
-Everything before the HTML ≤ 190 KB (`tests/test_budget.py`).
+Everything before the HTML ≤ 190 KB, stylesheets ≤ 15 KB gzipped (`tests/test_budget.py`; raised
+once, from 14, at DL4).
 No JavaScript beyond HTMX unless it earns its place. The shortlist renders in under 3s on the VPS.
 
 ## Before saying done

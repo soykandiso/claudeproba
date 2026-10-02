@@ -289,7 +289,6 @@ section:first-of-type { border-top: 0; }
 
 .calls { list-style: none; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16); margin-top: var(--s-16); }
 .call {
-  background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
   padding: var(--s-16);
 }
 @media (min-width: 768px) { .call { padding: var(--s-24); } }
@@ -433,7 +432,6 @@ fieldset.field legend + * { clear: both; }
    own surface, as an iOS empty state is. */
 .empty {
   padding: var(--s-48) var(--s-24); text-align: center; max-width: var(--measure);
-  background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
 }
 .empty p { margin-inline: auto; }
 .empty .actions { justify-content: center; }
@@ -662,7 +660,6 @@ details.cite[open] > summary::before, details.why[open] > summary::before { tran
 /* Under the problems: where the decision is, and each call, one jump away (F33). */
 .decision-bar {
   display: grid; gap: var(--s-8); padding: var(--s-12) var(--s-16);
-  background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
   max-width: var(--measure);
 }
 .decision-bar__calls { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-16); list-style: none; padding: 0; margin: 0; }
@@ -722,11 +719,9 @@ details.confirm > form {
   .glass { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
-/* A surface: content's own ground, solid and quiet (an inset grouped list, a card). */
-.surface {
-  background: var(--surface);
-  border-radius: var(--radius-l);
-  box-shadow: var(--shadow-1);
+/* A surface: content's own ground, solid and quiet. Every card in the site is this one. */
+.surface, .call, .empty, .decision-bar, .group__rows, .form-section__card, .legend--card, .document--card {
+  background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -743,7 +738,7 @@ details.confirm > form {
 .group { display: grid; gap: var(--s-8); max-width: var(--measure); }
 .group__header { padding-inline: var(--s-16); font-size: var(--text-footnote); color: var(--label-3); font-weight: 600; }
 .group__footer { padding-inline: var(--s-16); font-size: var(--text-subhead); color: var(--label-2); }
-.group__rows { list-style: none; margin: 0; padding: 0; background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1); overflow: hidden; }
+.group__rows { list-style: none; margin: 0; padding: 0; overflow: hidden; }
 .group__row {
   display: flex; align-items: center; justify-content: space-between; gap: var(--s-12);
   min-height: var(--target); padding: var(--s-12) var(--s-16); position: relative;
@@ -806,7 +801,6 @@ a.group__row::after {
 .form-section { display: grid; gap: var(--s-8); }
 .form-section__title { font-size: var(--text-title3); padding-inline: var(--s-4); }
 .form-section__card {
-  background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
   padding-inline: var(--s-16);
 }
 .form-section__card > .field { border-top: var(--rule-w) solid var(--separator); }
@@ -818,3 +812,30 @@ a.group__row::after {
 /* On a phone the one action of the form spans the width, as iOS's primary buttons do. */
 .form-submit .btn { width: 100%; }
 @media (min-width: 768px) { .form-submit .btn { width: auto; min-width: var(--width-narrow); } }
+
+/* ------------------------------------------------------------------ shortlist and passage (DL4) */
+
+/* A grouped page is cards on --bg: its sections are told apart by space, not by rules. */
+.grouped section { border-top: 0; }
+.grouped .group + section, .grouped section + section { padding-top: var(--s-24); }
+
+/* The legend on one card: the four marks, wrapping two to a line on a phone. */
+.legend--card {
+  padding: var(--s-12) var(--s-16); margin: 0;
+}
+
+/* iOS's back button: a chevron and the way back, in the tint, flush with the content. */
+.back { font-size: var(--text-body); gap: var(--s-4); margin-left: calc(-1 * var(--s-4)); padding-inline: var(--s-4); }
+.back::before {
+  content: ""; width: var(--s-8); height: var(--s-8); flex: none;
+  border-left: var(--mark-w) solid currentColor; border-bottom: var(--mark-w) solid currentColor;
+  transform: rotate(45deg); margin-left: var(--s-4);
+}
+.back:hover { text-decoration: none; }
+
+/* The passage: the facts as a group, then the stored text on a card of its own. */
+.grouped .report-head { padding-bottom: var(--s-24); }
+.document--card {
+  padding: var(--s-16); margin-block: var(--s-32) var(--s-64);
+}
+@media (min-width: 768px) { .document--card { padding: var(--s-24) var(--s-32); } }

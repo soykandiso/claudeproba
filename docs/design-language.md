@@ -104,6 +104,23 @@ DS4's behaviour is untouched: the error summary links every field (the segmented
 fieldset carries the field's id), errors sit between control and hint, the picker's loading
 state is on the field.
 
+## The shortlist and the passage (DL4, 02.10.2026)
+
+`/povici` is a grouped page (`.wrap.grouped`): cards on the ground, sections apart by space, no
+rules between them. The legend is an inset group, the four marks on one card, with what «Потребна
+е проверка» does not mean as its footer. `/povici/izvor/<id>` opens with iOS's back button
+(chevron, tint) to the call the reader left; the call's title as context, the condition as the
+heading; the facts (institution, deadline, last check, retrieved, source, position) as an inset
+group whose «Извор» row leads to the institution's page; the explanation of the mark as the
+group's footer; then the stored text on a card of its own. The marked quote is still the one bold
+element on the page: nothing else on it is green or underlined in the verified colour.
+DS5's checks are unchanged: `#quote` and `#call-<id>`, last check and deadline on the passage,
+the quote's own `lang`.
+
+The stylesheet budget went from 14 to 15 KB gzipped here, as a recorded decision
+(`tests/test_budget.py`): the language adds components the old one did not have. Every card now
+shares one rule, so the next card costs a selector, not a block.
+
 ## What the PDF does
 
 Paper is not glass. Until DL5 the PDF keeps the faces it merges and checks (Fira Sans and

@@ -4,6 +4,10 @@ Target: a mid-range Android on mobile data (the skill's "Performance budget"). M
 on 02.10.2026 over the real pages: 132-167 KB gzipped for a first visit, 11-13 requests,
 most of it fonts that load with `font-display: swap`, so text shows before they arrive.
 These limits sit a little above that, so growth is a decision, not an accident.
+
+Raised once, on 02.10.2026 at DL4: the stylesheets from 14 to 15 KB. The design language
+adds components (inset groups, cards, the back button) that the old one did not have; the
+first-visit limit, which is what a phone on mobile data feels, did not move.
 """
 
 import gzip
@@ -18,7 +22,7 @@ def _gz(path: Path) -> int:
 
 def test_the_stylesheets_stay_small():
     css = _gz(STATIC / "css" / "tokens.css") + _gz(STATIC / "css" / "site.css")
-    assert css <= 14 * 1024, f"tokens.css + site.css gzipped: {css} bytes"
+    assert css <= 15 * 1024, f"tokens.css + site.css gzipped: {css} bytes"
 
 
 def test_the_javascript_is_htmx_and_one_small_file():
