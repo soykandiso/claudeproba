@@ -1,13 +1,14 @@
 {% extends "admin/base.html" %}
+{% import "_components.html" as ui with context %}
 {% block title %}Ставка {{ item.id }}{% endblock %}
 {% set pending = item.state.value == 'pending' %}
 {% block main %}
-<div class="wrap">
+<div class="wrap wrap--review">
   <a class="back" href="{{ url_for('admin.queue') }}">Назад кон редот</a>
   <div class="report-head stack">
     <p class="small soft">{{ stage_label }}, ставка <span class="id id--14">{{ item.id }}</span></p>
-    <h1 class="break">{% if call %}{{ call.title_mk }}{% else %}{{ (payload.extraction or {}).get('title_mk', {}).get('value') or payload.public_url or payload.url or (payload.urls or [None])[0] or item.reason }}{% endif %}</h1>
-    <p class="soft break">{{ item.reason }}</p>
+    <h1 class="break">{% if call %}{{ call.title_mk }}{% else %}{{ (payload.extraction or {}).get('title_mk', {}).get('value') or payload.public_url or payload.url or (payload.urls or [None])[0] or item.reason|reason_mk }}{% endif %}</h1>
+    <p class="soft break">{{ item.reason|reason_mk }}</p>
     {% if not pending %}
     <p class="review-stamp">{{ state_label }}, {{ item.resolved_at|datetime_mk }}{% if item.reviewer_note %}: {{ item.reviewer_note }}{% endif %}</p>
     {% endif %}
@@ -121,10 +122,16 @@
       <h3 class="criterion__title">{{ c.label_mk }}</h3>
       {% if row.holds %}
       <p class="small"><span class="cite-mark">Цитатот стои дословно во документот</span>, снимка <span class="id">{{ c.snapshot_id }}</span>, знаци <span class="id">{{ c.quote_start }}–{{ c.quote_end }}</span>{% if c.confidence is not none %}, сигурност {{ '%.2f'|format(c.confidence) }}{% endif %}</p>
+      {% set ocr = row.snapshot and row.snapshot.text_source and row.snapshot.text_source.value in ('ocr', 'mixed') %}
+      {# The text and, when it was read off a scan, the page beside it at ≥ 1200px (F36). #}
+      <div class="evidence-pair">
+      <div class="evidence-pair__text stack">
       <div class="document document--context document--lines">{{ row.context }}</div>
-      {% if row.snapshot and row.snapshot.text_source and row.snapshot.text_source.value in ('ocr', 'mixed') %}
-      <p class="small"><strong>Текстот е прочитан со OCR</strong>{% if row.snapshot.ocr_mean_confidence is not none %}, сигурност {{ '%.0f'|format(row.snapshot.ocr_mean_confidence) }}{% endif %}. Цитатот е дословен во OCR-текстот, не нужно во оригиналот: споредете со <a class="break" href="{{ row.snapshot.url }}" rel="noopener noreferrer" target="_blank">документот</a>.</p>
-      {% if row.page_image %}
+      {% if ocr %}
+      <p class="soft"><strong>Текстот е прочитан со OCR</strong>{% if row.snapshot.ocr_mean_confidence is not none %}, сигурност {{ '%.0f'|format(row.snapshot.ocr_mean_confidence) }}{% endif %}. Цитатот е дословен во OCR-текстот, не нужно во оригиналот: споредете со <a class="break" href="{{ row.snapshot.url }}" rel="noopener noreferrer" target="_blank">документот</a>.</p>
+      {% endif %}
+      </div>
+      {% if ocr and row.page_image %}
       {# D9 rule 1: a citation into OCR is shown with the page image beside it before it
          can reach a customer. Lazy, and the same page is one download however many
          conditions were read off it. #}
@@ -133,7 +140,7 @@
         <figcaption class="small">Страница <span class="id">{{ row.page_image.page }}</span> од оригиналот. <a href="{{ row.page_image.url }}" rel="noopener noreferrer" target="_blank">Отвори ја сликата</a></figcaption>
       </figure>
       {% endif %}
-      {% endif %}
+      </div>
       {% else %}
       <div class="notice stack"><p><strong>Цитатот не стои на запишаното место во документот.</strong> Поправете го цитатот или отстранете го условот.</p>{% if c.source_quote %}<p class="break">„{{ c.source_quote }}“</p>{% endif %}</div>
       {% endif %}
@@ -193,10 +200,15 @@
           </div>
           <div class="actions"><button class="btn btn--quiet" type="submit">Зачувај го условот</button></div>
         </form>
-        <form method="post" action="{{ url_for('admin.remove_criterion', item_id=item.id, criterion_id=c.id) }}">
-          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
-          <div class="actions"><button class="btn btn--quiet" type="submit">Отстрани го условот</button></div>
-        </form>
+        {# A second step, apart from «Зачувај» and looking like what it is (F34). #}
+        <details class="confirm">
+          <summary class="btn btn--destructive">Отстрани го условот</summary>
+          <form class="stack" method="post" action="{{ url_for('admin.remove_criterion', item_id=item.id, criterion_id=c.id) }}">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <p class="soft">Условот излегува од повикот. Ако е погрешен само делумно, подобро поправете го погоре.</p>
+            <div class="actions">{{ ui.submit('Да, отстрани го', kind='destructive', busy='Се отстранува') }}</div>
+          </form>
+        </details>
         </div>
       </details>
       {% endif %}
@@ -261,7 +273,7 @@
     {% if payload.listing %}
     <div class="stack">
       <h3>Што вели листата на изворот</h3>
-      <p class="small soft">Не е цитат и не се објавува; служи за споредба.</p>
+      <p class="soft">Не е цитат и не се објавува; служи за споредба.</p>
       <dl class="breakdown">
         {% for key, value in payload.listing.items() %}{% if value %}<div><dt><span class="id">{{ key }}</span></dt><dd class="break">{{ value }}</dd></div>{% endif %}{% endfor %}
       </dl>
@@ -304,7 +316,7 @@
       <div class="field">
         <label for="reject-note">Причина за затворање</label>
         <input class="input" id="reject-note" name="note" value="{{ t.get('note', '') }}" required>
-        <span class="hint">Повикот останува необјавен. Причината станува случај за евалуација (P2 s34).</span>
+        <span class="hint">Повикот останува необјавен. Причината станува случај за евалуација: следниот пат проверката ќе го знае.</span>
       </div>
       <div class="actions"><button class="btn btn--quiet" type="submit">Затвори без објавување</button></div>
     </form>

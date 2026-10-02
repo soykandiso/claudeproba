@@ -17,7 +17,7 @@
         <div class="stack">
           <span class="small soft">{{ stage_labels[item.id] }}{% if item.priority < 100 %}, <strong>беше објавен, сега е скриен</strong>{% endif %}</span>
           <a class="break" href="{{ url_for('admin.item', item_id=item.id) }}"><strong>{{ titles[item.id] }}</strong></a>
-          <span class="small soft break">{{ item.reason }}</span>
+          <span class="soft break">{{ item.reason|reason_mk }}</span>
         </div>
         <div class="rows__meta small">
           <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
@@ -63,7 +63,7 @@
           <div class="stack">
             <span class="small">{{ report_state_labels[item.state] }}</span>
             <a class="break" href="{{ url_for('admin.report', item_id=item.id) }}">{{ report_titles[item.id] }}</a>
-            {% if item.reviewer_note %}<span class="small break">{{ item.reviewer_note }}</span>{% endif %}
+            {% if item.reviewer_note %}<span class="soft break">{{ item.reviewer_note }}</span>{% endif %}
           </div>
           <div class="rows__meta small">
             <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
@@ -85,7 +85,7 @@
         <div class="stack">
           <span class="small">{{ state_labels[item.state] }}</span>
           <a class="break" href="{{ url_for('admin.item', item_id=item.id) }}">{{ titles[item.id] }}</a>
-          {% if item.reviewer_note %}<span class="small break">{{ item.reviewer_note }}</span>{% endif %}
+          {% if item.reviewer_note %}<span class="soft break">{{ item.reviewer_note }}</span>{% endif %}
         </div>
         <div class="rows__meta small">
           <span>Ставка <span class="id id--14">{{ item.id }}</span></span>

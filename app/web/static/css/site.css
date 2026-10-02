@@ -595,3 +595,34 @@ details.cite[open] > summary::before, details.why[open] > summary::before {
 .call[id] { scroll-margin-top: var(--s-24); }
 /* Under a call's verdict: how its conditions came out, in one line. A sentence, so 16. */
 .verdict-why { color: var(--ink-soft); }
+
+/* Operator screens (DS7) */
+
+/* Under the problems: where the decision is, and each call, one jump away (F33). */
+.decision-bar {
+  display: grid; gap: var(--s-8); padding: var(--s-12) var(--s-16);
+  border: var(--rule-w) solid var(--rule-strong); max-width: var(--measure);
+}
+.decision-bar__calls { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-16); list-style: none; padding: 0; margin: 0; }
+.decision-bar__calls a { display: inline-block; padding-block: var(--s-8); }
+#odluka { scroll-margin-top: var(--s-24); }
+.report-call { scroll-margin-top: var(--s-24); }
+
+/* Removing something is a second step, apart from «Зачувај» (F34). The summary looks
+   like the destructive button it opens; the real submit is inside. */
+details.confirm { margin-top: var(--s-32); }
+details.confirm > summary { list-style: none; width: fit-content; }
+details.confirm > summary::-webkit-details-marker { display: none; }
+details.confirm[open] > summary { text-decoration-color: var(--ink); }
+details.confirm > form { margin-top: var(--s-12); padding-left: var(--s-16); border-left: var(--rule-w-strong) solid var(--ink); max-width: var(--measure); }
+
+/* A review page at ≥ 1200px: wider, so a quote and the scanned page it was read off sit
+   side by side while the reviewer compares them. Prose still keeps --measure (F36). */
+@media (min-width: 1200px) {
+  .wrap--review { max-width: var(--width-review); }
+  .evidence-pair:has(.page) {
+    display: grid; gap: var(--s-32); align-items: start;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+  }
+  .evidence-pair:has(.page) .page { position: sticky; top: var(--s-16); }
+}

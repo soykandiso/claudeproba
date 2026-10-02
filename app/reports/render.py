@@ -86,7 +86,13 @@ RENDERABLE = (ReviewState.APPROVED, ReviewState.EDITED)
 
 
 class RenderRefused(ValueError):
-    """The report cannot be printed as it stands. The message is for the operator."""
+    """The report cannot be printed as it stands. The message is for the log; when the
+    reason is compose's checks, `problems` carries them so the admin can say each one in
+    Macedonian (app/review/report.describe), as the review page does."""
+
+    def __init__(self, message: str, problems: list[dict] | None = None):
+        super().__init__(message)
+        self.problems = problems or []
 
 
 @dataclass
@@ -330,7 +336,9 @@ def render(session: Session, item: ReviewQueueItem, *, issued: dt.date | None = 
     problems = compose.blockers(session, item, today=issued)
     if problems:
         details = "; ".join(f"{p['check']} at {p['where']}: {p['detail']}" for p in problems)
-        raise RenderRefused(f"report {item.id} no longer passes its checks: {details}")
+        raise RenderRefused(
+            f"report {item.id} no longer passes its checks: {details}", problems=problems
+        )
 
     html = html_of(draft, issued=issued, reference=f"И-{item.id}")
     banned = find_banned(own_voice(html))

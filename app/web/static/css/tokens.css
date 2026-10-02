@@ -94,6 +94,7 @@
   /* Widths. Anything that reads as prose takes --measure. These are for what does
      not: the page column, wide lists and tables, and the label columns inside them. */
   --width-page: 64rem;
+  --width-review: 90rem;
   --width-wide: 56rem;
   --width-mid: 48rem;
   --width-narrow: 20rem;

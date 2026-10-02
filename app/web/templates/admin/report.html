@@ -31,13 +31,18 @@
         </div>
         <div class="actions"><button class="btn btn--quiet" type="submit">Зачувај ја изјавата</button></div>
       </form>
-      <form method="post" action="{{ url_for('admin.remove_statement', item_id=item.id) }}">
-        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
-        <input type="hidden" name="part" value="{{ part }}">
-        <input type="hidden" name="call" value="{{ call or '' }}">
-        <input type="hidden" name="n" value="{{ n }}">
-        <div class="actions"><button class="btn btn--quiet" type="submit">Отстрани ја изјавата</button></div>
-      </form>
+      {# Removing is a second step and looks like what it is, not like «Зачувај» (F34). #}
+      <details class="confirm">
+        <summary class="btn btn--destructive">Отстрани ја изјавата</summary>
+        <form class="stack" method="post" action="{{ url_for('admin.remove_statement', item_id=item.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+          <input type="hidden" name="part" value="{{ part }}">
+          <input type="hidden" name="call" value="{{ call or '' }}">
+          <input type="hidden" name="n" value="{{ n }}">
+          <p class="soft">Изјавата излегува од извештајот. Измената се запишува и останува видлива долу на страницата.</p>
+          <div class="actions">{{ ui.submit('Да, отстрани ја', kind='destructive', busy='Се отстранува') }}</div>
+        </form>
+      </details>
     </div>
   </details>
   {% endif %}
@@ -47,6 +52,9 @@
 {# A citation where it stands in the stored text: the quote marked, its source line,
    and the scanned page when the text came from OCR (decisions.md D9 rule 1). #}
 {% macro passage(p) %}
+{# The text and, when it was read off a scan, the page beside it at ≥ 1200px (F36). #}
+<div class="evidence-pair">
+<div class="evidence-pair__text stack">
 {% if p.context %}
 <div class="document document--context document--lines">{{ p.context }}</div>
 {% else %}
@@ -54,7 +62,10 @@
 {% endif %}
 <p class="small soft break"><a href="{{ p.c.source_url }}" rel="noopener noreferrer" target="_blank">{{ p.c.source_url }}</a>, преземено {{ p.c.retrieved_at|iso_mkdate }}, снимка <span class="id">{{ p.c.snapshot_id }}</span>, знаци <span class="id">{{ p.c.char_start }}–{{ p.c.char_end }}</span></p>
 {% if p.ocr %}
-<p class="small"><strong>Текстот е прочитан со OCR.</strong> Цитатот е дословен во OCR-текстот, не нужно во оригиналот.</p>
+<p class="soft"><strong>Текстот е прочитан со OCR.</strong> Цитатот е дословен во OCR-текстот, не нужно во оригиналот.</p>
+{% endif %}
+</div>
+{% if p.ocr %}
 {% if p.page_image %}
 <figure class="page">
   <img class="page__image" src="{{ p.page_image.url }}" alt="Страница {{ p.page_image.page }} од документот, како што е скенирана" loading="lazy" decoding="async">
@@ -62,6 +73,7 @@
 </figure>
 {% endif %}
 {% endif %}
+</div>
 {% endmacro %}
 
 {% macro condition(c, key) %}
@@ -88,7 +100,7 @@
 {% endmacro %}
 
 {% block main %}
-<div class="wrap">
+<div class="wrap wrap--review">
   <a class="back" href="{{ url_for('admin.queue') }}">Назад кон редот</a>
   <div class="report-head stack">
     <p class="small soft">Извештај за преглед, ставка <span class="id id--14">{{ item.id }}</span>{% if item.match_run_id %}, анализа <span class="id id--14 break">{{ item.match_run_id }}</span>{% endif %}</p>
@@ -136,6 +148,19 @@
       {% endfor %}
     </ul>
   </section>
+  {% endif %}
+
+  {# The decision is at the end of a long page: say where it is and how to get there,
+     and to each call, before the reviewer reads anything else (F33). #}
+  {% if pending and draft %}
+  <nav class="decision-bar" aria-label="Кон одлуката и повиците">
+    <p>{% if problems %}<strong>{{ problems|length }} {{ 'проблем го спречува' if problems|length == 1 else 'проблеми го спречуваат' }} прифаќањето.</strong>{% else %}Нема проблем што го спречува прифаќањето.{% endif %}</p>
+    <ul class="decision-bar__calls">
+      <li><a href="#odluka"><strong>Оди на одлуката</strong></a></li>
+      {% for call in draft.calls %}<li><a href="#povik-{{ call.number }}">Повик {{ call.number }}</a></li>{% endfor %}
+      {% if draft.excluded %}<li><a href="#excluded-h">Исклучени</a></li>{% endif %}
+    </ul>
+  </nav>
   {% endif %}
 
   {% if failures %}
@@ -225,7 +250,7 @@
 
   {# ------------------------------------------------------------------ decision #}
   {% if pending %}
-  <section class="stack-lg" aria-labelledby="decide-h">
+  <section class="stack-lg" id="odluka" aria-labelledby="decide-h">
     <h2 id="decide-h">Одлука</h2>
     {% if draft %}
     <form class="stack form-narrow" method="post" action="{{ url_for('admin.approve_report', item_id=item.id) }}">
@@ -236,8 +261,11 @@
         <input class="input" id="approve-note" name="note">
       </div>
       <div class="actions">
-        <button class="btn" type="submit" {% if problems %}disabled aria-describedby="problems"{% endif %}>Прифати го извештајот</button>
+        {# Disabled with its reason beside it, not only in the list at the top (F33). #}
+        {{ ui.submit('Прифати го извештајот', busy='Се прифаќа', id='approve',
+             disabled_reason=(problems|length ~ (' проблем го спречува' if problems|length == 1 else ' проблеми го спречуваат') ~ ' прифаќањето. Списокот е на врвот на страницата.') if problems else none) }}
       </div>
+      {% if problems %}<p><a href="#problems">Кон проблемите</a></p>{% endif %}
     </form>
     {% endif %}
     <form class="stack form-narrow" method="post" action="{{ url_for('admin.reject_report', item_id=item.id) }}">
@@ -246,7 +274,7 @@
       <div class="field">
         <label for="reject-note">Причина за затворање</label>
         <input class="input" id="reject-note" name="note" value="{{ t.get('note', '') }}" required>
-        <span class="hint">Извештајот не се испраќа. Причината станува случај за евалуација (P2 s34).</span>
+        <span class="hint">Извештајот не се испраќа. Причината станува случај за евалуација: следниот пат проверката ќе го знае.</span>
       </div>
       <div class="actions"><button class="btn btn--quiet" type="submit">Затвори без испраќање</button></div>
     </form>

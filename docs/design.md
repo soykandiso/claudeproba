@@ -189,6 +189,26 @@ rendered and looked at on this host for the first time (conda-forge Pango, hando
 - **The dotted ring printed as eight specks.** Paper uses a dashed ring (four clear arcs); the
   screen keeps dotted. Same idea, broken ring, drawn the way each renderer shows it.
 
+Closed in **DS7, 01–02.10.2026**, held by `tests/test_admin_design.py`:
+
+- **F32**: `app/review/reasons.py` says every reason the pipeline writes in Macedonian on the
+  queue and the item page; the raw English stays in the database and the log. A test lists each
+  writer's wording, so a changed f-string fails before English reaches the screen; an unknown
+  reason is shown as it is, never guessed. The PDF refusal says compose's problems the same way.
+- **F33**: under the problems, a decision bar: how many problems stop approval, «Оди на
+  одлуката», and a link to each call. The disabled «Прифати го извештајот» says its reason
+  beside it (`ui.submit(disabled_reason=…)`) and links back to the list.
+- **F34**: removing a statement or a condition is a `<details class="confirm">`: the summary is
+  the destructive variant, 32px below «Зачувај», and the real submit is inside with a sentence
+  on what happens. No `confirm()`.
+- **F08, F09**: the admin wordmark is «Грантови и субвенции»; skip link, focusable `main`. The
+  font-preload warning is DS9's.
+- **F35**: «Причината станува случај за евалуација: следниот пат проверката ќе го знае.»
+- **F36**: at ≥ 1200px review pages widen to `--width-review` (90rem) and a quote's text sits
+  beside its scanned page, the page sticky while reading; on `/stil` as a sample, because the dev
+  database holds no scanned pages to show.
+- **F06b**: the queue's reason and notes, the OCR notes and the comparison note are 16px.
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -278,7 +298,7 @@ issue.
 | DS4 | ~~F19, F21, F22, F23 (review page), F24~~ closed 01.10.2026 (§2); the timed run is open |
 | DS5 | ~~F11 (live check), F13, F14, F15, F16, F17, F18~~ closed 01.10.2026 (§2); F38 waits for the user; the first-time-user test is open |
 | DS6 | ~~F07, F23 (report half), F28, F29, F30~~ closed 01.10.2026 (§2) |
-| DS7 | F06b (admin sentences at 14px), F08, F09, F32, F33, F34, F35, F36 |
+| DS7 | ~~F06b, F08, F09 (preload: DS9), F32, F33, F34, F35, F36~~ closed (§2); the 45-minute review is open |
 | DS9 | F37 |
 
 Three are **A**: F10, F13 and F29. F13 and F29 break a promise to the customer (a date on every

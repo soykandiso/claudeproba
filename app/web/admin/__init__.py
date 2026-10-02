@@ -40,6 +40,7 @@ from app.models import Call, RawSnapshot, SourceFeed
 from app.models.enums import CriterionKind, ReviewState, TextSource, Verdict
 from app.reports import render
 from app.review import extraction as review
+from app.review import reasons
 from app.review import report as reports
 from app.web import csrf, format
 from app.web.format import SKOPJE, mkdate
@@ -117,6 +118,12 @@ def _sessions():
 
 
 csrf.protect(bp)
+
+
+@bp.app_template_filter("reason_mk")
+def reason_mk(reason: str | None) -> str:
+    """The pipeline's English reason in Macedonian (app/review/reasons.py, F32)."""
+    return reasons.in_macedonian(reason)
 
 
 @bp.app_template_filter("date_mk")
@@ -579,7 +586,13 @@ def report_pdf(item_id: int):
         try:
             rendered = render.render(db, item, issued=_now().astimezone(SKOPJE).date())
         except render.RenderRefused as refused:
-            page, _ = _render_report(db, item, error=f"PDF не е направен: {refused}")
+            # The checks' problems in the reviewer's words (F32); anything else (a font,
+            # a glyph) is rare enough to show as the log has it.
+            said = "; ".join(
+                f"{reports.place(p['where'])[0]}: {reports.describe(p['detail'])}"
+                for p in refused.problems
+            )
+            page, _ = _render_report(db, item, error=f"PDF не е направен. {said or refused}")
             return page, 409
     return Response(
         rendered.pdf,
