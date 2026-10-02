@@ -209,6 +209,32 @@ Closed in **DS7, 01–02.10.2026**, held by `tests/test_admin_design.py`:
   database holds no scanned pages to show.
 - **F06b**: the queue's reason and notes, the OCR notes and the comparison note are 16px.
 
+Done in **DS9, 02.10.2026** (accessibility and performance), as far as this host allows:
+
+- **axe-core 4.10.2, WCAG 2.1 A and AA: zero violations** on `/`, `/profil` (empty and refused),
+  `/profil/pregled`, `/povici`, a passage, `/stil`, `/admin`, three call items, manual entry, two
+  report items and the report's screen view, at 375, 768 and 1440. The one finding (a scrollable
+  table a keyboard could not reach) is fixed on `/stil` and the three demo pages. Best-practice
+  rules too: the report's screen view got its `<main>`; `/demo`'s are left (it is replaced).
+- **F37 closed**: every standalone link, the nav and the wordmark are at least 44px tall
+  (`.tap`); links inside a sentence stay inline. Measured on every customer page at 375 and
+  1440; the admin report's too.
+- **Keyboard**: real Tab presses through `/povici` and the longest admin report; every stop
+  shows the outline, the order follows the page, and «Оди на одлуката» is the 11th stop (DS1
+  counted more than 60).
+- **F09's preload half**: the admin shell preloads no fonts (an EU call's English heading left
+  the Cyrillic face unused). The customer shell keeps them.
+- **Weight**, measured over the real pages and gzipped as Caddy serves them: 132-167 KB for a
+  first visit, 11-13 requests; `tests/test_budget.py` holds CSS ≤ 14 KB, HTMX ≤ 17 KB, our own
+  script ≤ 2 KB and everything before the HTML ≤ 190 KB (today 164 KB). Text shows before the
+  fonts (`font-display: swap`): HTML and CSS are about 12 KB.
+
+**Not done here, and why**: Lighthouse (no Node or Chrome command line on this host) and a
+screen-reader pass (no NVDA here; DS8's real users on real phones are the better test). **An
+option, measured and not taken**: the Latin font subsets (about 87 KB) load on every Macedonian
+page only for digits, spaces and punctuation; a Cyrillic subset that carries ASCII would save
+them, at the cost of re-cutting the faces the PDF merges.
+
 - `/stil` measures the contrast pairs from the token values on every load: `--ink-soft` on paper
   is **6,0:1**, not the 6.1 the skill said (now corrected there). All pairs pass.
 
@@ -299,7 +325,7 @@ issue.
 | DS5 | ~~F11 (live check), F13, F14, F15, F16, F17, F18~~ closed 01.10.2026 (§2); F38 waits for the user; the first-time-user test is open |
 | DS6 | ~~F07, F23 (report half), F28, F29, F30~~ closed 01.10.2026 (§2) |
 | DS7 | ~~F06b, F08, F09 (preload: DS9), F32, F33, F34, F35, F36~~ closed (§2); the 45-minute review is open |
-| DS9 | F37 |
+| DS9 | ~~F37~~ closed 02.10.2026 (§2); Lighthouse and a screen reader not run on this host |
 
 Three are **A**: F10, F13 and F29. F13 and F29 break a promise to the customer (a date on every
 call; a deadline you can trust), so they could be taken out of order, ahead of the sessions that

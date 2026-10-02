@@ -604,7 +604,7 @@ details.cite[open] > summary::before, details.why[open] > summary::before {
   border: var(--rule-w) solid var(--rule-strong); max-width: var(--measure);
 }
 .decision-bar__calls { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-16); list-style: none; padding: 0; margin: 0; }
-.decision-bar__calls a { display: inline-block; padding-block: var(--s-8); }
+.decision-bar__calls a { display: inline-flex; align-items: center; min-height: var(--target); }
 #odluka { scroll-margin-top: var(--s-24); }
 .report-call { scroll-margin-top: var(--s-24); }
 
@@ -625,4 +625,10 @@ details.confirm > form { margin-top: var(--s-12); padding-left: var(--s-16); bor
     grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
   }
   .evidence-pair:has(.page) .page { position: sticky; top: var(--s-16); }
+}
+
+/* A link that stands alone is a touch target: at least 44px tall, whatever its type
+   size (docs/design.md F37, DS9). Links inside a sentence stay in the sentence. */
+.tap, .site-nav a, .wordmark, .excerpt figcaption a {
+  display: inline-flex; align-items: center; min-height: var(--target);
 }

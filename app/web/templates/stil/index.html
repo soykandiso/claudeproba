@@ -29,7 +29,8 @@
       {% endfor %}
     </div>
     <h3>Контраст, измерен од вредностите</h3>
-    <div class="table-wrap">
+    {# A table wider than a phone scrolls; the keyboard has to reach it (WCAG 2.1.1). #}
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Контраст на боите">
       <table class="ledger">
         <thead><tr><th>Боја</th><th>Подлога</th><th class="num">Однос</th><th class="num">Потребно</th><th>Резултат</th></tr></thead>
         <tbody>

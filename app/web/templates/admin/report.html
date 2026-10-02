@@ -108,7 +108,7 @@
     <h1>Извештај од {{ draft.run_date|iso_mkdate }}</h1>
     <p class="soft">{{ draft.calls|length }} {{ 'повик' if draft.calls|length == 1 else 'повици' }} со проверка, {{ draft.excluded|length }} {{ 'исклучен' if draft.excluded|length == 1 else 'исклучени' }} по правило, од {{ draft.candidates_considered }} {{ 'разгледан' if draft.candidates_considered == 1 else 'разгледани' }}.</p>
     {# The PDF's own template on screen: what the customer will read, in that order (DS6). #}
-    <p><a href="{{ url_for('admin.report_document', item_id=item.id) }}">Види го извештајот како документ</a></p>
+    <p><a class="tap" href="{{ url_for('admin.report_document', item_id=item.id) }}">Види го извештајот како документ</a></p>
     {% else %}
     <h1>Извештај без нацрт</h1>
     {% endif %}
@@ -197,7 +197,7 @@
         <div><dt>Институција</dt><dd>{{ call.institution }}</dd></div>
         <div><dt>Рок</dt><dd>{# The component: a passed deadline says «рокот помина» (F29). #}{% if call.deadline %}{{ ui.deadline(call.deadline|instant) }}{% else %}не е објавен{% endif %}</dd></div>
       </dl>
-      <p class="small break"><a href="{{ call.url }}" rel="noopener noreferrer" target="_blank">{{ call.url }}</a></p>
+      <p class="small break"><a class="tap" href="{{ call.url }}" rel="noopener noreferrer" target="_blank">{{ call.url }}</a></p>
       {% for detail in problems_at.get('povik-' ~ call.number, []) %}<p class="field-error">{{ detail }}</p>{% endfor %}
     </div>
 
@@ -265,7 +265,7 @@
         {{ ui.submit('Прифати го извештајот', busy='Се прифаќа', id='approve',
              disabled_reason=(problems|length ~ (' проблем го спречува' if problems|length == 1 else ' проблеми го спречуваат') ~ ' прифаќањето. Списокот е на врвот на страницата.') if problems else none) }}
       </div>
-      {% if problems %}<p><a href="#problems">Кон проблемите</a></p>{% endif %}
+      {% if problems %}<p><a class="tap" href="#problems">Кон проблемите</a></p>{% endif %}
     </form>
     {% endif %}
     <form class="stack form-narrow" method="post" action="{{ url_for('admin.reject_report', item_id=item.id) }}">

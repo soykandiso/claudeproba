@@ -6,8 +6,9 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="data:,">
   <title>{% block title %}Админ{% endblock %}</title>
-  <link rel="preload" href="{{ url_for('static', filename='fonts/fira-sans-cyrillic-400-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="{{ url_for('static', filename='fonts/source-serif-4-cyrillic-600-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
+  {# No font preloads here (F09, DS9): an operator page's heading is as often an EU call's
+     English title as a Macedonian one, so a preloaded Cyrillic face went unused and the
+     browser warned. The customer shell keeps them: its headings are Macedonian. #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
   <script src="{{ url_for('static', filename='js/submit.js') }}" defer></script>
