@@ -357,3 +357,36 @@ def test_the_timed_run_is_said_in_minutes(seconds, words):
     from app.web.intake import _duration_words
 
     assert _duration_words(seconds) == words
+
+
+# ------------------------------------------------------------- DL3: the intake as iOS groups
+
+
+def test_each_section_is_a_group_card(client):
+    page = client.get("/profil/").get_data(as_text=True)
+    assert page.count('class="form-section"') == len(intake.sections())
+    assert page.count('class="form-section__card"') == len(intake.sections())
+
+
+def test_the_headcount_is_a_segmented_control_that_posts_without_script(client):
+    page = client.get("/profil/").get_data(as_text=True)
+    control = page[page.index('<fieldset class="segmented" id="employees"') :]
+    control = control[: control.index("</fieldset>")]
+    assert control.count('type="radio" name="employees"') == 5
+    assert "10⁠–⁠49" in control  # a band never breaks at its dash
+    # A posted band is read exactly as the select's value was.
+    assert submit(client, employees="10-49").status_code == 302
+
+
+def test_a_missing_headcount_links_to_the_control(client):
+    body = submit(client, employees="").get_data(as_text=True)
+    assert '<a href="#employees">' in body
+    control = body[body.index('<fieldset class="segmented" id="employees"') :]
+    assert 'aria-invalid="true"' in control[: control.index(">")]
+
+
+def test_the_review_is_a_grouped_list(client):
+    submit(client)
+    page = client.get("/profil/pregled").get_data(as_text=True)
+    assert '<p class="group__header">Вашите одговори</p>' in page
+    assert page.count('class="group__row"') == len(intake.describe(normalise(FULL)))

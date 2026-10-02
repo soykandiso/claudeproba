@@ -140,6 +140,8 @@ def review():
         "intake/review.html",
         profile=p,
         rows=intake.describe(p),
+        # (label, what it was read as, no link) for the grouped list (DL3).
+        answers=[(label, value or UNKNOWN, None) for label, value in intake.describe(p)],
         unknown=UNKNOWN,
         scrubbed=Scrubber().scrub(p.project_description),
         took=_duration_words(session.get("profile_seconds")),

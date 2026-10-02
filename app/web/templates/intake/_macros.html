@@ -43,6 +43,20 @@
 </span>
 {% endmacro %}
 
+{# One of a few short bands, chosen in place (DL3): radios under a segmented control, so it
+   posts without script and a screen reader hears a radio group. The fieldset carries the
+   field's id, so the error summary's link lands on it. #}
+{% macro segmented(q, a, errors) %}
+<fieldset class="segmented" id="{{ q.key }}" {{ described(q, errors) }}>
+  <legend class="visually-hidden">{{ q.label_mk }}</legend>
+  {% for value, text in q.options %}
+  {# A word joiner each side of the dash: «10–49» is one band and must not break at the dash
+     on a phone. #}
+  <label><input class="visually-hidden" type="radio" name="{{ q.key }}" value="{{ value }}" {% if value == a.get(q.key) %}checked{% endif %}>{{ text|replace("–", "⁠–⁠") }}</label>
+  {% endfor %}
+</fieldset>
+{% endmacro %}
+
 {% macro checkboxes(q, a) %}
 <div class="choices">
   {% for value, text in q.options %}
@@ -57,7 +71,14 @@
 {# The activity field is not here: it is a partial of its own (intake/_activity.html),
    because HTMX swaps it whole when a search result is picked. #}
 {% macro field(q, a, errors) %}
-{% if q.kind == 'checkboxes' %}
+{% if q.kind == 'segmented' %}
+<div class="field">
+  <span class="field__label" aria-hidden="true">{{ q.label_mk }}</span>
+  {{ segmented(q, a, errors) }}
+  {{ error(errors, q.key) }}
+  {{ hint(q) }}
+</div>
+{% elif q.kind == 'checkboxes' %}
 <fieldset class="field">
   <legend>{{ q.label_mk }}{% if not q.required %} <span class="optional">(по избор)</span>{% endif %}</legend>
   {{ checkboxes(q, a) }}

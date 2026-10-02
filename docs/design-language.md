@@ -92,6 +92,18 @@ Everything collapses to 1 ms under `prefers-reduced-motion`.
   control** and a **sheet** exist for DL3 onwards.
 - **Glass is fenced in by a test**: the templates may use it on the bars and a sheet only.
 
+## The intake (DL3, 02.10.2026)
+
+`/profil` reads like an iOS form: each section (Фирмата, Дејноста, Проектот) is an inset group
+card with its title above; the headcount is a segmented control of its five bands (radios under
+it, so the form still posts with no script, and «10–49» is held on one line by word joiners
+around the dash); the purposes are a multi-select list; the one action spans the width on a
+phone. `/profil/pregled` is a settings list: each answer a row, what it was read as on the right,
+«Не е одговорено» where nothing was given, and the reason that costs nothing in the footer.
+DS4's behaviour is untouched: the error summary links every field (the segmented control's
+fieldset carries the field's id), errors sit between control and hint, the picker's loading
+state is on the field.
+
 ## What the PDF does
 
 Paper is not glass. Until DL5 the PDF keeps the faces it merges and checks (Fira Sans and

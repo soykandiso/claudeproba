@@ -9,17 +9,10 @@
       на отворените повици.</p>
   </div>
 
-  <dl class="breakdown">
-    {% for label, value in rows %}
-    <div>
-      <dt>{{ label }}</dt>
-      <dd>{% if value %}{{ value }}{% else %}<span class="soft">{{ unknown }}</span>{% endif %}</dd>
-    </div>
-    {% endfor %}
-  </dl>
-
-  <p class="privacy-note">Неодговорено поле не исклучува ниту еден повик. Условот што зависи од него
-    се означува за проверка и ве прашуваме тогаш.</p>
+  {# The answers as an iOS settings list (DL3): each answer a row, its reading on the right;
+     what was not answered says so, and the footer says what that means. #}
+  {{ c.group(answers, header='Вашите одговори',
+             footer='Неодговорено поле не исклучува ниту еден повик. Условот што зависи од него се означува за проверка и ве прашуваме тогаш.') }}
 
   {% if profile.project_description %}
   <section class="stack">
@@ -30,7 +23,7 @@
   </section>
   {% endif %}
 
-  <div class="actions actions--after">
+  <div class="actions actions--after form-submit">
     <a class="btn" href="{{ url_for('shortlist.index') }}">Види ги отворените повици</a>
     <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">Измени го профилот</a>
   </div>

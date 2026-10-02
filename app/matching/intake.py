@@ -69,7 +69,7 @@ class Question:
 
     key: str
     label_mk: str
-    kind: str  # select | activity | year | number | percent | checkboxes | text
+    kind: str  # select | segmented | activity | year | number | percent | checkboxes | text
     section_mk: str = ""
     hint_mk: str = ""
     required: bool = False
@@ -142,7 +142,8 @@ def questions() -> tuple[Question, ...]:
         Question(
             key="employees",
             label_mk="Број на вработени",
-            kind="select",
+            # Five short bands: one tap on a segmented control rather than a menu (DL3).
+            kind="segmented",
             section_mk=SECTION_COMPANY,
             required=True,
             options=_band_options(HEADCOUNT_BANDS),

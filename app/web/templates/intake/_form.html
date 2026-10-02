@@ -25,19 +25,23 @@
      nothing but the visitor's own session cookie. #}
   {% if csrf_token is defined %}<input type="hidden" name="csrf" value="{{ csrf_token() }}">{% endif %}
 
+  {# Each section is an iOS inset group (DL3): its title above, its questions as rows on
+     one surface, separated by inset hairlines. #}
   {% for title, rows in sections %}
-  <div>
-    <h2>{{ title }}</h2>
-    {% for q in rows %}
-      {% if q.kind == 'activity' %}{% include "intake/_activity.html" %}{% else %}{{ f.field(q, a, errors) }}{% endif %}
-    {% endfor %}
+  <div class="form-section">
+    <h2 class="form-section__title">{{ title }}</h2>
+    <div class="form-section__card">
+      {% for q in rows %}
+        {% if q.kind == 'activity' %}{% include "intake/_activity.html" %}{% else %}{{ f.field(q, a, errors) }}{% endif %}
+      {% endfor %}
+    </div>
   </div>
   {% endfor %}
 
   <p class="privacy-note">Назив, ЕМБС и контакт ги бараме дури ако нарачате извештај.
     Во автоматската анализа никогаш не се праќаат податоци по кои може да се препознае фирмата.</p>
 
-  <div class="actions">
+  <div class="actions form-submit">
     {{ c.submit(submit_label, busy='Се зачувува') }}
   </div>
 </form>
