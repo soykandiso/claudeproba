@@ -168,21 +168,6 @@ def test_cyrillic_subset_has_every_macedonian_letter(path):
     assert [ch for ch in MK_LETTERS if ord(ch) not in cmap] == []
 
 
-@pytest.mark.parametrize(
-    "path", sorted(FONTS.glob("source-serif-4-cyrillic-*.woff2")), ids=lambda p: p.name
-)
-def test_serif_keeps_the_macedonian_language_system(path):
-    """docs/design.md F05: the serif is the face Macedonian forms come from."""
-    font = TTFont(path)
-    langs = {
-        lang.LangSysTag
-        for sr in font["GSUB"].table.ScriptList.ScriptRecord
-        if sr.ScriptTag == "cyrl"
-        for lang in sr.Script.LangSysRecord
-    }
-    assert "MKD " in langs
-
-
 def test_no_italic_is_shipped():
     """Neither Inter nor SF has Macedonian italic forms, so the language has no italic
     (DL1); emphasis is weight, as on iOS."""

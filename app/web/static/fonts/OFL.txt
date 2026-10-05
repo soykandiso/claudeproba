@@ -1,7 +1,6 @@
-Fira Sans and Source Serif 4: Google Inc.
 Inter (inter-*.woff2): Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
 
-All three are subsets of the upstream files, cut by ops/dev/cut_fonts.py; under the
+The files are subsets of the upstream files, cut by ops/dev/cut_fonts.py; under the
 licence below they are Modified Versions and keep their names only as Reserved Font
 Names permit.
 

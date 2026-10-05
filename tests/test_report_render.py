@@ -121,7 +121,7 @@ def test_the_pdf_takes_the_token_values_and_not_the_sites_split_fonts():
     assert "--label: #1D1D1F" in page and "--deadline:" in page
     # Paper takes the light theme only: the dark block is not part of :root.
     assert "#000000" not in page.split("</style>")[0].split(":root")[1]
-    assert "fira-sans-cyrillic" not in page and "fira-sans-all-400-normal.ttf" in page
+    assert "inter-cyrillic" not in page and "inter-all-400-normal.ttf" in page
 
 
 # ------------------------------------------------------------------ what is said
@@ -216,9 +216,7 @@ def test_a_character_the_fonts_cannot_draw_is_refused_not_printed(world):
 @needs_db
 def test_a_font_we_do_not_ship_is_refused(world, monkeypatch):
     factory, item_id = approved(world)
-    values = render.token_values().replace(
-        '--font-print-body: "Fira Sans"', "--font-print-body: monospace"
-    )
+    values = render.token_values().replace('--font-print: "Inter"', "--font-print: monospace")
     monkeypatch.setattr(render, "token_values", lambda: values)
     with factory() as s, pytest.raises(render.RenderRefused, match="a font we do not ship"):
         render.render(s, s.get(ReviewQueueItem, item_id))
@@ -446,3 +444,35 @@ def test_the_admin_shows_the_report_as_a_document(world, admin):
     )
     css = admin.get("/admin/izveshtaj/report.css")
     assert css.mimetype == "text/css" and "@media screen" in css.get_data(as_text=True)
+
+
+# ------------------------------------------------------------- DL5: the design language
+
+
+def test_paper_is_set_in_the_sites_one_family():
+    """DL5: Inter on paper as on screen; the weights do what a second face did."""
+    assert {family for family, _, _ in render.FACES} == {"Inter"}
+    assert '--font-print: "Inter"' in render.token_values()
+    assert "Fira" not in render.report_css() and "Source Serif" not in render.report_css()
+
+
+def test_each_merged_weight_has_a_name_of_its_own():
+    """Every static cut of Inter is called «Inter-Regular»; three files under one name is
+    the mix-up the merge exists to prevent (P2 s35), so each is named for its weight."""
+    from fontTools.ttLib import TTFont
+
+    folder = render.pdf_fonts()
+    names = [
+        TTFont(folder / pattern.format("all").replace(".woff2", ".ttf"))["name"].getDebugName(6)
+        for _, _, pattern in render.FACES
+    ]
+    assert names == ["Inter-Regular", "Inter-SemiBold", "Inter-Bold"]
+
+
+def test_the_screen_view_draws_the_sites_verdict_symbols():
+    """On screen the verdicts are the site's symbols; on paper the four printed marks the
+    pixel test reads (WeasyPrint has no mask)."""
+    css = render.report_css()
+    screen = css[css.index("@media screen") :]
+    assert "var(--sym-needs-verification)" in screen and "var(--sym-cite)" in screen
+    assert "--sym-" not in css[: css.index("@media screen")]

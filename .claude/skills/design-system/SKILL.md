@@ -43,7 +43,8 @@ No colour value in components, ever. `/stil` renders every token in both themes
 Apple devices render their own SF and download nothing; everyone else gets **Inter**, self-hosted
 as subsetted woff2 (`ops/dev/cut_fonts.py`), **never from a font CDN** (no visitor IP to a US
 processor, `docs/architecture.md` §8). Weights: 400 text, 600 headlines and controls, 700 large
-titles. `--font-print-*` (Fira Sans, Source Serif 4) belong to the PDF until DL5.
+titles. Paper names its face exactly, `--font-print: "Inter"`, the same files merged per weight
+by `app/reports/render.py` (DL5).
 
 The iOS text styles: **caption 12** (identifiers only), **footnote 13** (labels), **subhead 15**
 (secondary sentences; nothing a reader must read is smaller), **body 17**, **title3 20**, **title2
@@ -96,7 +97,7 @@ Four verdicts, and `needs_verification` is the **default and most common** resul
 traffic light would therefore render the normal case as a failure. Encode verdicts by **mark and
 rule weight first, hue second**, so they survive both colour-blindness and a cheap phone screen:
 
-| Verdict | Symbol (screen, `--sym-*`) | Paper (until DL5) |
+| Verdict | Symbol (screen, `--sym-*`) | Paper (WeasyPrint has no masks) |
 |---|---|---|
 | Eligible | filled disc with a check cut out | filled disc |
 | Likely eligible | whole ring with a check | hollow ring |

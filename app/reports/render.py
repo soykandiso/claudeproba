@@ -25,8 +25,8 @@ guarantee rather than a hope:
   font the machine happens to have — or by none — and nothing would say so;
 - **after rendering**, every font embedded in the PDF must be one of ours. That
   catches what the first check cannot: a CSS rule asking for a family we do not
-  ship (the site's monospace is a system font, so the PDF sets identifiers in Fira
-  Sans with tabular figures instead).
+  ship (the site's monospace is a system font, so the PDF sets identifiers in Inter
+  instead).
 
 Either failure raises `RenderRefused` and produces no PDF. A report is sent late
 before it is sent with a letter missing.
@@ -73,14 +73,14 @@ from app.reports import compose
 from app.reports.lint import find_banned
 from app.web.format import CRITERION_LABELS, SKOPJE, VERDICT_LABELS, lang_of, mkdate
 
-RENDERER_VERSION = "2026-09-30.1"
+RENDERER_VERSION = "2026-10-03.1"
 
 HERE = Path(__file__).resolve().parent
 TEMPLATES = HERE / "templates"
 STATIC = HERE.parent / "web" / "static"
 FONTS = STATIC / "fonts"
-# Our families as they appear in an embedded font's name: "ABCDEF+Fira-Sans".
-OUR_FAMILIES = ("Source-Serif-4", "Fira-Sans")
+# Our family as it appears in an embedded font's name: "ABCDEF+Inter-SemiBold".
+OUR_FAMILIES = ("Inter",)
 
 RENDERABLE = (ReviewState.APPROVED, ReviewState.EDITED)
 
@@ -106,12 +106,16 @@ class Rendered:
 
 
 # (family, weight, the subsets that make it): what the site ships, as the PDF needs it.
+# Since DL5 paper is set in the site's one family, the weights doing what a second face did.
 FACES = (
-    ("Fira Sans", 400, "fira-sans-{}-400-normal.woff2"),
-    ("Fira Sans", 500, "fira-sans-{}-500-normal.woff2"),
-    ("Source Serif 4", 400, "source-serif-4-{}-400-normal.woff2"),
-    ("Source Serif 4", 600, "source-serif-4-{}-600-normal.woff2"),
+    ("Inter", 400, "inter-{}-400-normal.woff2"),
+    ("Inter", 600, "inter-{}-600-normal.woff2"),
+    ("Inter", 700, "inter-{}-700-normal.woff2"),
 )
+# Each static cut of Inter keeps the variable font's name, "Inter-Regular", whatever its
+# weight. Three files under one name is the mix-up the merge exists to prevent, so each
+# merged file is named for its weight.
+WEIGHT_NAMES = {400: "Regular", 600: "SemiBold", 700: "Bold"}
 SUBSETS = ("latin", "cyrillic")
 
 
@@ -121,7 +125,7 @@ def pdf_fonts() -> Path:
     from fontTools.merge import Merger
 
     out = Path(tempfile.mkdtemp(prefix="report-fonts-"))
-    for _, _, pattern in FACES:
+    for family, weight, pattern in FACES:
         parts = []
         for subset in SUBSETS:
             font = TTFont(FONTS / pattern.format(subset))
@@ -130,6 +134,12 @@ def pdf_fonts() -> Path:
             font.save(path)
             parts.append(str(path))
         merged = Merger().merge(parts)
+        style = WEIGHT_NAMES[weight]
+        for record in merged["name"].names:
+            if record.nameID in (4, 6):
+                record.string = f"{family}-{style}" if record.nameID == 6 else f"{family} {style}"
+            elif record.nameID in (2, 17):
+                record.string = style
         merged.save(out / pattern.format("all").replace(".woff2", ".ttf"))
     return out
 
@@ -157,8 +167,8 @@ def token_values() -> str:
 def covered_characters() -> frozenset[str]:
     """Every character the PDF's faces can draw: the union of their character maps.
 
-    FACES, not every file in the folder: the italic shipped for /stil (DS2) is not
-    used on paper, and a character only it covered would pass here and print wrong."""
+    FACES, not every file in the folder: a face shipped for the screen alone would cover
+    characters here that paper could not print."""
     chars: set[str] = set()
     for _family, _weight, pattern in FACES:
         for subset in SUBSETS:

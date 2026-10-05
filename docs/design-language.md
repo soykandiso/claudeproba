@@ -121,11 +121,26 @@ The stylesheet budget went from 14 to 15 KB gzipped here, as a recorded decision
 (`tests/test_budget.py`): the language adds components the old one did not have. Every card now
 shares one rule, so the next card costs a selector, not a block.
 
-## What the PDF does
+## The report, on paper and on screen (DL5, 03.10.2026)
 
-Paper is not glass. Until DL5 the PDF keeps the faces it merges and checks (Fira Sans and
-Source Serif 4, `--font-print-*`) and takes the light theme's colours only. DL5 makes it a print
-rendering of the new language.
+Paper is not glass. The PDF is a print rendering of the language: **one face, Inter** (400, 600,
+700, the same woff2 files the site serves, merged per weight by `render.py` and each renamed for
+its weight, since every static cut of Inter calls itself «Inter-Regular»), the weights doing what
+Source Serif did for headings and quotes; the light theme's colours only; large titles drawn
+tight; hairlines at 0.5pt; the quoted passage recessed in `--fill` with rounded corners and the
+green bar straight on its left edge, the quote a step larger than the text. The four printed
+verdict marks are unchanged (filled, hollow, dashed, struck: WeasyPrint has no masks, and the
+pixel test reads them). `--font-print: "Inter"` names the face exactly, so no system font can
+stand in; the embedded-font check refuses anything else.
+
+The screen view (`/admin/izveshtaj/<id>/dokument`, later the customer's) is the same template
+drawn as the site draws: the print scale takes the iOS text styles, each part a card on the
+grouped ground, the verdicts the site's SF-style symbols, the source line with the citation
+seal, and dark when the device is. On a phone a clause's number sits above it and the quote is
+body size; from 768px the quote is title 3, as on the site. Before DL5 the screen view had
+fallen back to the browser's serif: its print faces were no longer loaded on screen.
+
+Fira Sans and Source Serif 4 are gone from the repository.
 
 ## Sources
 

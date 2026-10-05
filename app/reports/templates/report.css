@@ -1,31 +1,35 @@
-/* The paid report on paper (P2 s35). Values come from tokens.css; this file only
-   says how a page of it is laid out. Print, not screen: A4, no colour but the two
-   single-purpose ones (--deadline for deadlines, --verified for the citation mark). */
+/* The paid report on paper (P2 s35), in the design language (DL5). Values come from
+   tokens.css; this file only says how a page of it is laid out. Paper is not glass: one
+   face (Inter, the weights doing what a second face did), the light theme's colours, no
+   colour but the two single-purpose ones (--deadline for deadlines, --verified for the
+   citation mark), and grey only where iOS recesses something: a quoted passage. */
 
 @page {
   size: A4;
   margin: 22mm 20mm 24mm;
-  @bottom-left { font-family: var(--font-print-body); font-size: var(--print-8); color: var(--label-2); }
+  @bottom-left { font-family: var(--font-print); font-size: var(--print-8); color: var(--label-2); }
   @bottom-right {
     content: "Страница " counter(page) " од " counter(pages);
-    font-family: "Fira Sans"; font-size: var(--print-8); color: var(--label-2);
+    font-family: var(--font-print); font-size: var(--print-8); color: var(--label-2);
   }
 }
 
 html { font-feature-settings: "locl"; }
 body {
   margin: 0;
-  font-family: var(--font-print-body);
+  font-family: var(--font-print);
   font-size: var(--print-10-5);
   line-height: 1.5;
   color: var(--label);
   background: white;
+  font-synthesis: none;
 }
 
-h1, h2 { font-family: var(--font-print-display); font-weight: 600; line-height: 1.25; margin: 0; }
+/* Large titles draw tighter, as on the site (--tracking-title). */
+h1, h2 { font-weight: 700; line-height: 1.2; letter-spacing: var(--tracking-title); margin: 0; }
 h1 { font-size: var(--print-22); max-width: 16em; }
 h2 { font-size: var(--print-14); margin-top: 6mm; }
-h3 { font-size: var(--print-10-5); font-weight: 500; margin: 5mm 0 2mm; }
+h3 { font-size: var(--print-10-5); font-weight: 600; margin: 5mm 0 2mm; }
 /* A heading never ends a page alone. */
 h2, h3 { break-after: avoid; }
 p { margin: 1.5mm 0; }
@@ -33,7 +37,7 @@ p { margin: 1.5mm 0; }
 .id { font-variant-numeric: tabular-nums; }
 
 section { margin-top: 8mm; }
-.cover { padding-bottom: 6mm; border-bottom: 1px solid var(--separator); }
+.cover { padding-bottom: 2mm; }
 
 .facts { display: block; margin: 4mm 0 0; }
 .facts div { display: inline-block; vertical-align: top; width: 48%; margin: 0 0 3mm; }
@@ -41,7 +45,8 @@ section { margin-top: 8mm; }
 .facts dd { margin: 0; }
 .url { font-size: var(--print-8-5); word-break: break-all; }
 
-.profile div { display: block; padding: 1mm 0; border-top: 1px solid var(--separator); }
+/* The applicant as an inset list: label left, what we read right, hairlines between. */
+.profile div { display: block; padding: 1.5mm 0; border-top: 0.5pt solid var(--separator); }
 .profile div:first-child { border-top: 0; }
 .profile dt { display: inline-block; width: 42%; vertical-align: top; }
 .profile dd { display: inline-block; width: 56%; margin: 0; }
@@ -49,10 +54,10 @@ section { margin-top: 8mm; }
 /* A table: the label column is as wide as its longest label and never wraps (F28). */
 .legend { border-collapse: collapse; margin: 3mm 0 0; }
 .legend th, .legend td { text-align: left; vertical-align: top; padding: 1mm 6mm 1mm 0; }
-.legend th { white-space: nowrap; font-weight: 500; }
+.legend th { white-space: nowrap; font-weight: 600; }
 
 /* Verdicts: mark and rule weight, as on the site (design system, "The verdict system") */
-.verdict { font-weight: 500; }
+.verdict { font-weight: 600; }
 .verdict::before {
   content: ""; display: inline-block; width: 8pt; height: 8pt; margin-right: 2mm;
   border: 1.5pt solid currentColor; border-radius: 50%; vertical-align: -1pt;
@@ -60,8 +65,8 @@ section { margin-top: 8mm; }
 .verdict--eligible::before { background: currentColor; }
 .verdict--needs_verification, .verdict--not_eligible { color: var(--label-2); }
 /* The site's four marks (docs/design.md F10): filled, hollow, broken, struck. Broken is
-   dashed here, not dotted as on screen: WeasyPrint draws a dotted 8pt ring as eight specks
-   that vanish on paper, a dashed one as four clear arcs (compared in DS6). */
+   dashed here, not dotted: WeasyPrint draws a dotted 8pt ring as eight specks that vanish
+   on paper, a dashed one as four clear arcs (compared in DS6). */
 .verdict--needs_verification::before { border-style: dashed; }
 /* Struck: a hollow ring with a bar through it. Not the site's sized gradient: WeasyPrint 70
    ignores background-size there and fills the disc, which then reads as «Можете да
@@ -81,7 +86,7 @@ section { margin-top: 8mm; }
 section.call { margin-top: 10mm; }
 .call-head { break-inside: avoid; break-after: avoid; }
 .call-number { font-size: var(--print-8-5); color: var(--label-2); margin: 0; }
-.deadline { color: var(--deadline); font-weight: 500; }
+.deadline { color: var(--deadline); font-weight: 600; }
 .deadline--passed { color: var(--label); }
 
 .statements { padding-left: 5mm; margin: 0; }
@@ -90,59 +95,108 @@ section.call { margin-top: 10mm; }
 
 /* Numbered clauses, the way an official document reads */
 .clauses { list-style: none; padding: 0; margin: 0; }
-.clauses > li { border-top: 1px solid var(--separator); padding: 3mm 0; break-inside: avoid; }
+.clauses > li { border-top: 0.5pt solid var(--separator); padding: 3mm 0; break-inside: avoid; }
 .clauses > li:first-child { border-top: 0; }
 .ref {
   float: left; width: 11mm;
-  font-family: var(--font-print-display); font-size: var(--print-12); color: var(--label-2);
+  font-size: var(--print-12); font-weight: 600; color: var(--label-2);
   font-variant-numeric: tabular-nums;
 }
 .clause { margin-left: 11mm; }
-.clause-label { font-weight: 500; margin-top: 0; }
+.clause-label { font-weight: 600; margin-top: 0; }
 .outcome, .reason { margin: 0.5mm 0; }
 
-/* The cited passage: the one bold element */
+/* The cited passage: the one bold element. Recessed and rounded as on the site, the green
+   bar straight on its left edge, the quote a step larger than the text around it. */
 .excerpt {
   margin: 2mm 0 0; padding: 3mm 4mm 2mm;
   background: var(--fill); border-left: 2pt solid var(--verified);
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
   break-inside: avoid;
 }
 .excerpt-label { font-size: var(--print-8-5); color: var(--label-2); }
 .excerpt blockquote {
-  margin: 1mm 0 0; font-family: var(--font-print-display); font-size: var(--print-10-5); line-height: 1.6;
+  margin: 1mm 0 0; font-size: var(--print-12); line-height: 1.45;
   quotes: "„" "“";
 }
 .excerpt blockquote[lang="en"] { quotes: "“" "”"; }
 .excerpt blockquote::before { content: open-quote; }
 .excerpt blockquote::after { content: close-quote; }
-.source { font-size: var(--print-8); margin: 2mm 0 0; padding-top: 1.5mm; border-top: 1px solid var(--separator); }
+.source { font-size: var(--print-8); margin: 2mm 0 0; padding-top: 1.5mm; border-top: 0.5pt solid var(--separator); }
 .source span { margin-right: 4mm; }
-.cite-mark { color: var(--verified); font-weight: 500; }
+.cite-mark { color: var(--verified); font-weight: 600; }
 
 .excluded { break-before: page; }
-.closing { border-top: 1px solid var(--separator); padding-top: 3mm; }
+.closing { border-top: 0.5pt solid var(--separator); padding-top: 3mm; }
 
 /* The same document on a screen (DS6, the admin's «Види како документ»; the customer's
-   later). Nothing about what it says changes: only the print scale gets the site's sizes,
-   and the page gets the site's ground and a reading column. */
+   later), as the site draws it (DL5): the print scale takes the iOS text styles, each part
+   a card on the grouped ground, the verdicts the site's symbols, and dark when the phone
+   is. Nothing about what it says or in what order changes: it is the same template. */
 @media screen {
   :root {
-    --print-8: var(--text-caption);
+    --print-8: var(--text-footnote);
     --print-8-5: var(--text-subhead);
     --print-10-5: var(--text-body);
     --print-12: var(--text-title3);
-    --print-14: var(--text-title3);
+    --print-14: var(--text-title2);
     --print-22: var(--text-title1);
   }
   html, body { background: var(--bg); }
   body {
     max-width: var(--width-mid); margin: 0 auto; padding: var(--s-32) var(--s-16) var(--s-96);
-    font-feature-settings: "locl"; font-synthesis: none;
+    font-family: var(--font-text); line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body); -webkit-font-smoothing: antialiased;
   }
-  /* The hollow ring's inside is the ground it sits on, not paper-white. */
-  .verdict--not_eligible::before {
-    background: linear-gradient(var(--surface) 41%, var(--label-2) 41%, var(--label-2) 59%, var(--surface) 59%);
+  h1, h2 { font-family: var(--font-display); }
+  @media (min-width: 768px) { :root { --print-22: var(--text-large); } }
+
+  /* Each part a card; the cover stands on the ground as a large title does. */
+  section, .call {
+    background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
+    border-left: 0; padding: var(--s-16); margin-top: var(--s-16);
   }
+  @media (min-width: 768px) { section, .call { padding: var(--s-24); } }
+  section h2:first-child, .call-head > :first-child { margin-top: 0; }
+  section.call, .closing { margin-top: var(--s-16); }
+  .call--likely_eligible { padding-left: var(--s-16); }
+  /* An excluded call is a card inside the excluded part's card: recessed, not lifted. */
+  .excluded .call { background: var(--fill); box-shadow: none; }
+  .closing { border-top: 0; padding-top: var(--s-16); }
+
+  /* The verdicts as the site draws them: SF-style symbols, the glyph alone telling them. */
+  .verdict { display: inline-flex; align-items: center; gap: var(--s-8); }
+  .verdict::before {
+    width: var(--symbol); height: var(--symbol); margin: 0; border: 0; border-radius: 0;
+    background: currentColor;
+    -webkit-mask: var(--verdict-symbol) center / contain no-repeat;
+    mask: var(--verdict-symbol) center / contain no-repeat;
+  }
+  .verdict--eligible { --verdict-symbol: var(--sym-eligible); }
+  .verdict--likely_eligible { --verdict-symbol: var(--sym-likely-eligible); }
+  .verdict--needs_verification { --verdict-symbol: var(--sym-needs-verification); }
+  .verdict--not_eligible { --verdict-symbol: var(--sym-not-eligible); }
+
+  .excerpt {
+    border-left: 0; border-radius: var(--radius-l);
+    box-shadow: inset var(--rule-w-strong) 0 0 var(--verified);
+    padding: var(--s-16) var(--s-16) var(--s-12) var(--s-24); margin-top: var(--s-8);
+  }
+  /* The quote at body size on a phone, a step up where there is room, as on the site. */
+  .excerpt blockquote { font-size: var(--text-body); }
+  @media (min-width: 768px) { .excerpt blockquote { font-size: var(--text-title3); } }
+  .cite-mark::before {
+    content: ""; display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em;
+    margin-right: var(--s-4); background: currentColor;
+    -webkit-mask: var(--sym-cite) center / contain no-repeat; mask: var(--sym-cite) center / contain no-repeat;
+  }
+  /* On a phone a clause's number sits above it: beside it, it took a sixth of the line. */
+  @media (max-width: 600px) {
+    .ref { float: none; display: block; width: auto; font-size: var(--text-footnote); }
+    .clause { margin-left: 0; }
+  }
+  .profile div, .clauses > li, .source { border-top-width: var(--rule-w); }
+  .clauses > li { padding-block: var(--s-16); }
   .url, .source, .cites { overflow-wrap: anywhere; }
   /* On a phone the legend stacks: the label, then what it means under it. */
   @media (max-width: 600px) {

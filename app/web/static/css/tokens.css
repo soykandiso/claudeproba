@@ -33,9 +33,9 @@
   --font-text: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
   --font-id: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  /* The PDF keeps the faces it merges and checks (app/reports/render.py) until DL5. */
-  --font-print-body: "Fira Sans";
-  --font-print-display: "Source Serif 4";
+  /* Paper names its face exactly: the PDF embeds only the files render.py merges and
+     checks, so no system font can stand in (DL5). */
+  --font-print: "Inter";
 
   /* The iOS text styles. Body is 17, as on an iPhone. Secondary sentences are subhead
      (15) at the least; footnote (13) is for labels; caption (12) for identifiers. */

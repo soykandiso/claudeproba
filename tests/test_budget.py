@@ -34,8 +34,8 @@ def test_the_javascript_is_htmx_and_one_small_file():
 
 def test_a_first_visit_stays_under_the_budget():
     """Everything a customer page can load, gzipped as Caddy serves it (woff2 is already
-    compressed). Since DL1 the site serves Inter only; Fira and Source Serif are the PDF's
-    (read from disk by render.py), and Apple devices fetch no font at all."""
+    compressed). The site serves Inter only, and since DL5 the PDF reads the same files
+    from disk (render.py); Apple devices fetch no font at all."""
     fonts = list((STATIC / "fonts").glob("inter-*.woff2"))
     total = (
         _gz(STATIC / "css" / "tokens.css")

@@ -15,8 +15,8 @@ weight splits into one Cyrillic and one Latin file.
 
 History: DS2 cut a Source Serif 4 italic for a Macedonian reader to sign off. The
 design language has no italic (Inter and SF have no Macedonian italic forms), so DL1
-removed it. The Fira Sans and Source Serif 4 uprights stay for the PDF until DL5; they
-were never cut here (decisions.md, DS2).
+removed it. The Fira Sans and Source Serif 4 uprights the PDF kept went at DL5, when
+paper took Inter too; they were never cut here (decisions.md, DS2).
 """
 
 import argparse

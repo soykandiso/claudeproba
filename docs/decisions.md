@@ -627,7 +627,9 @@ machine has installed. The image has six system fonts, this Codespace fifty-eigh
 that looks right here proves nothing there. The PDF uses only the woff2 files the site already
 serves, and `render` refuses (a) any character outside their character maps, before rendering,
 and (b) any embedded font that is not ours, after. Identifiers are set in Fira Sans with tabular
-figures, because the site's monospace is a system font.
+figures, because the site's monospace is a system font. *Since DL5 (03.10.2026) the face is
+Inter, the site's one family; the merged files are renamed per weight, because every static cut
+of Inter is named «Inter-Regular». Fira Sans and Source Serif 4 are no longer shipped.*
 
 **Merged at runtime, not committed.** WeasyPrint 70 embeds the Latin and Cyrillic subsets of one
 face under one name and mixes their glyphs (the first render: right Cyrillic, wrong digits and
@@ -646,6 +648,10 @@ keeps `--seal`. **Not stored**: rendered on demand, reproducible from the stored
 `RENDERER_VERSION`; which bytes were delivered is P4 s53's to record.
 
 ### The upright fonts are not re-cut; the only italic is the serif's, and it waits for a reader (01.10.2026, DS2)
+
+*Superseded by the design language: DL1 removed the italic, DL5 the Fira and Source Serif uprights.
+Inter's Cyrillic keeps no Macedonian language system either; its upright forms are the
+Macedonian ones, and there is no italic for them to differ in.*
 
 DS1 (F05) asked for the subsets to be re-cut keeping Macedonian `locl`. Opened with fontTools,
 the upstream files said otherwise: **Fira Sans has no Cyrillic language systems at all**, so a
