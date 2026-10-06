@@ -121,6 +121,19 @@ The stylesheet budget went from 14 to 15 KB gzipped here, as a recorded decision
 (`tests/test_budget.py`): the language adds components the old one did not have. Every card now
 shares one rule, so the next card costs a selector, not a block.
 
+## The operator screens (DL6, 06.10.2026)
+
+The admin is the same language, denser. The queue is a grouped page whose lists are inset cards
+of rows: each row one tap target (the title's link stretched over it, `.rows__link`), iOS's
+chevron on its right, the fill under it on hover and the tint ring on keyboard focus; titles are
+the label colour, not underlined, because a row is not a link inside a sentence. An item or a
+report review (`.grouped.grouped--cards`) makes each part a card; what was a card of its own
+inside a part (a call's head, a notice) is recessed there in `--fill`, never lifted twice. Stored
+text around a quote has rounded corners. The manual entry's fields sit on one card, as the
+intake's do. DS7's behaviour is untouched: the decision bar under the problems, the reason beside
+a disabled approval, removal a confirmed second step, the quote and the scanned page side by side
+at 1200px.
+
 ## The report, on paper and on screen (DL5, 03.10.2026)
 
 Paper is not glass. The PDF is a print rendering of the language: **one face, Inter** (400, 600,

@@ -123,7 +123,10 @@ parameter there and a row on `/stil`, in both themes.
   `c.group(...)`: inset hairlines, a footnote header, an explanation under it. Every card is one
   recipe, the `.surface` rule in `site.css`: add a new card's class to that selector rather than
   writing the background, radius and shadow again. A page of cards is `.wrap.grouped`: its
-  sections are spaced, not ruled (DL4).
+  sections are spaced, not ruled (DL4); with `.grouped--cards` each section is itself a card,
+  and a card inside it is recessed in `--fill`, never lifted twice (DL6).
+- **Rows**: `ul.rows` is an inset grouped list. A row that leads somewhere puts `.rows__link` on
+  its title: the link covers the row and the chevron is drawn. One link per row.
 - **Back**: `a.back` is iOS's back button, a drawn chevron and the way back in the tint. It
   returns to the place the reader left (`#call-<id>`), not the top of the list.
 - **Disclosure**: iOS's chevron, turning on a spring. **Segmented control**: radio inputs under

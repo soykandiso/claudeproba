@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% block title %}Рачен внес на повик{% endblock %}
 {% block main %}
-<div class="wrap">
+<div class="wrap grouped">
   <div class="report-head stack">
     <h1>Рачен внес на повик</h1>
     <p class="soft">За повик што ниту еден извор не го презема: донатор, министерство, општина. Документите поминуваат низ истиот пат како преземените: снимка, читање, извлекување со цитати, па вашиот преглед.</p>
@@ -13,7 +13,8 @@
 
   <form class="form" method="post" action="{{ url_for('admin.manual_entry_submit') }}">
     <input type="hidden" name="csrf" value="{{ csrf_token() }}">
-    <div>
+    {# The fields on one card, as the intake's sections are (DL3, DL6). #}
+    <div class="form-section__card">
       <div class="field">
         <label for="urls">Адреси на повикот</label>
         <textarea class="textarea id-input" id="urls" name="urls" rows="4" required aria-describedby="urls-hint"{% if error %} aria-invalid="true"{% endif %}>{{ typed.get('urls', '') }}</textarea>
@@ -30,7 +31,7 @@
         <span class="hint">На пример, од каде дознавте за повикот. Не се објавува.</span>
       </div>
     </div>
-    <div class="actions"><button class="btn" type="submit">Преземи и извлечи</button></div>
+    <div class="actions form-submit"><button class="btn" type="submit">Преземи и извлечи</button></div>
   </form>
 </div>
 {% endblock %}

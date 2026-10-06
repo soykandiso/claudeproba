@@ -113,3 +113,26 @@ def test_the_decision_is_one_jump_away_and_says_why_it_is_shut(world, admin):  #
     assert 'class="decision-bar"' in page and 'href="#odluka"' in page
     assert 'id="odluka"' in page and 'href="#povik-1"' in page
     assert page.index('class="decision-bar"') < page.index('id="odluka"')
+
+
+# ------------------------------------------------------------- DL6: the design language
+
+
+def test_the_long_review_pages_are_cards_on_the_grouped_ground():
+    """DL6: each part of an item or a report review is a card; the queue's lists and the
+    manual entry's fields sit on the grouped ground as the customer pages do."""
+    for name in ("item.html", "report.html"):
+        assert 'class="wrap wrap--review grouped grouped--cards"' in (TEMPLATES / name).read_text(
+            encoding="utf-8"
+        ), name
+    assert 'class="wrap grouped"' in (TEMPLATES / "queue.html").read_text(encoding="utf-8")
+    assert 'class="form-section__card"' in (TEMPLATES / "manual.html").read_text(encoding="utf-8")
+
+
+def test_each_queue_row_is_one_tap_target():
+    """DL6: the row's title is its link, stretched over the row, with iOS's chevron; it is
+    not underlined as a link inside a sentence is."""
+    queue = (TEMPLATES / "queue.html").read_text(encoding="utf-8")
+    assert queue.count('class="rows__link') == 4
+    css = (TEMPLATES.parents[1] / "static" / "css" / "site.css").read_text(encoding="utf-8")
+    assert ":not(.rows__link)" in css and ".rows__link::after" in css

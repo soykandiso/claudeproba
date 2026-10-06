@@ -100,7 +100,7 @@
 {% endmacro %}
 
 {% block main %}
-<div class="wrap wrap--review">
+<div class="wrap wrap--review grouped grouped--cards">
   <a class="back" href="{{ url_for('admin.queue') }}">Назад кон редот</a>
   <div class="report-head stack">
     <p class="small soft">Извештај за преглед, ставка <span class="id id--14">{{ item.id }}</span>{% if item.match_run_id %}, анализа <span class="id id--14 break">{{ item.match_run_id }}</span>{% endif %}</p>

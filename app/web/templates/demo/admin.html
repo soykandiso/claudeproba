@@ -17,7 +17,7 @@
       <li{% if not i.open %} class="rows--closed"{% endif %}>
         <div class="stack--tight">
           <span class="small soft">{{ i.kind }}</span>
-          <a href="{{ i.url }}"><strong>{{ i.title }}</strong></a>
+          <a class="rows__link" href="{{ i.url }}"><strong>{{ i.title }}</strong></a>
           {% if i.flag and i.open %}<span class="small">{{ i.flag }}</span>{% endif %}
         </div>
         <div class="rows__meta">

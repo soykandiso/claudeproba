@@ -28,7 +28,7 @@ body {
    does not tell a link from its sentence (WCAG 1.4.1). Standalone links (.tap, the nav, a
    button) need no underline, their shape says what they are. */
 a { color: var(--tint); text-decoration: none; text-underline-offset: var(--s-4); }
-:where(p, li, dd, td, figcaption, .hint, .why-not) a:not(.btn):not(.tap):not(.group__row) {
+:where(p, li, dd, td, figcaption, .hint, .why-not) a:not(.btn):not(.tap):not(.group__row):not(.rows__link) {
   text-decoration: underline; text-decoration-thickness: var(--rule-w);
 }
 a:hover { text-decoration: underline; }
@@ -472,7 +472,7 @@ details.why > summary:hover, details.why > summary.is-hover { color: var(--label
   white-space: pre-wrap; overflow-wrap: anywhere; max-width: var(--measure);
   padding-bottom: var(--s-64);
 }
-.document--context { background: var(--fill); padding: var(--s-12) var(--s-16); white-space: normal; }
+.document--context { background: var(--fill); border-radius: var(--radius-m); padding: var(--s-12) var(--s-16); white-space: normal; }
 mark {
   background: var(--fill); color: var(--label);
   text-decoration: underline var(--mark-w) var(--verified); text-underline-offset: var(--s-4);
@@ -482,14 +482,30 @@ mark {
 /* The reviewer copies quotes from one line, so the lines are shown as stored. */
 .document--lines { white-space: pre-line; }
 
-/* Rows: an order list, the review queue */
+/* Rows: an order list, the review queue. An inset grouped list (DL6): one card, inset
+   hairlines, and a row that leads somewhere is one tap target with iOS's chevron. */
 
-.rows { list-style: none; padding: 0; max-width: var(--width-wide); }
+.rows { list-style: none; padding: 0; max-width: var(--width-wide); overflow: hidden; }
 .rows > li {
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-8) var(--s-24);
-  padding-block: var(--s-16); border-top: var(--rule-w) solid var(--separator);
+  padding: var(--s-12) var(--s-16); position: relative;
 }
-.rows > li:last-child { border-bottom: var(--rule-w) solid var(--separator); }
+.rows > li + li::before {
+  content: ""; position: absolute; top: 0; left: var(--s-16); right: 0;
+  border-top: var(--rule-w) solid var(--separator);
+}
+.rows__link { color: var(--label); text-decoration: none; }
+.rows__link::after { content: ""; position: absolute; inset: 0; }
+.rows__link:hover { text-decoration: none; }
+.rows > li:has(.rows__link) { padding-right: var(--s-32); }
+.rows > li:has(.rows__link)::after {
+  content: ""; position: absolute; right: var(--s-16); top: 50%; width: var(--s-8); height: var(--s-8);
+  border-right: var(--mark-w) solid var(--label-3); border-bottom: var(--mark-w) solid var(--label-3);
+  transform: translateY(-50%) rotate(-45deg);
+}
+.rows > li:has(.rows__link:hover) { background: var(--fill); }
+.rows__link:focus-visible { outline: none; }
+.rows > li:has(.rows__link:focus-visible) { outline: var(--rule-w-strong) solid var(--tint); outline-offset: calc(-1 * var(--rule-w-strong)); }
 .rows > li > .stack { flex: 1 1 var(--width-narrow); min-width: 0; }
 .rows > li > .stack > * { display: block; margin-top: var(--s-4); }
 .rows > li > .stack > :first-child { margin-top: 0; }
@@ -720,7 +736,8 @@ details.confirm > form {
 }
 
 /* A surface: content's own ground, solid and quiet. Every card in the site is this one. */
-.surface, .call, .empty, .decision-bar, .group__rows, .form-section__card, .legend--card, .document--card {
+.surface, .call, .empty, .decision-bar, .group__rows, .form-section__card, .legend--card, .document--card,
+.rows, .grouped--cards > section:not(.notice) {
   background: var(--surface); border-radius: var(--radius-l); box-shadow: var(--shadow-1);
 }
 
@@ -816,8 +833,7 @@ a.group__row::after {
 /* ------------------------------------------------------------------ shortlist and passage (DL4) */
 
 /* A grouped page is cards on --bg: its sections are told apart by space, not by rules. */
-.grouped section { border-top: 0; }
-.grouped .group + section, .grouped section + section { padding-top: var(--s-24); }
+.grouped section { border-top: 0; padding-block: var(--s-24); }
 
 /* The legend on one card: the four marks, wrapping two to a line on a phone. */
 .legend--card {
@@ -839,3 +855,13 @@ a.group__row::after {
   padding: var(--s-16); margin-block: var(--s-32) var(--s-64);
 }
 @media (min-width: 768px) { .document--card { padding: var(--s-24) var(--s-32); } }
+
+/* ------------------------------------------------------------------ operator screens (DL6) */
+
+/* A long review page: each part a card on the grouped ground. What was a card of its own
+   inside a part (a call's head, a notice) is recessed there instead, never lifted twice. */
+.grouped.grouped--cards > section { padding: var(--s-16); margin-top: var(--s-16); }
+@media (min-width: 768px) { .grouped.grouped--cards > section { padding: var(--s-24); } }
+.grouped--cards section .call, .grouped--cards section .notice { background: var(--fill); box-shadow: none; }
+.grouped--cards section .notice { box-shadow: inset var(--rule-w-strong) 0 0 var(--label); }
+.grouped--cards .criterion:first-child { padding-top: 0; }
