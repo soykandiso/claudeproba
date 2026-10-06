@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <title>{% block title %}Админ{% endblock %}</title>
   {# No font preloads here (F09, DS9): an operator page's heading is as often an EU call's
      English title as a Macedonian one, so a preloaded Cyrillic face went unused and the

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <title>{% block title %}Грантови.мк{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
@@ -20,7 +20,9 @@
     </div>
   </div>
 
-  <header class="site-header">
+  {# The site's bar (DL7): glass, as everywhere. Its four sections wrap on a phone, so there
+     it scrolls away rather than holding a third of the screen. #}
+  <header class="site-header site-header--scrolls glass glass--bar">
     <div class="wrap">
       <a class="wordmark" href="{{ url_for('demo.landing') }}">Грантови.мк</a>
       {% set here = request.endpoint %}

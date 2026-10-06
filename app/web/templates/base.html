@@ -9,7 +9,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <title>{% block title %}Платформа за грантови и субвенции{% endblock %}</title>
   {# No font preloads (DL1): Apple devices render in their own SF and would fetch Inter for
      nothing; everyone else gets Inter with font-display: swap, text first. #}

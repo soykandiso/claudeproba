@@ -183,6 +183,7 @@ def test_glass_is_only_on_the_floating_layer():
     allowed = {
         "base.html": {"site-header glass glass--bar", "tab-bar glass"},
         "admin/base.html": {"site-header glass glass--bar"},
+        "demo/base.html": {"site-header site-header--scrolls glass glass--bar"},
         "stil/_components.html": {"sheet glass stil-sheet"},
         "stil/index.html": {"stil-backdrop__bar glass"},
     }
@@ -223,3 +224,63 @@ def test_a_grouped_list_links_a_row_and_says_a_value(app):
     assert '<p class="group__header">Профил</p>' in html
     assert '<span class="group__value">Центар</span>' in html
     assert '<a class="group__row" href="/profil/">' in html
+
+
+# ------------------------------------------------------------------ DL7: the audit
+
+
+def _composited(glass: str, under: str) -> str:
+    """The glass colour over a solid ground: what the eye reads text against."""
+    r, g, b, a = re.match(r"rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)", glass).groups()
+    top, a = (int(r), int(g), int(b)), float(a)
+    below = [int(under[i : i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(
+        f"{round(a * c + (1 - a) * x):02X}" for c, x in zip(top, below, strict=True)
+    )
+
+
+def test_text_on_glass_reads_over_whatever_scrolls_under_it():
+    """axe measures the bar against the page's ground; glass shows what scrolls under it, a
+    white scan in dark, black in light. Text on glass is --label, which holds AA over both
+    extremes in both themes; --label-2 fell to 3:1 there (DL7)."""
+    from app.web import style
+
+    for name, theme in style.themes().items():
+        for under in ("#000000", "#FFFFFF", theme["tint-strong"]):
+            ground = _composited(theme["glass"], under)
+            assert style.contrast(theme["label"], ground) >= 4.5, (name, under)
+    for selector in (".site-nav a {", ".tab-bar a {"):
+        rule = SITE_CSS[SITE_CSS.index(selector) :]
+        assert "color: var(--label);" in rule[: rule.index("}")], selector
+
+
+def test_motion_and_transparency_have_their_way_out():
+    """Under reduced motion every transition and animation is cut to a frame; under reduced
+    transparency glass is solid. The text on it is measured against that solid too."""
+    motion = SITE_CSS[SITE_CSS.index("@media (prefers-reduced-motion: reduce)") :]
+    assert "transition-duration: 1ms !important" in motion[:300]
+    assert "animation-duration: 1ms !important" in motion[:300]
+    clear = SITE_CSS[SITE_CSS.index("@media (prefers-reduced-transparency: reduce)") :]
+    assert (
+        "background: var(--glass-solid)" in clear[:200] and "backdrop-filter: none" in clear[:200]
+    )
+
+
+def test_focus_scrolls_clear_of_the_bars():
+    """WCAG 2.4.11: what keyboard focus scrolls into view is not hidden under the sticky
+    bar or the phone's tab bar (found in DL7)."""
+    assert "scroll-padding-top:" in SITE_CSS and "scroll-padding-bottom:" in SITE_CSS
+
+
+def test_the_icon_is_the_citation_seal_in_the_tint(client):
+    """DL7: one icon, the product's one bold element on its tint; /favicon.ico leads to it.
+    An SVG file cannot read tokens.css, so the tint is written in it and held to it here."""
+    from app.web import style
+
+    icon = (ROOT / "app" / "web" / "static" / "favicon.svg").read_text(encoding="utf-8")
+    tint = style.themes()["light"]["tint-strong"]
+    assert set(re.findall(r"#[0-9A-Fa-f]{6}", icon)) == {tint, "#FFFFFF"}
+    for shell in ("base.html", "admin/base.html", "demo/base.html"):
+        assert "favicon.svg" in (TEMPLATES / shell).read_text(encoding="utf-8"), shell
+    moved = client.get("/favicon.ico")
+    assert moved.status_code == 301 and moved.location.endswith("/static/favicon.svg")

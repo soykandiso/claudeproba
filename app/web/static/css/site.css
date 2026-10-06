@@ -4,6 +4,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
+/* What keyboard focus scrolls into view clears the sticky bar above and, on a phone, the
+   tab bar below: never hidden under the glass (WCAG 2.4.11, DL7). */
+html { scroll-padding-top: calc(var(--control) + var(--s-16)); }
+@media (max-width: 767px) { html:has(.has-tab-bar) { scroll-padding-bottom: calc(var(--control) + var(--s-48)); } }
 
 body {
   margin: 0;
@@ -99,9 +103,12 @@ section:first-of-type { border-top: 0; }
 }
 .wordmark:hover { text-decoration: none; }
 .site-nav { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+/* Text on glass is --label, never --label-2: glass shows what scrolls under it, and over a
+   white scan in dark or black in light, --label-2 falls to 3:1 where --label keeps 6:1
+   (DL7; tests/test_components.py measures it). The current section is told by its lens. */
 .site-nav a {
   padding-inline: var(--s-16); border-radius: var(--radius-pill);
-  color: var(--label-2); font-weight: 600; font-size: var(--text-subhead);
+  color: var(--label); font-weight: 600; font-size: var(--text-subhead);
   transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
 }
 .site-nav a:hover { color: var(--label); background: var(--fill); text-decoration: none; }
@@ -119,10 +126,10 @@ section:first-of-type { border-top: 0; }
 .tab-bar a {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
   min-width: var(--s-96); min-height: var(--control); padding: var(--s-4) var(--s-16);
-  border-radius: var(--radius-pill); color: var(--label-2);
+  border-radius: var(--radius-pill); color: var(--label);
   font-size: var(--text-caption); font-weight: 600; text-decoration: none;
 }
-.tab-bar a:hover { text-decoration: none; color: var(--label); }
+.tab-bar a:hover { text-decoration: none; background: var(--fill); }
 .tab-bar a[aria-current] { color: var(--tint); background: var(--surface); box-shadow: var(--shadow-1); }
 .tab-bar svg { width: var(--symbol); height: var(--symbol); }
 @media (max-width: 767px) {
@@ -130,6 +137,7 @@ section:first-of-type { border-top: 0; }
   .has-tab-bar { padding-bottom: calc(var(--control) + var(--s-48)); }
 }
 @media (min-width: 768px) { .tab-bar { display: none; } }
+@media (max-width: 767px) { .site-header--scrolls { position: static; } }
 
 .site-footer { padding-block: var(--s-32) var(--s-48); color: var(--label-2); }
 

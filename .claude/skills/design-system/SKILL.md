@@ -136,7 +136,10 @@ parameter there and a row on `/stil`, in both themes.
 - A passed deadline is `--label`, not `--deadline`. Submit buttons get their busy state from
   `app/web/static/js/submit.js` (`data-busy` says what is happening).
 - **Glass appears only where `tests/test_components.py` lists it** (the bars, a sheet). Adding it
-  anywhere else fails that test on purpose.
+  anywhere else fails that test on purpose. **Text on glass is `--label`**, never `--label-2`:
+  glass shows what scrolls under it, and grey text falls to 3:1 over a white scan in dark (DL7).
+- Keyboard focus never lands under a bar: `html` keeps `scroll-padding` for the sticky bar and
+  the tab bar. A new fixed or sticky element adds its height there.
 
 ## Every screen showing a call
 

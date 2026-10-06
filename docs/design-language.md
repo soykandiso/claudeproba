@@ -121,6 +121,37 @@ The stylesheet budget went from 14 to 15 KB gzipped here, as a recorded decision
 (`tests/test_budget.py`): the language adds components the old one did not have. Every card now
 shares one rule, so the next card costs a selector, not a block.
 
+## The audit (DL7, 07.10.2026)
+
+What was checked, and what it found:
+
+- **axe, WCAG 2.0/2.1/2.2 A and AA**: every customer page (`/`, `/profil`, `/profil/pregled`,
+  `/povici`, a passage), `/stil` and the seven demo pages in light and dark at 375, 768 and 1440,
+  and the five operator screens in both themes at 375 after the changes below (at 768 and 1440 in
+  DL6, before them; the only change there raises contrast): zero violations, no horizontal scroll.
+- **Text on glass**: axe measures the bar against the page's ground, but glass shows what
+  scrolls under it. Composited over the extremes (black in light, a white scan in dark, the
+  tint), `--label-2` fell to 3.0:1. Text on glass is now `--label` (6.0:1 at worst); the current
+  section is still told by its solid lens. A test computes it from the tokens.
+- **Keyboard**: every stop on every page shows the tint ring (a queue row draws it on the row).
+  Focus could scroll a control under the sticky bar or the phone's tab bar (WCAG 2.4.11):
+  `html` now has `scroll-padding` for both.
+- **Reduced motion and transparency**: every transition and animation cut to a frame; glass
+  solid. Held by a test.
+- **Glass**: only the bars, the tab bar and a sheet; at most two layers on any screen. The demo's
+  bar had lost its material in DL2 (content showed through it) and was a third of a phone's
+  height: it is glass now, and scrolls away below 768px.
+- **Budget**: a first visit is 112-115 KB before the HTML (190 allowed; DS9 measured 132-167 with
+  the old faces), about 1.2 s on Slow 4G, 2.8 s on Fast 3G, 0.4 s on 4G, computed from the gzipped
+  bytes Caddy will send; text shows before Inter arrives (`font-display: swap`), and Apple
+  devices fetch no font. Stylesheets 15 078 B gzipped of 15 360: the next component pays for
+  itself.
+- **The icon**: the citation seal, white on the tint (`static/favicon.svg`); `/favicon.ico`
+  redirects to it.
+
+Not run here, and the user's: a screen reader pass, Lighthouse, and the shortlist on a real
+mid-range Android.
+
 ## The operator screens (DL6, 06.10.2026)
 
 The admin is the same language, denser. The queue is a grouped page whose lists are inset cards
