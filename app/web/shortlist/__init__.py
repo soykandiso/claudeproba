@@ -20,7 +20,7 @@ from sqlalchemy import select
 from app.config import load_settings
 from app.db import session_factory
 from app.matching import intake, shortlist
-from app.models import Call, EligibilityCriterion, Programme, RawSnapshot
+from app.models import Call, EligibilityCriterion, Programme, RawSnapshot, SourceFeed
 from app.web.intake import profile as current_profile
 
 bp = Blueprint("shortlist", __name__, url_prefix="/povici")
@@ -74,8 +74,9 @@ def index():
 def passage(criterion_id: uuid.UUID):
     with _sessions()() as session:
         row = session.execute(
-            select(EligibilityCriterion, RawSnapshot, Call, Programme.institution)
+            select(EligibilityCriterion, RawSnapshot, Call, Programme.institution, SourceFeed.slug)
             .join(RawSnapshot, RawSnapshot.id == EligibilityCriterion.snapshot_id)
+            .join(SourceFeed, SourceFeed.id == RawSnapshot.source_feed_id)
             .join(Call, Call.id == EligibilityCriterion.call_id)
             .join(Programme, Programme.id == Call.programme_id)
             .where(
@@ -86,7 +87,7 @@ def passage(criterion_id: uuid.UUID):
         ).first()
         if row is None:
             abort(404)
-        criterion, snapshot, call, institution = row
+        criterion, snapshot, call, institution, source_slug = row
         text = snapshot.normalised_text or ""
         start, end = criterion.quote_start, criterion.quote_end
         # The same check the shortlist makes: a passage that is not where the
@@ -101,6 +102,8 @@ def passage(criterion_id: uuid.UUID):
             institution=institution,
             snapshot=snapshot,
             source_url=criterion.source_url or snapshot.url,
+            # The credit the source's licence asks for (docs/legal-notes.md).
+            credit=shortlist.credits().get(source_slug),
             before=("…" if lo else "") + text[lo:start],
             quoted=text[start:end],
             after=text[end:hi] + ("…" if hi < len(text) else ""),

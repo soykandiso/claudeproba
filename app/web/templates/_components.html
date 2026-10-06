@@ -34,13 +34,15 @@
    an English quote is read by an English voice and gets English quotation marks.
    `own` is for our own text shown as an excerpt (the scrubbed description): it is not
    a citation, so it never wears the citation colour (docs/design.md F12). #}
-{% macro excerpt(quote, source=none, retrieved=none, href=none, link_label='Види го во текстот на повикот', lang='mk', own=false, compact=true) -%}
+{% macro excerpt(quote, source=none, retrieved=none, href=none, link_label='Види го во текстот на повикот', lang='mk', own=false, compact=true, credit=none) -%}
 <figure class="excerpt{% if compact %} excerpt--compact{% endif %}{% if own %} excerpt--own{% endif %}">
   <blockquote lang="{{ lang }}">{{ quote }}</blockquote>
-  {%- if source or retrieved or href or caller is defined %}
+  {%- if source or retrieved or href or credit or caller is defined %}
   <figcaption>
     {% if source %}<span>{% if not own %}<span class="cite-mark">Извор:</span> {% endif %}{{ source }}</span>{% endif %}
     {% if retrieved %}<span>Преземено {{ retrieved|mkdate }}</span>{% endif %}
+    {#- The credit a source's licence asks for beside its words (the EU's CC BY 4.0). #}
+    {% if credit %}<span><a rel="license" href="{{ credit[1] }}">{{ credit[0] }}</a></span>{% endif %}
     {% if href %}<a href="{{ href }}">{{ link_label }}</a>{% endif %}
     {% if caller is defined %}{{ caller() }}{% endif %}
   </figcaption>

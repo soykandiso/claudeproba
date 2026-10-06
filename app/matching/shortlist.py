@@ -29,15 +29,17 @@ registry passes 2.000.
 import datetime as dt
 import uuid
 from dataclasses import dataclass, replace
+from functools import cache
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from app.ingestion.source_config import load_sources
 from app.matching import stage1, stage2
 from app.matching.normalise import Profile
 from app.matching.stage1 import CallOutcome, CriterionOutcome
 from app.matching.taxonomy import Decision, Outcome, criterion_verdict
-from app.models import Call, EligibilityCriterion, Programme, RawSnapshot
+from app.models import Call, EligibilityCriterion, Programme, RawSnapshot, SourceFeed
 
 # docs/decisions.md D6: the free shortlist shows the full top ten with reasons.
 FREE_DEPTH = 10
@@ -58,6 +60,9 @@ class Citation:
     quote: str
     source_url: str
     retrieved_at: dt.datetime
+    # (words, licence address) when the source's licence asks for credit beside a quote:
+    # the EU portal's CC BY 4.0 (config/sources.yaml, docs/legal-notes.md).
+    credit: tuple[str, str] | None = None
 
 
 @dataclass(frozen=True)
@@ -101,8 +106,10 @@ def _verified(session: Session, criteria: list[EligibilityCriterion]) -> dict:
             EligibilityCriterion.source_quote,
             func.coalesce(EligibilityCriterion.source_url, RawSnapshot.url),
             RawSnapshot.fetched_at,
+            SourceFeed.slug,
         )
         .join(RawSnapshot, RawSnapshot.id == EligibilityCriterion.snapshot_id)
+        .join(SourceFeed, SourceFeed.id == RawSnapshot.source_feed_id)
         .where(
             EligibilityCriterion.id.in_([c.id for c in criteria]),
             # Offsets are characters in Python and in PostgreSQL's substr alike.
@@ -110,7 +117,13 @@ def _verified(session: Session, criteria: list[EligibilityCriterion]) -> dict:
             == EligibilityCriterion.source_quote,
         )
     )
-    return {row[0]: Citation(*row) for row in rows}
+    return {row[0]: Citation(*row[:7], credit=credits().get(row[7])) for row in rows}
+
+
+@cache
+def credits() -> dict[str, tuple[str, str]]:
+    """Source slug → the credit its licence asks for beside a quote, from the config."""
+    return {e.slug: (e.credit_mk, e.credit_url or "") for e in load_sources() if e.credit_mk}
 
 
 def _recheck(outcome: CallOutcome, citations: dict) -> CallOutcome:

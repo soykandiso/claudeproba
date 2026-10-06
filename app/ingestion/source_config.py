@@ -29,6 +29,10 @@ class SourceEntry(BaseModel):
     rate_limit_rps: float = Field(gt=0, le=1)
     terms_url: str | None = None
     terms_note: str | None = None
+    # The credit a reuse licence asks for beside every quote from this source, and the
+    # licence's address (docs/legal-notes.md). Shown by the web layer, never stored.
+    credit_mk: str | None = None
+    credit_url: str | None = None
     priority: int = 100
     active: bool = False
     # Source-specific settings, read by the source's fetcher and never stored in the

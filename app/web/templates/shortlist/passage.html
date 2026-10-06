@@ -25,7 +25,7 @@
        ('Преземено', c.date(snapshot.fetched_at), none),
        ('Извор', source_url.split('/')[2], source_url),
        ('Позиција на цитатот', position, none),
-     ], footer='Означениот текст е точно од знак ' ~ criterion.quote_start ~ ' до знак ' ~ criterion.quote_end
+     ] + ([('Лиценца', credit[0], credit[1])] if credit else []), footer='Означениот текст е точно од знак ' ~ criterion.quote_start ~ ' до знак ' ~ criterion.quote_end
        ~ ' во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.') }}
   {# The stored text on a card; the quote in it is still the one bold element. #}
   <div class="document document--card" lang="{{ quote_lang }}">{{ before }}<mark id="quote">{{ quoted }}</mark>{{ after }}</div>

@@ -14,7 +14,7 @@
 {% macro excerpt(cite) %}
 {{ c.excerpt(cite.quote, source=cite.source_url.split('/')[2], retrieved=cite.retrieved_at,
              href=url_for('shortlist.passage', criterion_id=cite.criterion_id, _anchor='quote'),
-             lang=cite.quote|lang_of) }}
+             lang=cite.quote|lang_of, credit=cite.credit) }}
 {% endmacro %}
 
 {% macro call_item(e) %}

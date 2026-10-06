@@ -24,8 +24,13 @@ sources:
     expected_cadence_days: 7
     staleness_sla_days: 30
     rate_limit_rps: 0.2
-    terms_url: null
-    terms_note: robots allows portal paths; reuse terms not yet read (P3 s43)
+    terms_url: https://commission.europa.eu/legal-notice_en
+    terms_note: >-
+      EU-owned content is CC BY 4.0 under Commission Decision 2011/833/EU: reuse with
+      credit and changes indicated; third-party content and logos excluded (P3 s43,
+      docs/legal-notes.md)
+    credit_mk: © Европска унија, CC BY 4.0
+    credit_url: https://creativecommons.org/licenses/by/4.0/
     # Built in P1 s13 (16.09.2026). Which programmes are crawled is SCOPE in
     # app/ingestion/sources/eu_portal.py (docs/decisions.md D10).
     priority: 2

@@ -29,7 +29,7 @@
     <h3 lang="mk">{{ sample.label_mk }}</h3>
     {{ c.excerpt(sample.citation.quote, source=sample.citation.source_url.split('/')[2], retrieved=sample.citation.retrieved_at,
                  href=url_for('shortlist.passage', criterion_id=sample.citation.criterion_id, _anchor='quote'),
-                 lang=sample.citation.quote|lang_of) }}
+                 lang=sample.citation.quote|lang_of, credit=sample.citation.credit) }}
   </section>
   {% endif %}
 

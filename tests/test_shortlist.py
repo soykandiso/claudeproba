@@ -323,3 +323,47 @@ def test_the_legend_is_an_inset_group(client, served):
     body = client.get("/povici/").get_data(as_text=True)
     assert 'class="wrap grouped"' in body
     assert 'class="legend legend--card"' in body and 'class="group__footer"' in body
+
+
+# ------------------------------------------------- P3 s43: the credit a licence asks for
+
+CC_BY = ("© Европска унија, CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/")
+
+
+@db
+def test_a_quote_from_a_licensed_source_carries_its_credit(client, served, monkeypatch):
+    """docs/legal-notes.md: EU-owned text is CC BY 4.0, which asks for credit beside the
+    words, on the shortlist and on the passage alike."""
+    factory, source, snapshot = served
+    with factory() as s:
+        call = make_call(s, source, snapshot, criteria=[FITS])
+        s.commit()
+        criterion_id = s.query(EligibilityCriterion.id).filter_by(call_id=call.id).scalar()
+    monkeypatch.setattr(shortlist, "credits", lambda: {source.slug: CC_BY})
+    with_profile(client)
+
+    listed = client.get("/povici/").get_data(as_text=True)
+    assert f'<a rel="license" href="{CC_BY[1]}">{CC_BY[0]}</a>' in listed
+
+    passage = client.get(f"/povici/izvor/{criterion_id}").get_data(as_text=True)
+    assert "Лиценца" in passage and CC_BY[0] in passage
+
+
+@db
+def test_a_quote_from_an_unlicensed_source_carries_none(client, served):
+    factory, source, snapshot = served
+    with factory() as s:
+        make_call(s, source, snapshot, criteria=[FITS])
+        s.commit()
+    with_profile(client)
+    assert 'rel="license"' not in client.get("/povici/").get_data(as_text=True)
+
+
+def test_the_eu_portal_declares_its_licence_and_where_it_is_written():
+    from app.ingestion.source_config import load_sources
+
+    entries = {e.slug: e for e in load_sources()}
+    eu = entries["eu-portal"]
+    assert eu.credit_mk == CC_BY[0] and eu.credit_url == CC_BY[1]
+    assert eu.terms_url and "2011/833" in eu.terms_note
+    assert all(e.credit_url for e in entries.values() if e.credit_mk)

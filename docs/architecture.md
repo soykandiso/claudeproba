@@ -285,7 +285,9 @@ Republishing the full text of official calls may or may not be permitted; offici
 Macedonia are generally freely reusable, but "generally" is not a legal position. Until confirmed,
 the archive publishes structured summaries, short quoted extracts and links back to the source — which
 is also the better SEO strategy, since it is not duplicate content. One evening of checking, scheduled
-in P3.
+in P3. **Checked 07.10.2026 (P3 s43): `docs/legal-notes.md`** — official texts of public bodies are not
+works (Art. 16(2) of the copyright law), quotation for review is free with the source named (Art.
+52(7)), EU content is CC BY 4.0 with credit; summaries, short quotes and links stand as the rule.
 
 ### 9.8 Deploy in P0.5, not P3 (§10)
 
