@@ -1,0 +1,58 @@
+{#- Prices (roadmap P3 s39, docs/decisions.md D1). Every amount comes from
+    config/prices.yaml and is shown without and with ДДВ. No countdown, no "most popular",
+    no price struck through to look like a saving: the founding price says who it is for
+    and that it ends. What cannot be bought yet says so. Its Macedonian waits for a native
+    reader before launch (CLAUDE.md). -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}Цени{% endblock %}
+{% macro amount(net) -%}
+{{ net|thousands }} МКД без ДДВ<br><span class="small">{{ prices.gross(net)|thousands }} МКД со ДДВ</span>
+{%- endmacro %}
+{% block main %}
+{% set r, m = prices.report, prices.monitoring %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>Цени</h1>
+    <p class="lead">Листата на повици е бесплатна и целосна. Плаќате само ако сакате детална проверка на еден повик.</p>
+  </div>
+
+  <section class="stack" aria-labelledby="free-h">
+    <h2 id="free-h">Листа на повици</h2>
+    {{ c.group([('Цена', 'Бесплатно', none)],
+         footer='Сите отворени повици што одговараат на профилот, првите десет со оценка, причините за неа, рокот, датумот на последна проверка и цитат од повикот за секој услов. Ништо не е скриено за да ве натера да платите.') }}
+    <p><a class="btn" href="{{ url_for('intake.form') }}">Пополни го профилот</a></p>
+  </section>
+
+  <section class="stack" aria-labelledby="report-h">
+    <h2 id="report-h">Детален извештај</h2>
+    {% set rows = [('Цена', amount(r.net), none)] %}
+    {% if r.founding.open %}
+      {% set rows = rows + [('За првите ' ~ r.founding.orders ~ ' нарачки', amount(r.founding.net), none)] %}
+    {% endif %}
+    {% set rows = rows + [('Нарачка', 'од повикот во вашата листа' if r.orderable else 'наскоро', none)] %}
+    {{ c.group(rows, footer='За еден повик: секој услов проверен според официјалниот текст, со цитат и извор, што ви недостасува и што треба да подготвите. Го прегледува човек пред да ви се испрати, како PDF.') }}
+    {% if r.founding.open %}
+    <p class="small soft">Почетната цена важи за првите {{ r.founding.orders }} нарачки на платформата, потоа престанува. Не е попуст за ограничено време, туку цена за првите корисници.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack" aria-labelledby="monitoring-h">
+    <h2 id="monitoring-h">Следење на повици</h2>
+    {{ c.group([
+         ('Месечно', amount(m.monthly_net), none),
+         ('Годишно', amount(m.yearly_net), none),
+         ('Достапно', 'сега' if m.available else 'наскоро', none),
+       ], footer='Известување по е-пошта кога ќе се отвори нов повик што одговара на вашиот профил.') }}
+  </section>
+
+  <section class="stack" aria-labelledby="questions-h">
+    <h2 id="questions-h">Пред да платите</h2>
+    <h3>Што ако извештајот покаже дека не можам да аплицирам?</h3>
+    <p>Тоа е одговор што вреди: знаете пред да потрошите време на пријава. Извештајот кажува кој услов не е исполнет и го цитира повикот.</p>
+    <h3>Дали извештајот значи дека ќе ги добијам средствата?</h3>
+    <p>Не. Одлуката ја носи институцијата што го објавила повикот. Извештајот е проценка врз основа на текстот на повикот и вашите одговори.</p>
+    <p class="small soft">Цените се во денари. ДДВ е {{ prices.vat_percent }}%.</p>
+  </section>
+</div>
+{% endblock %}

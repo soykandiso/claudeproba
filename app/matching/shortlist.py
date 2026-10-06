@@ -30,7 +30,7 @@ import datetime as dt
 import uuid
 from dataclasses import dataclass, replace
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.matching import stage1, stage2
@@ -160,3 +160,53 @@ def build(session: Session, profile: Profile, now: dt.datetime | None = None) ->
         excluded_total=len(excluded),
         weights_version=stage2.WEIGHTS_VERSION,
     )
+
+
+@dataclass(frozen=True)
+class Sample:
+    """One real condition and its words, for the landing page (P3 s38)."""
+
+    citation: Citation
+    label_mk: str
+    call_title: str
+    institution: str
+
+
+# Long enough to read as a condition, short enough to read at a glance on a phone.
+SAMPLE_LENGTH = (40, 240)
+
+
+def sample(session: Session, now: dt.datetime | None = None) -> Sample | None:
+    """An approved condition of a published, open call, its quote found again exactly
+    where it was read (`_verified`, as on the shortlist). None when there is none: the
+    landing shows no example rather than an invented one (invariant 2)."""
+    now = now or dt.datetime.now(dt.UTC)
+    length = EligibilityCriterion.quote_end - EligibilityCriterion.quote_start
+    rows = session.execute(
+        select(EligibilityCriterion, Call.title_mk, Programme.institution)
+        .join(Call, Call.id == EligibilityCriterion.call_id)
+        .join(Programme, Programme.id == Call.programme_id)
+        .where(
+            Call.is_published.is_(True),
+            or_(Call.deadline_at.is_(None), Call.deadline_at > now),
+            EligibilityCriterion.is_approved.is_(True),
+            length.between(*SAMPLE_LENGTH),
+        )
+        # A rule on a profile field first: who may apply says what the product does,
+        # where a clause about dates does not. Then a call with a deadline (an open call,
+        # not a pre-announcement), the most recently checked, and within it the document's
+        # own order, which usually begins with who may apply.
+        .order_by(
+            EligibilityCriterion.field.is_(None),
+            Call.deadline_at.is_(None),
+            Call.last_verified_at.desc(),
+            EligibilityCriterion.quote_start,
+            EligibilityCriterion.id,
+        )
+        .limit(20)
+    ).all()
+    for criterion, title, institution in rows:
+        found = _verified(session, [criterion]).get(criterion.id)
+        if found:
+            return Sample(found, criterion.label_mk, title, institution or "")
+    return None

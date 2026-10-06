@@ -1,0 +1,25 @@
+# Prices on /ceni (roadmap P3 s39). docs/decisions.md D1, decided by the user on 07.10.2026.
+#
+# Every amount is МКД without ДДВ; the page adds ДДВ and shows both, because a B2B buyer
+# thinks without it and a farmer or an individual pays with it (D1). A change here is a
+# price change and shows up in a diff, as a scoring weight does (CLAUDE.md).
+
+vat_percent: 18
+
+report:
+  net: 8900
+  # The founding price: the first ten orders, labelled as such and then gone. Set
+  # `open: false` when the tenth founding order is paid; the page stops offering it.
+  founding:
+    net: 4900
+    orders: 10
+    open: true
+  # The order flow is P4's (s47 onwards). Until it exists the page says so, and offers
+  # nothing that cannot be bought.
+  orderable: false
+
+monitoring:
+  monthly_net: 1200
+  yearly_net: 12000
+  # P4 builds the alerts; until then the price is shown as coming.
+  available: false

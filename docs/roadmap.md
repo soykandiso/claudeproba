@@ -171,7 +171,7 @@ from the same components without adding new ones.
 
 | # | Task | Acceptance |
 |---|------|-----------|
-| 38–39 | Landing page and pricing page in Macedonian | Explains the free shortlist honestly; no dark patterns in the upgrade path (brief §12) |
+| 38–39 | Landing page and pricing page in Macedonian | Explains the free shortlist honestly; no dark patterns in the upgrade path (brief §12) — *built 07.10.2026: `/` explains the service in three steps with a **real** condition and its quote, found again in the stored text before it is shown (none, no example); `/ceni` reads D1 (decided 07.10) from `config/prices.yaml`, every price without and with ДДВ, the founding price labelled, «наскоро» for what cannot be bought yet; no countdown, nothing blurred; the banned-phrase lint passes on both; axe zero violations in both themes at three widths. **Open: a native reader for the Macedonian copy** before launch (CLAUDE.md)* |
 | 40 | i18n scaffolding verified: Babel, `dd.mm.yyyy`, МКД/EUR formatting | Locale switch works correctly with only MK content present |
 | 41–42 | Public SEO archive: durable programme pages + closed call pages | Indexed; **summaries, short quotes and links — not full reproductions** |
 | 43 | Copyright/reuse check for official publications (architecture §9.7) | Written conclusion in `docs/legal-notes.md`; archive adjusted if needed |

@@ -1,20 +1,45 @@
-"""Public pages.
+"""The public surface: the landing page and the prices (roadmap P3 s38–39).
 
-Currently one placeholder so there is something to look at while the platform is
-being built. This is NOT the landing page -- that is P3, and it follows the
-design system in .claude/skills/design-system/SKILL.md. Nothing here should be
-treated as a design decision.
+Both say only what the platform does today. The landing's example condition is a real
+one, its quote found again in the stored text before it is shown (invariant 2); with
+none to show, the section is left out rather than filled with an invented one. Prices
+come from `config/prices.yaml` (docs/decisions.md D1), never from the template.
 """
 
 from flask import Blueprint, current_app, redirect, render_template, url_for
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.config import load_settings
+from app.db import session_factory
+from app.matching import shortlist
+from app.pricing import prices
 
 bp = Blueprint("public", __name__)
 
 
+def _sample():
+    # The landing must render without a database: a page that explains the service is
+    # the one page that cannot be down because the registry is.
+    try:
+        with session_factory(load_settings())() as session:
+            return shortlist.sample(session)
+    except SQLAlchemyError:
+        current_app.logger.warning("landing: no sample, the database is not reachable")
+        return None
+
+
 @bp.get("/")
 def index():
-    settings = current_app.extensions["settings"]
-    return render_template("index.html", settings=settings)
+    return render_template(
+        "index.html",
+        sample=_sample(),
+        prices=prices(),
+    )
+
+
+@bp.get("/ceni")
+def pricing():
+    return render_template("pricing.html", prices=prices())
 
 
 @bp.get("/favicon.ico")

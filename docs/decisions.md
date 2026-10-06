@@ -12,6 +12,14 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 
 ## D1 — Pricing (you left this open; here is the model)
 
+> **Decided 07.10.2026 by the user:** option **B, 8.900 МКД** without ДДВ (10.502 with); a
+> **founding price of 4.900 МКД for the first 10 orders**, labelled as such; the **monitoring
+> subscription** listed at 1.200 МКД/month or 12.000 МКД/year, marked «наскоро» until P4 builds
+> it. Document packages are not listed until P5. The numbers live in `config/prices.yaml`,
+> read by `app/pricing.py`; the page shows every price without and with ДДВ, as recommended
+> below. The founding price is switched off by hand in that file when the tenth founding order
+> is paid (there are no orders before P4).
+
 ### The input that actually matters
 
 The marginal cost of a deep report is roughly **€1 of model tokens and 45–60 minutes of your review
