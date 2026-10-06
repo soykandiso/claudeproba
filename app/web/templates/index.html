@@ -2,29 +2,31 @@
     only what the platform does today (brief §12): no countdown, nothing blurred, nothing
     promised that only the institution can decide. The draft is the demo's landing, which
     the user approved (16.09.2026), with its invented example replaced by a real one.
-    Its Macedonian waits for a native reader before launch (CLAUDE.md). -#}
+    Its Macedonian waits for a native reader before launch (CLAUDE.md). Every string of our
+    own is marked for translation (P3 s40); the example is the institution's words and
+    keeps its own language whatever the page's. -#}
 {% extends "base.html" %}
 {% import "_components.html" as c with context %}
-{% block title %}Јавни повици за вашата фирма, со цитат од секој услов{% endblock %}
+{% block title %}{{ _('Јавни повици за вашата фирма, со цитат од секој услов') }}{% endblock %}
 {% block main %}
 <div class="wrap grouped">
   <div class="hero stack-lg">
-    <h1>Кои јавни повици се отворени за вашата фирма, и зошто</h1>
-    <p class="lead">Опишете ја фирмата со неколку одговори. Добивате листа на отворени повици за грантови и субвенции, со причина за секој повик и цитат од официјалниот документ.</p>
+    <h1>{{ _('Кои јавни повици се отворени за вашата фирма, и зошто') }}</h1>
+    <p class="lead">{{ _('Опишете ја фирмата со неколку одговори. Добивате листа на отворени повици за грантови и субвенции, со причина за секој повик и цитат од официјалниот документ.') }}</p>
     <div class="actions">
-      <a class="btn" href="{{ url_for('intake.form') }}">Пополни го профилот</a>
-      <a class="btn btn--plain" href="{{ url_for('public.pricing') }}">Цени</a>
+      <a class="btn" href="{{ url_for('intake.form') }}">{{ _('Пополни го профилот') }}</a>
+      <a class="btn btn--plain" href="{{ url_for('public.pricing') }}">{{ _('Цени') }}</a>
     </div>
-    <p class="small soft">Околу три минути. Листата е бесплатна и не бара назив, ЕМБС ни контакт.</p>
+    <p class="small soft">{{ _('Околу три минути. Листата е бесплатна и не бара назив, ЕМБС ни контакт.') }}</p>
   </div>
 
   {% if sample %}
   {# A real condition, its quote found again in the stored text a moment ago. #}
   <section class="stack" aria-labelledby="proof-h">
-    <h2 id="proof-h">Секој услов има извор</h2>
-    <p class="soft">Не ви кажуваме само дека одговарате на условите. Ви го покажуваме текстот на повикот, документот и датумот кога е преземен, за да можете сами да проверите.</p>
-    <p class="small soft">Услов од повикот <span lang="{{ sample.call_title|lang_of }}">„{{ sample.call_title }}“</span>{% if sample.institution %}, {{ sample.institution }}{% endif %}:</p>
-    <h3>{{ sample.label_mk }}</h3>
+    <h2 id="proof-h">{{ _('Секој услов има извор') }}</h2>
+    <p class="soft">{{ _('Не ви кажуваме само дека одговарате на условите. Ви го покажуваме текстот на повикот, документот и датумот кога е преземен, за да можете сами да проверите.') }}</p>
+    <p class="small soft">{{ _('Услов од повикот') }} <span lang="{{ sample.call_title|lang_of }}">„{{ sample.call_title }}“</span>{% if sample.institution %}, <span lang="mk">{{ sample.institution }}</span>{% endif %}:</p>
+    <h3 lang="mk">{{ sample.label_mk }}</h3>
     {{ c.excerpt(sample.citation.quote, source=sample.citation.source_url.split('/')[2], retrieved=sample.citation.retrieved_at,
                  href=url_for('shortlist.passage', criterion_id=sample.citation.criterion_id, _anchor='quote'),
                  lang=sample.citation.quote|lang_of) }}
@@ -32,34 +34,34 @@
   {% endif %}
 
   <section class="stack" aria-labelledby="how-h">
-    <h2 id="how-h">Како функционира</h2>
+    <h2 id="how-h">{{ _('Како функционира') }}</h2>
     <ol class="clauses">
-      <li><div class="stack--tight"><h3>Профил на фирмата</h3><p class="soft">Вид на субјект, дејност, општина, големина и планирана инвестиција. Четири одговори се доволни за листа.</p></div></li>
-      <li><div class="stack--tight"><h3>Бесплатна листа</h3><p class="soft">Отворените повици подредени според тоа колку ви одговараат, со рок, износ, датум на последна проверка и цитат за секој услов. Без скриени резултати.</p></div></li>
-      <li><div class="stack--tight"><h3>Детален извештај, по избор</h3><p class="soft">Проверка на секој услов од избраниот повик според официјалниот текст и што треба да подготвите. Секој извештај го прегледува човек пред да ви се испрати.</p></div></li>
+      <li><div class="stack--tight"><h3>{{ _('Профил на фирмата') }}</h3><p class="soft">{{ _('Вид на субјект, дејност, општина, големина и планирана инвестиција. Четири одговори се доволни за листа.') }}</p></div></li>
+      <li><div class="stack--tight"><h3>{{ _('Бесплатна листа') }}</h3><p class="soft">{{ _('Отворените повици подредени според тоа колку ви одговараат, со рок, износ, датум на последна проверка и цитат за секој услов. Без скриени резултати.') }}</p></div></li>
+      <li><div class="stack--tight"><h3>{{ _('Детален извештај, по избор') }}</h3><p class="soft">{{ _('Проверка на секој услов од избраниот повик според официјалниот текст и што треба да подготвите. Секој извештај го прегледува човек пред да ви се испрати.') }}</p></div></li>
     </ol>
   </section>
 
   {# The legend as on the shortlist (DL4): the mark that worries people, said plainly. #}
   <section class="group" aria-labelledby="verdicts-h">
-    <h2 id="verdicts-h">Четири одговори, без претерување</h2>
+    <h2 id="verdicts-h">{{ _('Четири одговори, без претерување') }}</h2>
     <ul class="legend legend--card">
       {% for key in verdict_labels %}<li>{{ c.verdict(key) }}</li>{% endfor %}
     </ul>
-    <p class="group__footer">Најчестиот одговор е „Потребна е проверка“. Тоа не е лош знак: повикот може да ви одговара, но условот не може да се потврди само од профилот.</p>
+    <p class="group__footer">{{ _('Најчестиот одговор е „Потребна е проверка“. Тоа не е лош знак: повикот може да ви одговара, но условот не може да се потврди само од профилот.') }}</p>
   </section>
 
   <section class="stack" aria-labelledby="prices-h">
-    <h2 id="prices-h">Цени</h2>
+    <h2 id="prices-h">{{ _('Цени') }}</h2>
     {{ c.group([
-         ('Листа на повици', 'Бесплатно', none),
-         ('Детален извештај', prices.report.net|thousands ~ ' МКД без ДДВ', url_for('public.pricing')),
-       ], footer='Сите цени, со и без ДДВ, и што добивате за нив се на страницата со цени.') }}
+         (_('Листа на повици'), _('Бесплатно'), none),
+         (_('Детален извештај'), prices.report.net|money ~ ' ' ~ _('без ДДВ'), url_for('public.pricing')),
+       ], footer=_('Сите цени, со и без ДДВ, и што добивате за нив се на страницата со цени.')) }}
   </section>
 
   <section class="stack" aria-labelledby="not-h">
-    <h2 id="not-h">Што не правиме</h2>
-    <p>Не поднесуваме барања во ваше име и не одлучуваме кој добива средства. Одлуката ја носи институцијата што го објавила повикот. Нашата оценка е проценка врз основа на текстот на повикот и вашите одговори, не ветување за исходот.</p>
+    <h2 id="not-h">{{ _('Што не правиме') }}</h2>
+    <p>{{ _('Не поднесуваме барања во ваше име и не одлучуваме кој добива средства. Одлуката ја носи институцијата што го објавила повикот. Нашата оценка е проценка врз основа на текстот на повикот и вашите одговори, не ветување за исходот.') }}</p>
   </section>
 </div>
 {% endblock %}

@@ -30,8 +30,11 @@ def create_app(settings: Settings | None = None) -> Flask:
     # page shows up on refresh without restarting anything.
     app.config["TEMPLATES_AUTO_RELOAD"] = not settings.is_production
 
+    from app import i18n
     from app.web import format
 
+    # Which language a page is in, and _() in every template (app/i18n.py, P3 s40).
+    i18n.init(app)
     # Dates, amounts and verdict words, the same on every screen (app/web/format.py).
     format.register(app)
 

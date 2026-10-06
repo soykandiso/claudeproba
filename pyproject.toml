@@ -8,6 +8,7 @@ dependencies = [
     "anthropic>=1.5.0",
     "fastembed>=0.8,<0.9",
     "flask>=3.0",
+    "flask-babel>=4",
     "gunicorn>=23.0",
     "httpx>=0.28.1",
     "pgvector>=0.3",

@@ -4,13 +4,13 @@
    The wordmark is descriptive on purpose — the name and the domain are docs/decisions.md
    D2, and nothing here should quietly decide them. #}
 <!doctype html>
-<html lang="mk"{% if theme is defined and theme %} data-theme="{{ theme }}"{% endif %}>
+<html lang="{{ page_lang() }}"{% if theme is defined and theme %} data-theme="{{ theme }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
-  <title>{% block title %}Платформа за грантови и субвенции{% endblock %}</title>
+  <title>{% block title %}{{ _('Платформа за грантови и субвенции') }}{% endblock %}</title>
   {# No font preloads (DL1): Apple devices render in their own SF and would fetch Inter for
      nothing; everyone else gets Inter with font-display: swap, text first. #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
@@ -20,19 +20,19 @@
   <script src="{{ url_for('static', filename='js/submit.js') }}" defer></script>
 </head>
 <body class="has-tab-bar">
-  <a class="skip" href="#main">Оди на содржината</a>
+  <a class="skip" href="#main">{{ _('Оди на содржината') }}</a>
 
   {# The navigation bar floats on glass above the page (DL2); on a phone its sections move
      to the tab bar at the bottom. #}
   <header class="site-header glass glass--bar">
     <div class="wrap">
-      <a class="wordmark" href="{{ url_for('public.index') }}">Грантови и субвенции</a>
-      <nav class="site-nav" aria-label="Главна навигација">
+      <a class="wordmark" href="{{ url_for('public.index') }}">{{ _('Грантови и субвенции') }}</a>
+      <nav class="site-nav" aria-label="{{ _('Главна навигација') }}">
         {# By blueprint, not endpoint: the review page belongs to «Профил», a passage to
            «Повици» (docs/design.md F19). "page" only on the page itself, "true" below it. #}
-        <a href="{{ url_for('intake.form') }}" {% if request.blueprint == 'intake' %}aria-current="{{ 'page' if request.endpoint in ('intake.form', 'intake.save') else 'true' }}"{% endif %}>Профил</a>
-        <a href="{{ url_for('shortlist.index') }}" {% if request.blueprint == 'shortlist' %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>Повици</a>
-        <a href="{{ url_for('public.pricing') }}" {% if request.endpoint == 'public.pricing' %}aria-current="page"{% endif %}>Цени</a>
+        <a href="{{ url_for('intake.form') }}" {% if request.blueprint == 'intake' %}aria-current="{{ 'page' if request.endpoint in ('intake.form', 'intake.save') else 'true' }}"{% endif %}>{{ _('Профил') }}</a>
+        <a href="{{ url_for('shortlist.index') }}" {% if request.blueprint == 'shortlist' %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>{{ _('Повици') }}</a>
+        <a href="{{ url_for('public.pricing') }}" {% if request.endpoint == 'public.pricing' %}aria-current="page"{% endif %}>{{ _('Цени') }}</a>
       </nav>
     </div>
   </header>
@@ -45,24 +45,24 @@
      inline in currentColor, so the tint marks the current one in both themes. #}
   {% set in_intake = request.blueprint == 'intake' %}
   {% set in_shortlist = request.blueprint == 'shortlist' %}
-  <nav class="tab-bar glass" aria-label="Делови">
+  <nav class="tab-bar glass" aria-label="{{ _('Делови') }}">
     <a href="{{ url_for('intake.form') }}" {% if in_intake %}aria-current="{{ 'page' if request.endpoint in ('intake.form', 'intake.save') else 'true' }}"{% endif %}>
       <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2.5" width="14" height="15" rx="3"/><path d="M6.5 7h7M6.5 10.5h7M6.5 14h4"/></svg>
-      Профил
+      {{ _('Профил') }}
     </a>
     <a href="{{ url_for('shortlist.index') }}" {% if in_shortlist %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>
       <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="5.5" r="1"/><circle cx="4.5" cy="10" r="1"/><circle cx="4.5" cy="14.5" r="1"/><path d="M8 5.5h8M8 10h8M8 14.5h8"/></svg>
-      Повици
+      {{ _('Повици') }}
     </a>
     <a href="{{ url_for('public.pricing') }}" {% if request.endpoint == 'public.pricing' %}aria-current="page"{% endif %}>
       <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 2.5H16a1.5 1.5 0 0 1 1.5 1.5v5.4a1.5 1.5 0 0 1-.44 1.06l-6.6 6.6a1.5 1.5 0 0 1-2.12 0l-5.3-5.3a1.5 1.5 0 0 1 0-2.12l6.6-6.6a1.5 1.5 0 0 1 1.06-.44z"/><circle cx="13.5" cy="6.5" r="1"/></svg>
-      Цени
+      {{ _('Цени') }}
     </a>
   </nav>
 
   <footer class="site-footer">
     <div class="wrap stack">
-      <p>Платформата не поднесува барања во ваше име и не одлучува за доделување средства. Одлуката ја носи институцијата што го објавила повикот.</p>
+      <p>{{ _('Платформата не поднесува барања во ваше име и не одлучува за доделување средства. Одлуката ја носи институцијата што го објавила повикот.') }}</p>
     </div>
   </footer>
 </body>

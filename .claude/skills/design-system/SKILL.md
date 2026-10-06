@@ -159,6 +159,9 @@ parameter there and a row on `/stil`, in both themes.
 ## Copy
 
 - Sentence case. Active voice. A button names what happens: "Побарај извештај", not "Испрати".
+- **Every new customer string is marked**: `{{ _('…') }}` in a template, `ngettext` for a count,
+  `|money` for an amount (never `МКД` typed after a number). Macedonian is the source; the
+  institution's words keep their own `lang` (docs/i18n.md).
 - Use the vocabulary of the actual calls — јавен повик, барател, прифатливи трошоци — not invented
   product jargon. Users match our words against the official document in front of them.
 - **Banned from all output**: гарантирано, "guaranteed", "approved", "you will receive". Enforced by
