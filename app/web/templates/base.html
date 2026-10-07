@@ -35,6 +35,8 @@
         <a href="{{ url_for('shortlist.index') }}" {% if request.blueprint == 'shortlist' %}aria-current="{{ 'page' if request.endpoint == 'shortlist.index' else 'true' }}"{% endif %}>{{ _('Повици') }}</a>
         <a href="{{ url_for('public.pricing') }}" {% if request.endpoint == 'public.pricing' %}aria-current="page"{% endif %}>{{ _('Цени') }}</a>
       </nav>
+      {# Outside the nav so it stays on a phone, where the sections move to the tab bar (P3 s44). #}
+      <a class="tap" href="{{ url_for('account.home') if signed_in() else url_for('account.sign_in') }}"{% if request.blueprint == 'account' %} aria-current="page"{% endif %}>{{ _('Сметка') if signed_in() else _('Најава') }}</a>
     </div>
   </header>
 

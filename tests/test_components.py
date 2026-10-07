@@ -249,7 +249,7 @@ def test_text_on_glass_reads_over_whatever_scrolls_under_it():
         for under in ("#000000", "#FFFFFF", theme["tint-strong"]):
             ground = _composited(theme["glass"], under)
             assert style.contrast(theme["label"], ground) >= 4.5, (name, under)
-    for selector in (".site-nav a {", ".tab-bar a {"):
+    for selector in (".site-nav a {", ".tab-bar a {", ".site-header .tap {"):
         rule = SITE_CSS[SITE_CSS.index(selector) :]
         assert "color: var(--label);" in rule[: rule.index("}")], selector
 

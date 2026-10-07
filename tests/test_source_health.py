@@ -104,7 +104,9 @@ def test_no_url_is_said_plainly_and_a_long_body_is_cut():
 
 
 def test_production_refuses_to_judge_sources_with_nowhere_to_send_the_alert():
-    app = create_app(load_settings(env="production", heartbeat_health_url=None))
+    app = create_app(
+        load_settings(env="production", secret_key="x" * 40, heartbeat_health_url=None)
+    )
 
     with app.app_context():
         result = app.test_cli_runner().invoke(args=["ingest", "health"])

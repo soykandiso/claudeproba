@@ -1,0 +1,32 @@
+{#- The account (roadmap P3 s44): who is signed in, the profile kept on the account, and
+    the way out. Orders join it in P4. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Сметка') }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Сметка') }}</h1>
+    <p class="lead">{{ _('Најавени сте како %(email)s.', email=account.email) }}</p>
+  </div>
+
+  <section class="stack" aria-labelledby="profile-h">
+    <h2 id="profile-h">{{ _('Профил на фирмата') }}</h2>
+    {% if profile %}
+    {{ c.group(rows, footer=ngettext('Зачуван на %(date)s. Секоја измена се зачувува како нова верзија.', 'Зачуван на %(date)s, верзија %(num)d. Секоја измена се зачувува како нова верзија; претходните остануваат непроменети.', versions, date=profile.created_at|mkdate)) }}
+    <p><a class="btn btn--quiet" href="{{ url_for('intake.form') }}">{{ _('Измени го профилот') }}</a>
+       <a class="btn btn--plain" href="{{ url_for('shortlist.index') }}">{{ _('Види ги повиците') }}</a></p>
+    {% else %}
+    {{ c.empty(_('Нема зачуван профил'), _('Пополнете го профилот додека сте најавени и ќе се чува на сметката, за да го најдете и на друг уред.'), href=url_for('intake.form'), action=_('Пополни го профилот')) }}
+    {% endif %}
+  </section>
+
+  <section class="stack" aria-labelledby="out-h">
+    <h2 id="out-h">{{ _('Одјава') }}</h2>
+    <form method="post" action="{{ url_for('account.sign_out') }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {{ c.submit(_('Одјави се'), kind='gray', busy=_('Се одјавува')) }}
+    </form>
+  </section>
+</div>
+{% endblock %}

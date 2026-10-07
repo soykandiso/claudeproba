@@ -434,7 +434,7 @@ def test_an_unknown_item_or_criterion_is_a_404(admin, written):
 
 
 def test_the_admin_does_not_exist_in_production():
-    app = create_app(load_settings(env="production", secret_key="x"))
+    app = create_app(load_settings(env="production", secret_key="x" * 40))
     assert app.test_client().get("/admin/").status_code == 404
 
 

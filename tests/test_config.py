@@ -21,12 +21,12 @@ def test_env_is_constrained_to_known_values():
 
 def test_reads_environment(monkeypatch):
     monkeypatch.setenv("GRANTS_ENV", "production")
-    monkeypatch.setenv("GRANTS_SECRET_KEY", "from-environment")
+    monkeypatch.setenv("GRANTS_SECRET_KEY", "from-environment-" + "s" * 32)
 
     settings = load_settings()
 
     assert settings.is_production is True
-    assert settings.secret_key == "from-environment"
+    assert settings.secret_key.startswith("from-environment-")
 
 
 def test_sqlalchemy_url_is_dialect_qualified():

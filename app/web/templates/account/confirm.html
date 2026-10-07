@@ -1,0 +1,27 @@
+{#- The page a sign-in link opens (roadmap P3 s44). Opening it signs no one in: a mail
+    scanner that opens links would spend the link otherwise. The button does. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Потврдете ја најавата') }}{% endblock %}
+{# The link carries the address, signed but not encrypted: never sent on as a Referer. #}
+{% block head %}<meta name="referrer" content="no-referrer">{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Потврдете ја најавата') }}</h1>
+    {% if problem %}
+    <p class="lead">{{ problem }}</p>
+    {% else %}
+    <p class="lead">{{ _('Се најавувате како %(email)s.', email=email) }}</p>
+    {% endif %}
+  </div>
+  {% if problem %}
+  <p><a class="btn" href="{{ url_for('account.sign_in') }}">{{ _('Побарај нов линк') }}</a></p>
+  {% else %}
+  <form method="post" action="{{ url_for('account.use_link', token=token) }}">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="actions form-submit">{{ c.submit(_('Најави се'), busy=_('Се најавува')) }}</div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

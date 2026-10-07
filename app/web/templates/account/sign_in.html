@@ -1,0 +1,37 @@
+{#- Asking for a sign-in link (roadmap P3 s44). The same answer for every address: a link
+    is mailed to any valid one, and an account exists only once a link is used. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Најава') }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Најава') }}</h1>
+    <p class="lead">{{ _('Без лозинка. Внесете ја вашата е-пошта и ќе ви испратиме линк за најава.') }}</p>
+  </div>
+
+  {% if sent %}
+  <div class="notice stack" role="status">
+    <p><strong>{{ _('Испративме линк за најава.') }}</strong></p>
+    <p>{{ _('Отворете ја поштата на уредот на кој сакате да се најавите. Линкот важи 15 минути и може да се користи еднаш. Ако не го гледате, проверете ја папката за несакана пошта.') }}</p>
+  </div>
+  {% else %}
+  {% if error %}
+  {{ c.error_summary(_('Линкот не е испратен.'), items=[('email', error)]) }}
+  {% endif %}
+  <form class="form stack-lg" method="post" action="{{ url_for('account.send_link') }}" novalidate>
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="form-section">
+      <div class="form-section__card">
+        <div class="field">
+          <label for="email">{{ _('Е-пошта') }}</label>
+          <input class="input" id="email" name="email" type="email" inputmode="email" autocomplete="email" value="{{ typed }}" required aria-describedby="email-hint"{% if error %} aria-invalid="true"{% endif %}>
+          <span class="hint" id="email-hint">{{ _('Адресата ја користиме за најава и за пораките за вашите нарачки. Не ја даваме никому.') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="actions form-submit">{{ c.submit(_('Испрати линк за најава'), busy=_('Се испраќа')) }}</div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

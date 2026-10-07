@@ -10,6 +10,8 @@ from typing import Literal
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEV_SECRET = "dev-only-not-a-secret"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -21,7 +23,9 @@ class Settings(BaseSettings):
 
     # Runtime
     env: Literal["development", "testing", "production"] = "development"
-    secret_key: str = "dev-only-not-a-secret"
+    # Signs the session cookie and the sign-in links (app/web/account): in production it
+    # must be a real secret, or anyone could mint a link into any account.
+    secret_key: str = DEV_SECRET
     debug: bool = False
 
     # Browser auto-refresh on file changes (app/web/devreload.py). Development
@@ -67,6 +71,25 @@ class Settings(BaseSettings):
 
     # Hard ceiling on model spend, alarmed rather than enforced (decisions.md D8).
     model_spend_ceiling_eur: float = Field(default=30.0, ge=0)
+
+    # Mail (app/mail.py, P3 s44). "outbox" writes each message as an .eml file to
+    # outbox_dir, for development and tests; production sends by SMTP from the domain
+    # D2 decides, and refuses to send at all until it is configured.
+    mail_backend: Literal["outbox", "smtp"] = "outbox"
+    outbox_dir: str = "var/outbox"
+    mail_from: str = "Грантови и субвенции <no-reply@localhost>"
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+
+    @model_validator(mode="after")
+    def _a_real_secret_in_production(self) -> "Settings":
+        if self.is_production and (self.secret_key == DEV_SECRET or len(self.secret_key) < 32):
+            raise ValueError(
+                "GRANTS_SECRET_KEY must be a real secret (32+ characters) in production"
+            )
+        return self
 
     @model_validator(mode="after")
     def _no_live_reload_in_production(self) -> "Settings":

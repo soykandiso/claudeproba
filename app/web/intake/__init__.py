@@ -100,6 +100,13 @@ def save():
         return render_template("intake/form.html", **_context(posted, errors)), 422
     session[ANSWERS] = posted
     session["profile_seconds"] = round(time.time() - session.pop(STARTED, time.time()))
+    # Signed in, the profile is kept on the account too, as a new version (P3 s44).
+    from app.web import account
+
+    if account.current_account_id():
+        with account._sessions()() as db:
+            account.save_profile(db, account.current_account_id(), posted)
+            db.commit()
     return redirect(url_for("intake.review"))
 
 

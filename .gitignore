@@ -37,3 +37,6 @@ tailwindcss
 .DS_Store
 .idea/
 .vscode/
+
+# Development mail (app/mail.py "outbox"): sign-in links, never committed.
+var/
