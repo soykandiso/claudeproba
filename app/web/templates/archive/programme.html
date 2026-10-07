@@ -4,7 +4,7 @@
 {% extends "base.html" %}
 {% import "_components.html" as c with context %}
 {% block title %}{{ programme.name_mk }}{% endblock %}
-{% block robots %}<meta name="robots" content="{{ 'index, follow' if indexable else 'noindex' }}">{% endblock %}
+{% block robots %}{{ robots_meta() }}{% endblock %}
 {% block main %}
 {% set state_labels = {'open': _('Отворен'), 'announced': _('Најавен'), 'closed': _('Затворен')} %}
 <div class="wrap grouped">

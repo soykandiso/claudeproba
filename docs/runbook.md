@@ -325,3 +325,22 @@ stop the processing they object to and write down what you did in `docs/decision
 
 The retention job (`flask accounts anonymise-stale`, monthly from `ops/cron.d/grants`) forgets
 the profiles of accounts quiet for 24 months (D5). `--dry-run` lists them first.
+
+---
+
+## 8. How many people came, and from where
+
+No analytics runs in the page (`decisions.md` D14). The numbers are in Caddy's access log:
+
+```bash
+docker compose logs --no-log-prefix caddy | goaccess - --log-format=CADDY -o /srv/report.html
+```
+
+Read it over the SSH tunnel, never publish it: it holds IP addresses. Caddy's log rotation keeps
+30 days (the privacy policy's promise; configure it at P0.5 s4), so the report covers at most a
+month. Useful questions: how many reach `/profil/` from `/`, how many `/povici/` follow, which
+`/arhiva/` pages arrive from search engines (the referrer), how many `/tekovna` uploads fail.
+
+**Search Console** (once the domain exists, D2): verify by DNS, submit `/sitemap.xml`.
+`/robots.txt` in production allows the public pages and the archive and disallows the form,
+the shortlist, the account, the admin and the demo (`PRIVATE` in `app/web/public.py`).

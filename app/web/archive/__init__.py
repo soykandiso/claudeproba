@@ -16,7 +16,7 @@ import datetime as dt
 import uuid
 from itertools import groupby
 
-from flask import Blueprint, abort, current_app, render_template
+from flask import Blueprint, abort, render_template, url_for
 from sqlalchemy import func, select
 
 from app.config import load_settings
@@ -54,12 +54,6 @@ def state(call: Call, now: dt.datetime | None = None) -> str:
     return "open"
 
 
-def _indexable() -> bool:
-    # Search engines are let in once the site is the real one (P0.5 s4); until then
-    # every page says noindex, as the rest of the site does.
-    return current_app.extensions["settings"].is_production
-
-
 @bp.get("/")
 def index():
     with _sessions()() as session:
@@ -78,7 +72,7 @@ def index():
             .order_by(Programme.institution, Programme.name_mk)
         ).all()
     institutions = [(name, list(group)) for name, group in groupby(rows, key=lambda r: r[2])]
-    return render_template("archive/index.html", institutions=institutions, indexable=_indexable())
+    return render_template("archive/index.html", institutions=institutions)
 
 
 @bp.get("/<slug>/")
@@ -100,7 +94,6 @@ def programme(slug: str):
         "archive/programme.html",
         programme=found,
         calls=[(c, state(c, now)) for c in calls],
-        indexable=_indexable(),
     )
 
 
@@ -130,10 +123,51 @@ def call(slug: str, call_id: uuid.UUID):
     conditions = [(c, cited[c.id]) for c in criteria if c.id in cited]
     return render_template(
         "archive/call.html",
+        structured=_structured(found, prog),
         call=found,
         programme=prog,
         state=state(found),
         conditions=conditions,
         uncited=len(criteria) - len(conditions),
-        indexable=_indexable(),
     )
+
+
+def sitemap_entries(session) -> list[tuple[str, dt.datetime | None]]:
+    """(address, last change) for every programme and call the archive shows."""
+    rows = session.execute(
+        select(Programme.slug, Call.id, Call.last_verified_at)
+        .join(Call, Call.programme_id == Programme.id)
+        .join(SourceFeed, SourceFeed.id == Call.source_feed_id)
+        .where(*_public())
+        .order_by(Programme.slug, Call.id)
+    ).all()
+    entries, programmes = [], {}
+    for slug, call_id, checked in rows:
+        programmes[slug] = max(filter(None, (programmes.get(slug), checked)), default=None)
+        entries.append(
+            (url_for("archive.call", slug=slug, call_id=call_id, _external=True), checked)
+        )
+    entries += [
+        (url_for("archive.programme", slug=slug, _external=True), checked)
+        for slug, checked in programmes.items()
+    ]
+    return entries
+
+
+def _structured(call: Call, programme: Programme) -> dict:
+    """schema.org data for a call page (P3 s46): only what the page itself says."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "MonetaryGrant",
+        "name": call.title_mk,
+        "url": url_for("archive.call", slug=programme.slug, call_id=call.id, _external=True),
+        "sameAs": call.canonical_url,
+        "funder": {"@type": "GovernmentOrganization", "name": programme.institution},
+    }
+    if call.grant_max_mkd:
+        data["amount"] = {
+            "@type": "MonetaryAmount",
+            "currency": "MKD",
+            "maxValue": float(call.grant_max_mkd),
+        }
+    return data

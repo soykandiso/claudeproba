@@ -440,6 +440,25 @@ or УЈП appears, it is worth a second look, with the identifier never stored.
 
 ---
 
+## D14 — Analytics: none in the page; the server's own logs, counted (07.10.2026, P3 s46)
+
+The roadmap asks for "privacy-respecting analytics". **Default in code: no analytics script,
+no cookie, no third party.** What the platform needs to know (how many visitors reach the form,
+which archive pages are found from search, where people stop) is in the access log Caddy already
+writes, and **GoAccess** reads it on the server into a report nobody else sees (runbook §8).
+The privacy policy already says this: no analytics cookies, server records deleted after 30 days.
+
+**Consequences:** no per-visitor journeys and no conversion funnels beyond what the log's paths
+show; in exchange, no consent banner, nothing that leaves the EU, nothing to disclose but the
+log. *To change:* a cookieless, EU-hosted counter (Plausible, Umami self-hosted) is the next
+step if the log is not enough; it is a line in `/obrabotuvachi` and the privacy policy, and a
+new version of both.
+
+Search Console needs the domain (D2): verify it by DNS when the domain exists, and submit
+`/sitemap.xml`.
+
+---
+
 ## Decided in code, not by you
 
 Conservative defaults taken during a session, recorded here so they can be overruled deliberately
@@ -776,6 +795,7 @@ DL4 and DL6 have rebuilt those screens, not on the old ones.
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
 | D12 | What the public archive carries | Before the archive is indexed | Summaries and short quotes, no full texts, no manual entries (the default in code) |
 | D13 | Fewer answers to type | Built 07.10 at the user's request | Upload a тековна состојба (read in memory, four answers); no УЈП lookup by identifier |
+| D14 | Analytics | Before launch | None in the page; GoAccess over the server's own log (the default in code) |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

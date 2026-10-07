@@ -120,7 +120,7 @@ def test_the_archive_lets_search_engines_in_only_on_the_real_site():
     templates = Path(archive.__file__).parents[1] / "templates" / "archive"
     for name in ("index.html", "programme.html", "call.html"):
         text = (templates / name).read_text(encoding="utf-8")
-        assert "'index, follow' if indexable else 'noindex'" in text, name
+        assert "{% block robots %}{{ robots_meta() }}{% endblock %}" in text, name
 
 
 # ----------------------------------------------- legal-notes rule 7: no persons republished

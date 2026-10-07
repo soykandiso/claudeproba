@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{#- The public pages and the archive (roadmap P3 s46, app/web/public.py). -#}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{%- for address, changed in pages %}
+  <url><loc>{{ address }}</loc>{% if changed %}<lastmod>{{ changed.date().isoformat() }}</lastmod>{% endif %}</url>
+{%- endfor %}
+</urlset>

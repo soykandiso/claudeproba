@@ -9,6 +9,7 @@
 {% macro amount(net) -%}
 {{ net|money }} {{ _('без ДДВ') }}<br><span class="small">{{ prices.gross(net)|money }} {{ _('со ДДВ') }}</span>
 {%- endmacro %}
+{% block robots %}{{ robots_meta() }}{% endblock %}
 {% block main %}
 {% set r, m = prices.report, prices.monitoring %}
 <div class="wrap grouped">

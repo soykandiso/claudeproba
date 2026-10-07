@@ -6,7 +6,9 @@
 {% extends "base.html" %}
 {% import "_components.html" as c with context %}
 {% block title %}{{ call.title_mk }}{% endblock %}
-{% block robots %}<meta name="robots" content="{{ 'index, follow' if indexable else 'noindex' }}">{% endblock %}
+{% block robots %}{{ robots_meta() }}{% endblock %}
+{# Facts the page states, for search engines (P3 s46); |tojson makes it safe inside <script>. #}
+{% block head %}<script type="application/ld+json">{{ structured|tojson }}</script>{% endblock %}
 {% block main %}
 <div class="wrap grouped">
   <a class="back" href="{{ url_for('archive.programme', slug=programme.slug) }}">{{ _('Програмата') }}</a>

@@ -2,6 +2,7 @@
     version it is, and the others. `entity(field)` (from the view, app/web/legal.py) shows a
     fact from config/legal.yaml, or a visible placeholder while it is undecided. -#}
 {% extends "base.html" %}
+{% block robots %}{{ robots_meta() }}{% endblock %}
 {% block main %}
 <div class="wrap">
   <article class="report-head stack prose" lang="mk">
