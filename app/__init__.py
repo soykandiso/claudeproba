@@ -65,6 +65,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     # The terms, the privacy policy and the processors, versioned (P3 s45).
     app.register_blueprint(legal_bp)
     app.cli.add_command(legal_cli)
+    # Erasure, export and the 24-month retention job (app/accounts.py).
+    from app.accounts import cli as accounts_cli
+
+    app.cli.add_command(accounts_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 

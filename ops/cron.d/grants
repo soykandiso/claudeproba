@@ -26,3 +26,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Each rejected or edited item is written once to /srv/review-cases; pulling them to
 # a laptop and committing them is a person's job (docs/runbook.md §5).
 45 2 * * *  root  cd /srv/grants && docker compose exec -T web flask review export-cases >> /var/log/grants-review-cases.log 2>&1
+
+# Retention (docs/decisions.md D5, app/accounts.py): the profiles of accounts with no
+# activity for 24 months are forgotten. Monthly, on the 2nd, after the night's backup.
+30 4 2 * *  root  cd /srv/grants && docker compose exec -T web flask accounts anonymise-stale >> /var/log/grants-retention.log 2>&1

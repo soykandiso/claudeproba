@@ -23,14 +23,24 @@ brings the latest back.
 """
 
 import datetime as dt
+import json
 import time
 
 from email_validator import EmailNotValidError, validate_email
-from flask import Blueprint, current_app, redirect, render_template, request, session, url_for
+from flask import (
+    Blueprint,
+    Response,
+    current_app,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy import func, select
 
-from app import legal, mail
+from app import accounts, legal, mail
 from app.config import load_settings
 from app.db import session_factory
 from app.matching import intake as questions
@@ -270,6 +280,43 @@ def home():
     return render_template(
         "account/home.html", account=account, profile=profile, rows=rows, versions=versions
     )
+
+
+# ------------------------------------------------------------------ the person's data
+
+
+@bp.get("/smetka/izvoz")
+def export_data():
+    """Everything held about the account, as a file (the privacy policy's right of access)."""
+    account_id = current_account_id()
+    if not account_id:
+        return redirect(url_for("account.sign_in"))
+    with _sessions()() as db:
+        account = db.get(Account, account_id)
+        if account is None:
+            return redirect(url_for("account.sign_in"))
+        data = accounts.export(db, account)
+    body = json.dumps(data, ensure_ascii=False, indent=2)
+    return Response(
+        body,
+        mimetype="application/json",
+        headers={"Content-Disposition": 'attachment; filename="moi-podatoci.json"'},
+    )
+
+
+@bp.post("/smetka/izbrishi")
+def erase():
+    """Erase the account (app/accounts.erase), sign out, and say what was kept and why."""
+    account_id = current_account_id()
+    if not account_id:
+        return redirect(url_for("account.sign_in"))
+    with _sessions()() as db:
+        account = db.get(Account, account_id)
+        if account is not None:
+            accounts.erase(db, account)
+            db.commit()
+    session.clear()
+    return render_template("account/erased.html")
 
 
 # ------------------------------------------------------------------ saved profiles

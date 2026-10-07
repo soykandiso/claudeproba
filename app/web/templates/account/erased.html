@@ -1,0 +1,12 @@
+{#- After an account is erased (app/accounts.erase): what happened, and what was kept. -#}
+{% extends "base.html" %}
+{% block title %}{{ _('Сметката е избришана') }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Сметката е избришана') }}</h1>
+    <p class="lead">{{ _('Адресата и профилите се избришани и сте одјавени. Ако имавте нарачка, фактурата ја чуваме колку што бара законот.') }}</p>
+  </div>
+  <p><a class="btn btn--quiet" href="{{ url_for('public.index') }}">{{ _('Почетна страница') }}</a></p>
+</div>
+{% endblock %}

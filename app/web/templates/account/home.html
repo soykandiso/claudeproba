@@ -28,5 +28,21 @@
       {{ c.submit(_('Одјави се'), kind='gray', busy=_('Се одјавува')) }}
     </form>
   </section>
+
+  {# The privacy policy's rights, kept here rather than by e-mail (app/accounts.py). #}
+  <section class="stack" aria-labelledby="data-h">
+    <h2 id="data-h">{{ _('Вашите податоци') }}</h2>
+    <p>{{ _('Сè што чуваме за сметката, во датотека што може да ја прочитате: адресата, прифатените услови и профилите.') }}</p>
+    <p><a class="btn btn--quiet" href="{{ url_for('account.export_data') }}" download>{{ _('Преземи ги моите податоци') }}</a></p>
+    {# A second step, apart from everything else on the page and looking like what it is (F34). #}
+    <details class="confirm">
+      <summary class="btn btn--destructive">{{ _('Избриши ја сметката') }}</summary>
+      <form class="stack" method="post" action="{{ url_for('account.erase') }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <p class="soft">{{ _('Адресата и профилите се бришат веднаш и не може да се вратат. Ако имате нарачка, фактурата и профилот на кој се однесува ги чуваме колку што бара законот, без описот на проектот.') }}</p>
+        <div class="actions">{{ c.submit(_('Да, избриши ја'), kind='destructive', busy=_('Се брише')) }}</div>
+      </form>
+    </details>
+  </section>
 </div>
 {% endblock %}

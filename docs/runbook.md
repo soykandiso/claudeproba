@@ -303,3 +303,25 @@ archive keep running.
 **If something breaks while you are away:** the site can be down for days without
 losing data, as long as backups are running. Restoring is `./ops/restore.sh`.
 Nothing in this system requires a human on a given day except the review queue.
+
+---
+
+## 7. A request about personal data
+
+The privacy policy (`/privatnost`) promises an answer within a month. Most people do it
+themselves on `/smetka` (download, delete). For a request by e-mail:
+
+```bash
+docker compose exec -T web flask accounts export person@example.mk > export.json   # access, portability
+docker compose exec -T web flask accounts erase person@example.mk                   # erasure
+```
+
+`erase` anonymises rather than deletes: the address is replaced, profiles no order points at are
+deleted, a profile behind an order loses its project description and stays (the tax law keeps the
+order, and the report it bought must stay reproducible), subscriptions are cancelled, consent
+records lose the IP address (`app/accounts.py`). Reply saying exactly that. A correction is the
+person editing their profile; an objection or a restriction comes to you, and the answer is to
+stop the processing they object to and write down what you did in `docs/decisions.md`.
+
+The retention job (`flask accounts anonymise-stale`, monthly from `ops/cron.d/grants`) forgets
+the profiles of accounts quiet for 24 months (D5). `--dry-run` lists them first.
