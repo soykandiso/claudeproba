@@ -14,9 +14,9 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
-from app import create_app, mail
+from app import create_app, legal, mail
 from app.config import load_settings
-from app.models import Account, ApplicantProfile
+from app.models import Account, ApplicantProfile, ConsentRecord
 from app.web import account
 from tests.test_shortlist import db, registry  # noqa: F401 (fixture)
 
@@ -60,8 +60,11 @@ def _link(outbox: Path) -> str:
     return re.search(r"http://localhost/(najava/\S+)", body).group(1)
 
 
-def _use(client, link):
-    return client.post(f"/{link}", data={"csrf": _csrf(client)})
+def _use(client, link, terms="yes"):
+    data = {"csrf": _csrf(client)}
+    if terms:
+        data["terms"] = terms
+    return client.post(f"/{link}", data=data)
 
 
 @db
@@ -208,3 +211,50 @@ def test_the_mail_is_plain_macedonian_text(tmp_path):
         for t, c in decode_header(message["Subject"])
     )
     assert subject == "Линк за најава" and message.get_content_type() == "text/plain"
+
+
+# ------------------------------------------------------------------ consent (P3 s45)
+
+
+@db
+def test_no_account_without_the_terms_accepted(site):
+    client, factory, outbox = site
+    me = _fresh()
+    _ask(client, me)
+    link = _link(outbox)
+    assert 'name="terms"' in client.get(f"/{link}").get_data(as_text=True)
+
+    refused = _use(client, link, terms=None)
+    assert refused.status_code == 422 and "прифатите условите" in refused.get_data(as_text=True)
+    with factory() as s:
+        assert s.scalar(select(Account).where(Account.email == me)) is None
+
+    # The same link still works once the box is ticked: refusing spent nothing.
+    assert _use(client, link).status_code == 302
+
+
+@db
+def test_the_acceptance_is_recorded_once_and_asked_again_for_a_new_version(site, monkeypatch):
+    client, factory, outbox = site
+    me = _fresh()
+    _ask(client, me)
+    _use(client, _link(outbox))
+    with factory() as s:
+        rows = s.scalars(
+            select(ConsentRecord)
+            .join(Account, Account.id == ConsentRecord.account_id)
+            .where(Account.email == me)
+        ).all()
+    assert [(r.purpose, r.granted, r.policy_version) for r in rows] == [
+        ("terms", True, legal.legal().version)
+    ]
+
+    again = client.application.test_client()
+    _ask(again, me)
+    assert 'name="terms"' not in again.get(f"/{_link(outbox)}").get_data(as_text=True)
+
+    newer = legal.legal().model_copy(update={"version": "2099-01-01"})
+    monkeypatch.setattr(legal, "legal", lambda: newer)
+    third = client.application.test_client()
+    _ask(third, me)
+    assert 'name="terms"' in third.get(f"/{_link(outbox)}").get_data(as_text=True)

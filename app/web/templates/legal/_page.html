@@ -1,0 +1,13 @@
+{#- The frame of a legal text (roadmap P3 s45): the document in a reading column, which
+    version it is, and the others. `entity(field)` (from the view, app/web/legal.py) shows a
+    fact from config/legal.yaml, or a visible placeholder while it is undecided. -#}
+{% extends "base.html" %}
+{% block main %}
+<div class="wrap">
+  <article class="report-head stack prose" lang="mk">
+    {% block document %}{% endblock %}
+    <p class="small soft">{{ _('Верзија од %(date)s.', date=shown_version|mkdate) }}{% if shown_version != legal.version %} <strong>{{ _('Ова е претходна верзија.') }}</strong> <a href="{{ current_url }}">{{ _('Важечката верзија') }}</a>{% endif %}</p>
+    <p class="small soft">{{ _('Сите документи:') }} <a href="{{ url_for('legal.terms') }}">{{ _('Услови за користење') }}</a>, <a href="{{ url_for('legal.privacy') }}">{{ _('Политика за приватност') }}</a> {{ _('и') }} <a href="{{ url_for('legal.processors') }}">{{ _('Обработувачи') }}</a>.</p>
+  </article>
+</div>
+{% endblock %}

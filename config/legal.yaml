@@ -1,0 +1,58 @@
+# The facts the terms and the privacy policy state (roadmap P3 s45). The texts are versioned
+# templates in app/web/templates/legal/; this file holds what they say about who we are and
+# who processes data for us, so a change of provider is a diff, not an edit of prose.
+#
+# `flask legal check` fails while anything here is unknown, and the deploy runbook runs it:
+# the pages cannot go public with a placeholder in them.
+
+# The version a person accepts at sign-in (consent_record.policy_version). A new version
+# of either text is a new value here and a new template file; the old ones stay readable.
+version: "2026-10-07"
+
+# docs/decisions.md D4 (the existing DOO, to be confirmed with the accountant) and D2 (the
+# domain the contact address is on). Unknown until decided.
+entity:
+  name: null
+  embs: null
+  address: null
+  email: null
+
+# Who processes data for us. `in_use: false` is decided but not yet running; `chosen: false`
+# is a role with no provider yet. Both are shown as such, never as fact.
+processors:
+  - role: Анализа на текстот на повиците и нацрт на извештаите
+    provider: Anthropic PBC
+    location: САД, со стандардни договорни клаузули на ЕУ
+    data: Текст од повиците и профилот без лични податоци (вид на субјект, дејност, регион, опсег на големина и износ). Никогаш име, ЕМБС, адреса, телефон или е-пошта.
+    in_use: true
+    chosen: true
+  - role: Сервер и бази на податоци
+    provider: Hetzner Online GmbH
+    location: Германија или Финска (ЕУ)
+    data: Сите податоци на платформата.
+    in_use: false
+    chosen: true
+  - role: Заштитена врска и заштита од напади
+    provider: Cloudflare, Inc.
+    location: САД, со стандардни договорни клаузули на ЕУ; податоците минуваат низ најблискиот центар
+    data: IP-адреса и барањата додека минуваат до серверот; не ги чува.
+    in_use: false
+    chosen: true
+  - role: Шифрирани резервни копии
+    provider: null
+    location: ЕУ
+    data: Шифрирани копии од базата; давателот не може да ги прочита.
+    in_use: false
+    chosen: false
+  - role: Испраќање е-пошта (линкови за најава)
+    provider: null
+    location: null
+    data: Адресата за е-пошта и текстот на пораката.
+    in_use: false
+    chosen: false
+  - role: Следење дали платформата работи
+    provider: healthchecks.io (SIA Healthchecks.io)
+    location: ЕУ (Летонија)
+    data: Само сигнал дека задачата се извршила; никакви лични податоци.
+    in_use: true
+    chosen: true

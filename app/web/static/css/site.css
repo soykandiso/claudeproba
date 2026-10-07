@@ -138,6 +138,8 @@ section:first-of-type { border-top: 0; }
 }
 @media (min-width: 768px) { .tab-bar { display: none; } }
 @media (max-width: 767px) { .site-header--scrolls { position: static; } }
+/* A legal text reads at the measure (P3 s45). */
+.prose { max-width: var(--measure); }
 /* The header's account link: text on glass, so --label (DL7). */
 .site-header .tap { color: var(--label); font-weight: 600; font-size: var(--text-subhead); }
 

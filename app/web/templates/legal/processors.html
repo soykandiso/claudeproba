@@ -1,0 +1,25 @@
+{#- Who processes data for us (roadmap P3 s45, docs/architecture.md §8). From
+    config/legal.yaml: what each one receives and where it is. A provider not yet chosen,
+    or chosen but not yet running, says so; nothing is listed as fact before it is. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Обработувачи') }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Обработувачи') }}</h1>
+    <p class="lead">{{ _('Давателите што обработуваат податоци за нас: што добиваат и каде се. Ако некој се промени, оваа листа се менува пред промената.') }}</p>
+  </div>
+  {% for p in legal.processors %}
+  <section class="stack" aria-labelledby="p-{{ loop.index }}">
+    <h2 id="p-{{ loop.index }}" lang="mk">{{ p.role }}</h2>
+    {{ c.group([
+         (_('Давател'), p.provider if p.chosen and p.provider else _('сè уште не е избран'), none),
+         (_('Каде'), p.location or _('се утврдува'), none),
+         (_('Состојба'), _('во употреба') if p.in_use else _('од почетокот на работата'), none),
+       ], footer=p.data) }}
+  </section>
+  {% endfor %}
+  <p class="small soft">{{ _('Верзија од %(date)s.', date=legal.version|mkdate) }} <a href="{{ url_for('legal.privacy') }}">{{ _('Политика за приватност') }}</a></p>
+</div>
+{% endblock %}

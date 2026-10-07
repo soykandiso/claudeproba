@@ -45,6 +45,8 @@ def create_app(settings: Settings | None = None) -> Flask:
     from app.web.archive import bp as archive_bp
     from app.web.health import bp as health_bp
     from app.web.intake import bp as intake_bp
+    from app.web.legal import bp as legal_bp
+    from app.web.legal import cli as legal_cli
     from app.web.public import bp as public_bp
     from app.web.shortlist import bp as shortlist_bp
 
@@ -58,6 +60,9 @@ def create_app(settings: Settings | None = None) -> Flask:
     # Sign-in by e-mail link, the account and its saved profiles (P3 s44). A signed-in
     # browser stays signed in for 30 days; signing out clears it at once.
     app.register_blueprint(account_bp)
+    # The terms, the privacy policy and the processors, versioned (P3 s45).
+    app.register_blueprint(legal_bp)
+    app.cli.add_command(legal_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 

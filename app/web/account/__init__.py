@@ -30,12 +30,12 @@ from flask import Blueprint, current_app, redirect, render_template, request, se
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy import func, select
 
-from app import mail
+from app import legal, mail
 from app.config import load_settings
 from app.db import session_factory
 from app.matching import intake as questions
 from app.matching.normalise import normalise, to_row
-from app.models import Account, ApplicantProfile, EmailEvent
+from app.models import Account, ApplicantProfile, ConsentRecord, EmailEvent
 from app.web import csrf
 from app.web.intake import ANSWERS, UNKNOWN
 
@@ -150,14 +150,33 @@ def _read(token: str) -> tuple[dict | None, str | None]:
         return None, "Овој линк не е важечки. Побарајте нов."
 
 
+def _needs_terms(db, account: Account | None) -> bool:
+    """Whether this sign-in must accept the terms: a new account, or a new version since."""
+    if account is None:
+        return True
+    accepted = db.scalar(
+        select(ConsentRecord.policy_version)
+        .where(ConsentRecord.account_id == account.id, ConsentRecord.purpose == legal.TERMS)
+        .order_by(ConsentRecord.created_at.desc())
+    )
+    return accepted != legal.legal().version
+
+
 @bp.get("/najava/<token>")
 def confirm(token: str):
     payload, problem = _read(token)
+    needs = False
+    if payload:
+        with _sessions()() as db:
+            account = db.scalar(select(Account).where(Account.email == payload["e"]))
+            needs = _needs_terms(db, account)
     return render_template(
         "account/confirm.html",
         token=token,
         problem=problem,
         email=payload["e"] if payload else None,
+        needs_terms=needs,
+        terms_error=None,
     )
 
 
@@ -177,12 +196,35 @@ def use_link(token: str):
                 email=None,
                 problem="Овој линк е веќе искористен. Побарајте нов.",
             ), 400
+        # The terms and the privacy notice, accepted in so many words, before any account
+        # exists (P3 s45): a person who has not ticked the box is not signed in.
+        needs = _needs_terms(db, account)
+        if needs and request.form.get("terms") != "yes":
+            page = render_template(
+                "account/confirm.html",
+                token=token,
+                problem=None,
+                email=payload["e"],
+                needs_terms=True,
+                terms_error="За да се најавите, потребно е да ги прифатите условите.",
+            )
+            return page, 422
         if account is None:
             account = Account(email=payload["e"], email_verified_at=now)
             db.add(account)
         account.email_verified_at = account.email_verified_at or now
         account.last_seen_at = now
         db.flush()
+        if needs:
+            db.add(
+                ConsentRecord(
+                    account_id=account.id,
+                    purpose=legal.TERMS,
+                    granted=True,
+                    policy_version=legal.legal().version,
+                    ip_address=request.remote_addr,
+                )
+            )
         _restore_profile(db, account)
         account_id = str(account.id)
         db.commit()

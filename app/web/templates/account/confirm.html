@@ -18,8 +18,25 @@
   {% if problem %}
   <p><a class="btn" href="{{ url_for('account.sign_in') }}">{{ _('Побарај нов линк') }}</a></p>
   {% else %}
-  <form method="post" action="{{ url_for('account.use_link', token=token) }}">
+  <form class="form stack-lg" method="post" action="{{ url_for('account.use_link', token=token) }}" novalidate>
     <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    {% if needs_terms %}
+    {# Asked for a new account, and again when the texts change (P3 s45): never ticked in
+       advance, and nobody is signed in without it. #}
+    {% if terms_error %}{{ c.error_summary(_('Не сте најавени.'), items=[('terms', terms_error)]) }}{% endif %}
+    <div class="form-section">
+      <div class="form-section__card">
+        <div class="field">
+          <label class="choice" for="terms">
+            <input type="checkbox" id="terms" name="terms" value="yes" required{% if terms_error %} aria-invalid="true" aria-describedby="terms-error"{% endif %}>
+            <span>{{ _('Ги прочитав и ги прифаќам') }} <a href="{{ url_for('legal.terms') }}" target="_blank" rel="noopener">{{ _('Условите за користење') }}</a> {{ _('и') }} <a href="{{ url_for('legal.privacy') }}" target="_blank" rel="noopener">{{ _('Политиката за приватност') }}</a>.</span>
+          </label>
+          {% if terms_error %}<span class="field-error" id="terms-error">{{ terms_error }}</span>{% endif %}
+          <span class="hint">{{ _('Документите се отвораат во нов прозорец.') }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
     <div class="actions form-submit">{{ c.submit(_('Најави се'), busy=_('Се најавува')) }}</div>
   </form>
   {% endif %}
