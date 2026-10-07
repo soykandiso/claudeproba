@@ -1,0 +1,70 @@
+{#- A call's page in the archive (roadmap P3 s41–42, docs/legal-notes.md §3). Whether it
+    is open comes first; then its facts, which are ours; then its conditions as a reviewer
+    approved them, each with its own words quoted short and verbatim, found again a moment
+    ago, sourced, dated and credited, and the passage behind it one tap away. No full text,
+    no copy of a document: the whole call is a link to the institution's page. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ call.title_mk }}{% endblock %}
+{% block robots %}<meta name="robots" content="{{ 'index, follow' if indexable else 'noindex' }}">{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <a class="back" href="{{ url_for('archive.programme', slug=programme.slug) }}">{{ _('Програмата') }}</a>
+  <div class="report-head stack">
+    <p class="small soft" lang="{{ programme.institution|lang_of }}">{{ programme.institution }}</p>
+    <h1 lang="{{ call.title_mk|lang_of }}">{{ call.title_mk }}</h1>
+    {# Every screen showing a call states its deadline and when it was last checked. #}
+    {% if state == 'open' %}
+    <p class="lead">{{ _('Отворен.') }} {% if call.deadline_at %}{{ _('Рок за пријава:') }} {{ c.deadline(call.deadline_at) }}{% else %}{{ _('Рокот не е објавен.') }}{% endif %}</p>
+    {% elif state == 'announced' %}
+    <p class="lead">{{ _('Најавен: институцијата го најавила, но сè уште не е отворен.') }}</p>
+    {% else %}
+    <p class="lead">{{ _('Затворен.') }}{% if call.deadline_at %} {{ _('Рокот беше %(date)s.', date=call.deadline_at|mkdate) }}{% endif %}</p>
+    {% endif %}
+  </div>
+
+  {% set rows = [] %}
+  {% if call.published_at %}{% set rows = rows + [(_('Објавен'), call.published_at|mkdate, none)] %}{% endif %}
+  {% if call.opens_at %}{% set rows = rows + [(_('Отворен од'), call.opens_at|mkdate, none)] %}{% endif %}
+  {% if call.grant_max_mkd %}{% set rows = rows + [(_('Најмногу по барател'), call.grant_max_mkd|money, none)] %}{% endif %}
+  {% if call.total_budget_mkd %}{% set rows = rows + [(_('Вкупен буџет'), call.total_budget_mkd|money, none)] %}
+  {% elif call.total_budget_eur %}{% set rows = rows + [(_('Вкупен буџет'), call.total_budget_eur|money('EUR'), none)] %}{% endif %}
+  {% if call.cofinancing_pct %}{% set rows = rows + [(_('Сопствено учество'), call.cofinancing_pct|number ~ '%', none)] %}{% endif %}
+  {% set rows = rows + [(_('Последна проверка'), call.last_verified_at|mkdate, none)] %}
+  {% set rows = rows + [(_('Повикот на страницата на институцијата'), call.canonical_url.split('/')[2], call.canonical_url)] %}
+  {{ c.group(rows, footer=_('Ова е преглед на повикот, не целиот повик. Роковите и условите важат како што се објавени на страницата на институцијата.')) }}
+
+  {% if call.eligibility_gap %}
+  <p class="notice" role="note"><strong>{{ _('Условите не се целосни.') }}</strong> <span lang="mk">{{ call.eligibility_gap }}</span></p>
+  {% endif %}
+
+  {% if conditions %}
+  <section class="stack" aria-labelledby="conditions-h">
+    <h2 id="conditions-h">{{ _('Условите на повикот') }}</h2>
+    <ul class="reasons">
+      {% for criterion, cite in conditions %}
+      <li class="stack--tight">
+        <h3 class="criterion__title" lang="mk">{{ criterion.label_mk }}</h3>
+        {{ c.excerpt(cite.quote, source=cite.source_url.split('/')[2], retrieved=cite.retrieved_at,
+                     href=url_for('shortlist.passage', criterion_id=cite.criterion_id, _anchor='quote'),
+                     lang=cite.quote|lang_of, credit=cite.credit) }}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  {% if uncited %}
+  <p class="small soft">{{ ngettext('Еден услов не е прикажан: неговиот текст не се најде повторно во зачуваниот документ. Прочитајте го во оригиналот.', '%(num)d услови не се прикажани: нивниот текст не се најде повторно во зачуваниот документ. Прочитајте ги во оригиналот.', uncited) }}</p>
+  {% endif %}
+
+  <section class="stack" aria-labelledby="next-h">
+    <h2 id="next-h">{{ _('Дали вашата фирма може да аплицира?') }}</h2>
+    {% if state == 'closed' %}
+    <p>{{ _('Овој повик е затворен. Пополнете го профилот и ќе ги видите отворените повици што одговараат на вашата фирма.') }}</p>
+    {% else %}
+    <p>{{ _('Пополнете го профилот: секој услов на овој повик и на другите отворени повици се споредува со вашите одговори, бесплатно.') }}</p>
+    {% endif %}
+    <p><a class="btn" href="{{ url_for('intake.form') }}">{{ _('Пополни го профилот') }}</a></p>
+  </section>
+</div>
+{% endblock %}

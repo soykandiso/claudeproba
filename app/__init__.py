@@ -38,6 +38,7 @@ def create_app(settings: Settings | None = None) -> Flask:
     # Dates, amounts and verdict words, the same on every screen (app/web/format.py).
     format.register(app)
 
+    from app.web.archive import bp as archive_bp
     from app.web.health import bp as health_bp
     from app.web.intake import bp as intake_bp
     from app.web.public import bp as public_bp
@@ -48,6 +49,8 @@ def create_app(settings: Settings | None = None) -> Flask:
     # The intake form and the shortlist are real customer screens, registered everywhere.
     app.register_blueprint(intake_bp)
     app.register_blueprint(shortlist_bp)
+    # The public archive of programmes and calls, open and closed (P3 s41–42).
+    app.register_blueprint(archive_bp)
 
     # Invented calls and citations; must never be reachable in production.
     if not settings.is_production:

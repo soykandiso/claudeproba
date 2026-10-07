@@ -1,0 +1,32 @@
+{#- A programme's page in the archive (roadmap P3 s41–42): its calls, newest deadline
+    first, each with whether it is open. A programme's URL is its slug and stays when a
+    new year's call arrives: the page simply gains a row. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ programme.name_mk }}{% endblock %}
+{% block robots %}<meta name="robots" content="{{ 'index, follow' if indexable else 'noindex' }}">{% endblock %}
+{% block main %}
+{% set state_labels = {'open': _('Отворен'), 'announced': _('Најавен'), 'closed': _('Затворен')} %}
+<div class="wrap grouped">
+  <a class="back" href="{{ url_for('archive.index') }}">{{ _('Архива') }}</a>
+  <div class="report-head stack">
+    <p class="small soft" lang="{{ programme.institution|lang_of }}">{{ programme.institution }}</p>
+    <h1 lang="{{ programme.name_mk|lang_of }}">{{ programme.name_mk }}</h1>
+    {% if programme.description_mk %}<p class="lead" lang="mk">{{ programme.description_mk }}</p>{% endif %}
+  </div>
+
+  <section class="stack" aria-labelledby="calls-h">
+    <h2 id="calls-h">{{ _('Повици') }}</h2>
+    <ul class="rows">
+      {% for call, state in calls %}
+      <li{% if state == 'closed' %} class="rows--closed"{% endif %}>
+        <div class="stack--tight">
+          <a class="rows__link break" href="{{ url_for('archive.call', slug=programme.slug, call_id=call.id) }}" lang="{{ call.title_mk|lang_of }}"><strong>{{ call.title_mk }}</strong></a>
+          <span class="small">{{ state_labels[state] }}{% if call.deadline_at %}, {{ _('рок %(date)s', date=call.deadline_at|mkdate) }}{% endif %}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

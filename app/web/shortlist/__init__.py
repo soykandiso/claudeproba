@@ -17,6 +17,7 @@ import uuid
 from flask import Blueprint, abort, redirect, render_template, url_for
 from sqlalchemy import select
 
+from app.ai.scrub import mask_contacts
 from app.config import load_settings
 from app.db import session_factory
 from app.matching import intake, shortlist
@@ -104,7 +105,9 @@ def passage(criterion_id: uuid.UUID):
             source_url=criterion.source_url or snapshot.url,
             # The credit the source's licence asks for (docs/legal-notes.md).
             credit=shortlist.credits().get(source_slug),
-            before=("…" if lo else "") + text[lo:start],
+            # Around the quote, a contact person's e-mail and phone are masked
+            # (docs/legal-notes.md rule 7); the quote itself is shown as it stands.
+            before=("…" if lo else "") + mask_contacts(text[lo:start]),
             quoted=text[start:end],
-            after=text[end:hi] + ("…" if hi < len(text) else ""),
+            after=mask_contacts(text[end:hi]) + ("…" if hi < len(text) else ""),
         )

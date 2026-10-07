@@ -89,8 +89,12 @@ is adopted, read it before the archive's first public page.
 - `app/matching/shortlist.py`: a verified citation carries its source's credit; the excerpt
   component shows it as a `rel="license"` link (shortlist, landing); the passage page lists it
   as «Лиценца».
+- `app/ai/scrub.mask_contacts`: e-mail addresses and phone numbers in the text shown around a quote
+  on the passage page are masked (rule 7); the quote is never touched (P3 s41–42).
 
 ## 5. Yours to decide
+
+*The conservative default of each is in code since 07.10.2026: `decisions.md` D12.*
 
 - **Full texts, ever?** Rule 3 says no. If the archive should one day carry whole calls from the
   public bodies (Art. 16(2)), have a lawyer confirm that a јавен повик is a «службен текст од

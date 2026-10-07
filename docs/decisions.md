@@ -398,6 +398,23 @@ there is an account to point at.
 
 ---
 
+## D12 — What the public archive may carry (P3 s41–42)
+
+`docs/legal-notes.md` §5 asked three questions. The user said "continue" without answering, so the
+conservative default is in code (07.10.2026), each reversible in one line:
+
+1. **No full texts.** Summaries, our structured facts, short verbatim quotes with their source and
+   a link to the original; no mirrored document. *To change:* a lawyer's opinion that a јавен
+   повик is a «службен текст од административна природа» (Art. 16(2)) first.
+2. **Manual entries are not in the archive** (`EXCLUDED_SOURCES` in `app/web/archive/__init__.py`):
+   their text is a donor's or an NGO's copyright. They still appear on a customer's shortlist,
+   where a short quote is plainly a quotation for review (Art. 52(7)). *To change:* empty the tuple.
+3. **The open data law**: still a draft as far as found on 07.10.2026 (ENER consultation). The
+   archive is `noindex` until the production site exists, so nothing is public before it is
+   checked again.
+
+---
+
 ## Decided in code, not by you
 
 Conservative defaults taken during a session, recorded here so they can be overruled deliberately
@@ -732,6 +749,7 @@ DL4 and DL6 have rebuilt those screens, not on the old ones.
 | D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026**; both reopened gaps closed 21.09.2026 | Tesseract `mkd` locally; OCR citations always reviewed; two narrow second passes, matched by box, supply the `%` and the Albanian blocks |
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
+| D12 | What the public archive carries | Before the archive is indexed | Summaries and short quotes, no full texts, no manual entries (the default in code) |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

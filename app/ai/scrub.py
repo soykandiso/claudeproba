@@ -117,3 +117,23 @@ def find_identity_data(text: str) -> list[str]:
     if _EMBS.search(text):
         kinds.append("EMBS")
     return kinds
+
+
+# What a public page masks in text around a quote (docs/legal-notes.md, rule 7): a contact
+# person's e-mail and phone. Not addresses: an institution's address is not a person's.
+_PUBLIC_MASKS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("[е-пошта]", _EMAIL),
+    ("[телефон]", _PHONE_INTL),
+    ("[телефон]", _PHONE_DOMESTIC),
+)
+
+
+def mask_contacts(text: str) -> str:
+    """The text with e-mail addresses and phone numbers replaced by what they were.
+
+    For the stored text shown around a quote on a public page, never for the quote
+    itself: a quote is shown verbatim or not at all (invariant 2).
+    """
+    for label, pattern in _PUBLIC_MASKS:
+        text = pattern.sub(label, text)
+    return text

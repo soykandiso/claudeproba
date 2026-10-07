@@ -120,6 +120,11 @@ def _verified(session: Session, criteria: list[EligibilityCriterion]) -> dict:
     return {row[0]: Citation(*row[:7], credit=credits().get(row[7])) for row in rows}
 
 
+def verified(session: Session, criteria: list[EligibilityCriterion]) -> dict:
+    """The same check for any page that quotes a condition (the archive, P3 s41–42)."""
+    return _verified(session, criteria)
+
+
 @cache
 def credits() -> dict[str, tuple[str, str]]:
     """Source slug → the credit its licence asks for beside a quote, from the config."""

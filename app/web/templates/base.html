@@ -8,7 +8,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex">
+  {#- Every page is noindex until the real site exists; the archive opens itself then. #}
+  {% block robots %}<meta name="robots" content="noindex">{% endblock %}
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <title>{% block title %}{{ _('Платформа за грантови и субвенции') }}{% endblock %}</title>
   {# No font preloads (DL1): Apple devices render in their own SF and would fetch Inter for
@@ -63,6 +64,7 @@
   <footer class="site-footer">
     <div class="wrap stack">
       <p>{{ _('Платформата не поднесува барања во ваше име и не одлучува за доделување средства. Одлуката ја носи институцијата што го објавила повикот.') }}</p>
+      <p><a href="{{ url_for('archive.index') }}">{{ _('Архива на повици') }}</a></p>
     </div>
   </footer>
 </body>

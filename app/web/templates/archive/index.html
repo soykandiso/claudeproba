@@ -1,0 +1,32 @@
+{#- The archive's front page (roadmap P3 s41–42): every programme with a published call,
+    by institution. docs/legal-notes.md §3 governs everything under /arhiva. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Архива на повици за грантови и субвенции') }}{% endblock %}
+{% block robots %}<meta name="robots" content="{{ 'index, follow' if indexable else 'noindex' }}">{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Архива на повици') }}</h1>
+    <p class="lead">{{ _('Програмите и повиците за грантови и субвенции што ги следиме, отворени и затворени. За секој повик: роковите, износите и условите, секој со цитат од повикот и врска до оригиналот.') }}</p>
+  </div>
+
+  {% for institution, programmes in institutions %}
+  <section class="stack" aria-labelledby="inst-{{ loop.index }}">
+    <h2 id="inst-{{ loop.index }}" lang="{{ institution|lang_of }}">{{ institution }}</h2>
+    <ul class="rows">
+      {% for slug, name, inst, count, last_deadline in programmes %}
+      <li>
+        <div class="stack--tight">
+          <a class="rows__link break" href="{{ url_for('archive.programme', slug=slug) }}" lang="{{ name|lang_of }}"><strong>{{ name }}</strong></a>
+          <span class="small soft">{{ ngettext('%(num)d повик', '%(num)d повици', count) }}{% if last_deadline %}, {{ _('последен рок %(date)s', date=last_deadline|mkdate) }}{% endif %}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% else %}
+  {{ c.empty(_('Архивата е празна'), _('Ниту еден повик сè уште не е прегледан и објавен. Повиците се појавуваат тука откако ќе ги прегледа човек.')) }}
+  {% endfor %}
+</div>
+{% endblock %}
