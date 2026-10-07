@@ -23,6 +23,8 @@ def create_app(settings: Settings | None = None) -> Flask:
     # Forms that change data also carry a CSRF token (app/web/admin); Lax keeps the
     # session cookie off cross-site POSTs as a second line.
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    # The largest thing anyone posts is a тековна состојба (P3, app/matching/tekovna.py).
+    app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
 
     # Kept as the single source of truth for configuration. Flask's own config dict
     # stays limited to the keys Flask itself reads, so there is one place to look.

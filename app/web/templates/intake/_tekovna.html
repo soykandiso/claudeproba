@@ -1,0 +1,36 @@
+{#- Filling the form from a тековна состојба (app/matching/tekovna.py). A form of its own,
+    above the profile's: a file goes up, four answers come back into the fields below,
+    and the person checks them and saves. Without JavaScript it works the same. -#}
+{% if tekovna_error %}
+<div class="notice stack" role="alert" id="tekovna-error" tabindex="-1" autofocus>
+  <p><strong>{{ _('Тековната не е прочитана.') }}</strong> {{ tekovna_error }}</p>
+</div>
+{% endif %}
+
+{% if tekovna %}
+{# What was filled, said back field by field, and what is still the person's to answer. #}
+<div class="notice stack" role="status" id="tekovna-result" tabindex="-1" autofocus>
+  <p><strong>{{ _('Ја прочитавме тековната.') }}</strong> {{ _('Ги пополнивме полињата подолу; проверете ги пред да го зачувате профилот.') }}</p>
+  <ul class="notice__list">
+    {% for label, value, note, field_id in tekovna_rows %}
+    <li><a href="#{{ field_id }}">{{ label }}</a>: {{ value }}{% if note %}<br><span class="small">{{ note }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% if still_needed %}
+  <p>{{ _('Довршете рачно:') }} {% for q in still_needed %}<a href="#{{ q.key }}">{{ q.label_mk }}</a>{{ ", " if not loop.last else "." }}{% endfor %}</p>
+  {% endif %}
+</div>
+{% else %}
+<form class="form-section" method="post" action="{{ tekovna_action }}" enctype="multipart/form-data">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <h2 class="form-section__title">{{ _('Побрзо: со тековна состојба') }}</h2>
+  <div class="form-section__card">
+    <div class="field">
+      <label for="tekovna">{{ _('Тековна состојба од Централниот регистар (PDF)') }}</label>
+      <input class="input" id="tekovna" name="tekovna" type="file" accept="application/pdf,.pdf" required aria-describedby="tekovna-hint">
+      <span class="hint" id="tekovna-hint">{{ _('Од неа ги пополнуваме видот на субјектот, седиштето, годината на основање и дејноста; останатото го довршувате вие. Документот го читаме на нашиот сервер и не го чуваме. Назив, ЕМБС, ЕДБ, адреси и имиња на лица не земаме.') }}</span>
+      <div class="actions">{{ c.submit(_('Прочитај ја тековната'), kind='quiet', busy=_('Се чита')) }}</div>
+    </div>
+  </div>
+</form>
+{% endif %}

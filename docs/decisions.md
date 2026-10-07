@@ -415,6 +415,31 @@ conservative default is in code (07.10.2026), each reversible in one line:
 
 ---
 
+## D13 — Filling the intake from a тековна состојба, not from a УЈП search (07.10.2026)
+
+The user asked (07.10.2026) for a way to fill the profile with fewer answers: upload the
+Central Registry's тековна состојба and fill what it says, or look the company up on
+ujp.gov.mk by ЕДБ/ЕМБС.
+
+**Built: the upload** (`app/matching/tekovna.py`, `/profil/tekovna`). It fills four of the five
+required answers (legal form, municipality of the seat, founding year, main activity); the
+headcount and everything optional stay manual. The PDF is read in memory and dropped with the
+request; no model sees it (invariant 4); the name, ЕМБС, ЕДБ, addresses, owners, managers,
+e-mail and capital it carries are read past and never returned, so the profile stays what it
+was: the shape of a company, no identity (brief §3.3). The reading is exact: CRM's PDFs embed
+Calibri with Identity-H and no ToUnicode, and each glyph is mapped back through the font's own
+character map. CRM's activity code («80.010») is not the classification's («80.10»): one reading
+that exists is filled and marked for checking; otherwise only the division, which can make a
+condition «Потребна е проверка» but never exclude.
+
+**Not built: the УЈП search.** It would take an identifier (ЕДБ or ЕМБС) from the visitor and
+send it to a third party on every lookup, from a search form not offered for machine use; and it
+returns a name and an address, which the platform does not want, without the activity or the
+founding date, which it does. *To change:* if a public, documented API from the Central Registry
+or УЈП appears, it is worth a second look, with the identifier never stored.
+
+---
+
 ## Decided in code, not by you
 
 Conservative defaults taken during a session, recorded here so they can be overruled deliberately
@@ -750,6 +775,7 @@ DL4 and DL6 have rebuilt those screens, not on the old ones.
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |
 | D12 | What the public archive carries | Before the archive is indexed | Summaries and short quotes, no full texts, no manual entries (the default in code) |
+| D13 | Fewer answers to type | Built 07.10 at the user's request | Upload a тековна состојба (read in memory, four answers); no УЈП lookup by identifier |
 
 **Two are urgent.** D2 blocks the P0.5 deploy in the first week. D1 blocks the demand test that
 decides whether P2 gets built as specified. The rest can wait until their phase.

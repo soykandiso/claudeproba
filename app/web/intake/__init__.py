@@ -24,7 +24,9 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 
 from app.ai.scrub import Scrubber
 from app.matching import intake, reference
-from app.matching.normalise import Profile, normalise
+from app.matching.normalise import ENTITY_FORMS, Profile, normalise
+from app.matching.tekovna import NotATekovna
+from app.matching.tekovna import read as read_tekovna
 from app.web import csrf
 
 bp = Blueprint("intake", __name__, url_prefix="/profil")
@@ -108,6 +110,69 @@ def save():
             account.save_profile(db, account.current_account_id(), posted)
             db.commit()
     return redirect(url_for("intake.review"))
+
+
+def _tekovna_rows(reading) -> list[tuple[str, str, str | None, str]]:
+    """(question, what was filled, a note or None, the field's id) for the page to say back."""
+    rows = []
+    if reading.entity:
+        rows.append(("Вид на субјект", ENTITY_FORMS[reading.entity], None, "entity"))
+    if reading.municipality:
+        place = reference.resolve_municipality(reading.municipality)
+        rows.append(
+            (
+                "Општина на седиштето",
+                place.name_mk if place else reading.municipality,
+                None,
+                "municipality",
+            )
+        )
+    if reading.founded:
+        rows.append(("Година на основање", reading.founded, None, "founded"))
+    if reading.nace:
+        activity = reference.resolve_nace(reading.nace)
+        shown = f"{activity.code} {activity.name_mk}" if activity else reading.nace
+        written = f"„{reading.activity_as_written}“"
+        note = {
+            "check": f"Проверете ја: во тековната пишува {written}, "
+            "шифра што класификацијата ја пишува поинаку.",
+            "division": "Сигурен е само одделот. Изберете ја поточната дејност: "
+            f"во тековната пишува {written}.",
+        }.get(reading.nace_certainty)
+        rows.append(("Главна дејност", shown, note, "nace"))
+    return rows
+
+
+@bp.post("/tekovna")
+def tekovna():
+    """Fill the form from a тековна состојба (app/matching/tekovna.py).
+
+    The file is read in memory and dropped with the request: nothing of it is saved, not
+    even the four answers, until the person checks them and saves the form themselves.
+    What was there before is kept where the тековна says nothing.
+    """
+    upload = request.files.get("tekovna")
+    current = dict(answers() or {})
+    try:
+        reading = read_tekovna(upload.read() if upload else b"")
+    except NotATekovna:
+        context = _context(current, {})
+        context["tekovna_error"] = (
+            "Ова не изгледа како тековна состојба од Централниот регистар во PDF. "
+            "Прикачете ја онаа што ја преземате од crm.com.mk, или пополнете рачно."
+        )
+        return render_template("intake/form.html", **context), 422
+    filled = {**current, **reading.answers()}
+    context = _context(filled, {})
+    context["tekovna"] = reading
+    context["tekovna_rows"] = _tekovna_rows(reading)
+    context["still_needed"] = [
+        q
+        for _title, rows in intake.sections()
+        for q in rows
+        if q.required and not filled.get(q.key)
+    ]
+    return render_template("intake/form.html", **context)
 
 
 @bp.get("/dejnosti")

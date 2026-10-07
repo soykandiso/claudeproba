@@ -19,6 +19,8 @@
      error_items or errors.items()|list) }}
 {% endif %}
 
+{% if tekovna_action is defined %}{% include "intake/_tekovna.html" %}{% endif %}
+
 <form class="form stack-lg" method="post" action="{{ action }}" novalidate>
   {# The CSRF token comes from the blueprint that checks it (app/web/csrf.py). /demo
      does not check one: it is registered outside production and its forms write

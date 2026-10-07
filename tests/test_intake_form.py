@@ -364,8 +364,9 @@ def test_the_timed_run_is_said_in_minutes(seconds, words):
 
 def test_each_section_is_a_group_card(client):
     page = client.get("/profil/").get_data(as_text=True)
-    assert page.count('class="form-section"') == len(intake.sections())
-    assert page.count('class="form-section__card"') == len(intake.sections())
+    # One per section, and one more above them: filling from a тековна состојба.
+    assert page.count('class="form-section"') == len(intake.sections()) + 1
+    assert page.count('class="form-section__card"') == len(intake.sections()) + 1
 
 
 def test_the_headcount_is_a_segmented_control_that_posts_without_script(client):
