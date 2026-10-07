@@ -26,7 +26,7 @@
   <section class="stack" aria-labelledby="proof-h">
     <h2 id="proof-h">{{ _('Секој услов има извор') }}</h2>
     <p class="soft">{{ _('Не ви кажуваме само дека одговарате на условите. Ви го покажуваме текстот на повикот, документот и датумот кога е преземен, за да можете сами да проверите.') }}</p>
-    <p class="small soft">{{ _('Услов од повикот') }} <span lang="{{ sample.call_title|lang_of }}">„{{ sample.call_title }}“</span>{% if sample.institution %}, <span lang="mk">{{ sample.institution }}</span>{% endif %}:</p>
+    <p class="small soft">{{ _('Услов од повикот') }} <span lang="{{ sample.call_title|lang_of }}">„{{ sample.call_title }}“</span>{% if sample.institution %}, <span lang="mk">{{ sample.institution }}</span>{% endif %}{% if sample.last_verified_at %}, {{ _('последна проверка %(date)s', date=sample.last_verified_at|mkdate) }}{% endif %}:</p>
     <h3 lang="mk">{{ sample.label_mk }}</h3>
     {{ c.excerpt(sample.citation.quote, source=sample.citation.source_url.split('/')[2], retrieved=sample.citation.retrieved_at,
                  href=url_for('shortlist.passage', criterion_id=sample.citation.criterion_id, _anchor='quote'),

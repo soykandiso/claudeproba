@@ -506,7 +506,8 @@ mark {
   content: ""; position: absolute; top: 0; left: var(--s-16); right: 0;
   border-top: var(--rule-w) solid var(--separator);
 }
-.rows__link { color: var(--label); text-decoration: none; }
+/* The ring is the row's, which runs below the link: room for it above the tab bar (P3 s47). */
+.rows__link { color: var(--label); text-decoration: none; scroll-margin-bottom: var(--s-48); }
 .rows__link::after { content: ""; position: absolute; inset: 0; }
 .rows__link:hover { text-decoration: none; }
 .rows > li:has(.rows__link) { padding-right: var(--s-32); }

@@ -270,6 +270,8 @@ def test_focus_scrolls_clear_of_the_bars():
     """WCAG 2.4.11: what keyboard focus scrolls into view is not hidden under the sticky
     bar or the phone's tab bar (found in DL7)."""
     assert "scroll-padding-top:" in SITE_CSS and "scroll-padding-bottom:" in SITE_CSS
+    # A row's ring runs below its link: the link keeps room for it (P3 s47).
+    assert "scroll-margin-bottom" in SITE_CSS[SITE_CSS.index(".rows__link {") :][:200]
 
 
 def test_the_icon_is_the_citation_seal_in_the_tint(client):

@@ -188,6 +188,8 @@ class Sample:
     label_mk: str
     call_title: str
     institution: str
+    # Every screen showing a call states when it was last checked (brief §12, P3 s47).
+    last_verified_at: dt.datetime | None = None
 
 
 # Long enough to read as a condition, short enough to read at a glance on a phone.
@@ -201,7 +203,7 @@ def sample(session: Session, now: dt.datetime | None = None) -> Sample | None:
     now = now or dt.datetime.now(dt.UTC)
     length = EligibilityCriterion.quote_end - EligibilityCriterion.quote_start
     rows = session.execute(
-        select(EligibilityCriterion, Call.title_mk, Programme.institution)
+        select(EligibilityCriterion, Call.title_mk, Programme.institution, Call.last_verified_at)
         .join(Call, Call.id == EligibilityCriterion.call_id)
         .join(Programme, Programme.id == Call.programme_id)
         .where(
@@ -223,8 +225,8 @@ def sample(session: Session, now: dt.datetime | None = None) -> Sample | None:
         )
         .limit(20)
     ).all()
-    for criterion, title, institution in rows:
+    for criterion, title, institution, checked in rows:
         found = _verified(session, [criterion]).get(criterion.id)
         if found:
-            return Sample(found, criterion.label_mk, title, institution or "")
+            return Sample(found, criterion.label_mk, title, institution or "", checked)
     return None

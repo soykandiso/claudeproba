@@ -22,7 +22,7 @@
       <li{% if state == 'closed' %} class="rows--closed"{% endif %}>
         <div class="stack--tight">
           <a class="rows__link break" href="{{ url_for('archive.call', slug=programme.slug, call_id=call.id) }}" lang="{{ call.title_mk|lang_of }}"><strong>{{ call.title_mk }}</strong></a>
-          <span class="small">{{ state_labels[state] }}{% if call.deadline_at %}, {{ _('рок %(date)s', date=call.deadline_at|mkdate) }}{% endif %}</span>
+          <span class="small">{{ state_labels[state] }}{% if call.deadline_at %}, {{ _('рок %(date)s', date=call.deadline_at|mkdate) }}{% endif %}, {{ _('последна проверка %(date)s', date=call.last_verified_at|mkdate) }}</span>
         </div>
       </li>
       {% endfor %}
