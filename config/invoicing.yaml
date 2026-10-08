@@ -1,0 +1,14 @@
+# How invoices are numbered and when a proforma falls due (roadmap P4 s48–49).
+#
+# PROVISIONAL: the numbering scheme must match what the accountant already files
+# (docs/decisions.md D4). Confirm it before the first real invoice; changing it after
+# one is issued means a new fiscal year or a conversation with the accountant.
+
+# Numbers are gapless per kind and fiscal year: {prefix}-{year}-{n:04d}.
+prefixes:
+  proforma: ПФ
+  final: Ф
+
+# Days a proforma stays payable. After that the order may be cancelled; nothing is
+# cancelled automatically.
+proforma_due_days: 8

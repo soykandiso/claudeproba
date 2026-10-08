@@ -186,7 +186,7 @@ from the same components without adding new ones.
 
 | # | Task | Acceptance |
 |---|------|-----------|
-| 48 | Product/order model, `PaymentProvider` interface, `InvoiceProvider` implementation | A card gateway could be added later without touching order logic (brief §3.2) |
+| 48 | Product/order model, `PaymentProvider` interface, `InvoiceProvider` implementation | A card gateway could be added later without touching order logic (brief §3.2) — *built 07.10.2026: `app/orders/` — the state machine (`states.move`, the only way an order changes state), `PaymentProvider` (request, confirm) with `InvoiceProvider` (a proforma under a gapless number, the bank reference on confirmation), `service.create` at `config/prices.yaml`'s price (the founding price while it lasts, a cancelled order giving its place back); a test adds a card provider and runs an order through unchanged code. Numbering format in `config/invoicing.yaml`, **provisional until the accountant confirms it (D4)**; no migration* |
 | 49 | Proforma PDF with correct fiscal fields: ДДВ 18%, ЕДБ, ЕМБС, gapless numbering per fiscal year | An accountant reviews a sample and confirms it is compliant |
 | 50 | Checkout: order → invoice emailed | Customer receives a valid proforma within a minute |
 | 51 | Manual reconciliation in admin: mark paid with bank reference | Two-click reconciliation from a bank statement line |

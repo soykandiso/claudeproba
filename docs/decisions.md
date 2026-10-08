@@ -117,6 +117,10 @@ the project where momentum matters most. Do it third, once the templating machin
 
 **Recommendation: bill everything through your existing VAT-registered DOO. No new entity in v1.**
 
+> **07.10.2026, P4 s48:** the numbering is provisional in `config/invoicing.yaml`:
+> `ПФ-<year>-0001` for proformas, `Ф-<year>-0001` for fiscal invoices, gapless per kind and year.
+> Change it there before the first real invoice if the accountant files differently.
+
 **You need to confirm two things with your accountant** (30 minutes, before P4 session 49):
 1. Your registered activity codes cover software services and consulting as you intend to invoice them.
 2. Your invoice numbering scheme and required fields are compliant — the generator in session 49 must
