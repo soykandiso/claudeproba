@@ -29,6 +29,7 @@ from flask import (
     url_for,
 )
 from markupsafe import Markup
+from sqlalchemy import select
 
 from app.db import session_factory
 from app.ingestion.normalise import NormaliseError, page_of
@@ -37,7 +38,9 @@ from app.ingestion.snapshots import CorruptSnapshot, SnapshotStore
 from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
-from app.models.enums import CriterionKind, ReviewState, TextSource, Verdict
+from app.models.commerce import Invoice
+from app.models.enums import CriterionKind, InvoiceKind, ReviewState, TextSource, Verdict
+from app.orders import reconcile
 from app.reports import render
 from app.review import extraction as review
 from app.review import reasons
@@ -764,3 +767,69 @@ def reject_report(item_id: int):
         return f"Извештајот {item.id} е затворен и нема да се испрати." + _minutes_spent(item.id)
 
     return _decide_report(item_id, act, open_form="reject") or redirect(url_for("admin.queue"))
+
+
+# Payments (roadmap P4 s51): a bank statement line, the proforma it pays, one confirmation.
+# app/orders/reconcile.py decides; this only shows and asks. `by` stays empty until the
+# operator signs in (D11): the admin is not registered in production before then.
+
+
+def _payments_page(db, line: str = "", *, error=None, typed=None, status=200):
+    matches, closed = reconcile.match(db, line) if line.strip() else ([], [])
+    return render_template(
+        "admin/payments.html",
+        line=line,
+        matches=matches,
+        closed=closed,
+        waiting=reconcile.open_proformas(db),
+        paid=reconcile.recently_paid(db),
+        today=mkdate(dt.date.today()),
+        error=error,
+        typed=typed or {},
+    ), status
+
+
+@bp.get("/uplati")
+def payments():
+    with _sessions()() as db:
+        return _payments_page(db, request.args.get("line", "")[:2000])
+
+
+def _typed_date(text: str) -> dt.date | None:
+    try:
+        return dt.datetime.strptime(text.strip(), "%d.%m.%Y").date()
+    except ValueError:
+        return None
+
+
+@bp.post("/uplati/<uuid:invoice_id>")
+def confirm_payment(invoice_id: uuid.UUID):
+    form = request.form
+    line = form.get("line", "")[:2000]
+    on = _typed_date(form.get("date", ""))
+    with _sessions()() as db:
+        try:
+            if on is None:
+                raise reconcile.Refused(
+                    "Датумот на уплата е во облик дд.мм.гггг, на пример 09.10.2026."
+                )
+            order = reconcile.confirm(
+                db,
+                invoice_id,
+                reconcile.amount(form.get("amount", "")),
+                form.get("reference", ""),
+                on,
+            )
+        except reconcile.Refused as refused:
+            db.rollback()
+            typed = {key: form.get(key, "") for key in ("amount", "reference", "date")}
+            typed["invoice_id"] = str(invoice_id)
+            return _payments_page(db, line, error=str(refused), typed=typed, status=422)
+        number = db.scalar(
+            select(Invoice.number).where(
+                Invoice.order_id == order.id, Invoice.kind == InvoiceKind.PROFORMA
+            )
+        )
+        db.commit()
+    flash(f"Профактурата {number} е платена; нарачката чека анализа.")
+    return redirect(url_for("admin.payments"))

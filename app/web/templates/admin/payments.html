@@ -1,0 +1,119 @@
+{#- Payments (roadmap P4 s51): paste a line from the bank statement, find the proforma it
+    pays, confirm. Two clicks; the second is the only one that changes anything. -#}
+{% extends "admin/base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}Уплати{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>Уплати</h1>
+    <p class="soft">Залепете ред од изводот. Се бара бројот на профактурата (и PF-…, како што банката го пишува) и износот. Платена се означува само профактура чиј износ се совпаѓа до денар.</p>
+  </div>
+
+  {% if error %}
+  <div class="notice" role="alert" id="error" tabindex="-1"><p><strong>Не е означено.</strong> {{ error }}</p></div>
+  {% endif %}
+
+  <form class="form" method="get" action="{{ url_for('admin.payments') }}">
+    <div class="form-section__card">
+      <div class="field">
+        <label for="line">Ред од изводот</label>
+        <textarea class="textarea" id="line" name="line" rows="3" aria-describedby="line-hint">{{ line }}</textarea>
+        <span class="hint" id="line-hint">Целиот ред: налогодавач, цел на дознаката, износ, референца.</span>
+      </div>
+    </div>
+    <div class="actions form-submit">{{ c.submit('Најди профактура', kind=('quiet' if line.strip() else 'primary'), busy='Се бара') }}</div>
+  </form>
+
+  {% if line.strip() %}
+  <section class="stack-lg" aria-labelledby="found-h">
+    <h2 id="found-h">Пронајдено</h2>
+    {% for m in matches %}
+    {% set inv, order = m.open.invoice, m.open.order %}
+    {% set mine = typed.get('invoice_id') == inv.id|string %}
+    <div class="stack">
+      {{ c.group([
+           ('Профактура', inv.number, none),
+           ('Купувач', order.buyer_name, none),
+           ('Износ', inv.total_mkd|money, none),
+           ('Рок', inv.due_at|mkdate ~ (', задоцнета' if m.open.overdue else ''), none),
+           ('Износот во редот', 'се совпаѓа' if m.amount_matches else 'не е пронајден: проверете го на изводот', none),
+         ]) }}
+      <form class="form" method="post" action="{{ url_for('admin.confirm_payment', invoice_id=inv.id) }}">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="line" value="{{ line }}">
+        <div class="form-section__card">
+          <div class="field">
+            <label for="amount-{{ loop.index }}">Уплатен износ, МКД</label>
+            <input class="input" id="amount-{{ loop.index }}" name="amount" inputmode="decimal" required
+                   value="{{ typed.amount if mine else ('%.2f'|format(inv.total_mkd|float) if m.amount_matches else '') }}">
+          </div>
+          <div class="field">
+            <label for="reference-{{ loop.index }}">Референца од изводот</label>
+            <input class="input" id="reference-{{ loop.index }}" name="reference" required aria-describedby="reference-{{ loop.index }}-hint"
+                   value="{{ typed.reference if mine else line|truncate(200, true, '') }}">
+            <span class="hint" id="reference-{{ loop.index }}-hint">Се чува на профактурата, за уплатата да се најде во изводот.</span>
+          </div>
+          <div class="field">
+            <label for="date-{{ loop.index }}">Датум на уплата</label>
+            <input class="input" id="date-{{ loop.index }}" name="date" required inputmode="numeric" aria-describedby="date-{{ loop.index }}-hint"
+                   value="{{ typed.date if mine else today }}">
+            <span class="hint" id="date-{{ loop.index }}-hint">дд.мм.гггг, датумот на изводот.</span>
+          </div>
+        </div>
+        <div class="actions form-submit">{{ c.submit('Означи ја ' ~ inv.number ~ ' како платена', busy='Се означува') }}</div>
+      </form>
+    </div>
+    {% endfor %}
+    {% for number in closed %}
+    <p class="notice" role="status">{{ number }} не чека уплата: веќе е платена, нарачката е откажана, или таков број нема.</p>
+    {% endfor %}
+    {% if not matches and not closed %}
+    <p>Во редот нема број на профактура. Побарајте ја по износот или купувачот во листата подолу и отворете ја од таму.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section class="stack-lg" aria-labelledby="waiting-h">
+    <h2 id="waiting-h">Чекаат уплата{% if waiting %}, {{ waiting|length }}{% endif %}</h2>
+    {% if waiting %}
+    <ul class="rows">
+      {% for o in waiting %}
+      <li>
+        <div class="stack">
+          <a class="rows__link" href="{{ url_for('admin.payments', line=o.invoice.number) }}"><strong>{{ o.invoice.number }}</strong></a>
+          <span class="soft break">{{ o.order.buyer_name }}</span>
+        </div>
+        <div class="rows__meta small">
+          <span>{{ o.invoice.total_mkd|money }}</span>
+          <span class="soft">рок {{ o.invoice.due_at|mkdate }}{% if o.overdue %}, <strong>задоцнета</strong>{% endif %}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Ниедна профактура не чека уплата.</p>
+    {% endif %}
+  </section>
+
+  {% if paid %}
+  <section class="stack-lg" aria-labelledby="paid-h">
+    <h2 id="paid-h">Последни уплати</h2>
+    <ul class="rows">
+      {% for o in paid %}
+      <li>
+        <div class="stack">
+          <strong>{{ o.invoice.number }}</strong>
+          <span class="soft break">{{ o.order.buyer_name }}</span>
+        </div>
+        <div class="rows__meta small">
+          <span>{{ o.invoice.total_mkd|money }}</span>
+          <span class="soft">платена {{ o.invoice.paid_at|date_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
