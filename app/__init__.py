@@ -69,6 +69,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     from app.accounts import cli as accounts_cli
 
     app.cli.add_command(accounts_cli)
+    # Proformas: the launch check and a sample for the accountant (app/orders/proforma.py).
+    from app.orders.proforma import cli as invoices_cli
+
+    app.cli.add_command(invoices_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 

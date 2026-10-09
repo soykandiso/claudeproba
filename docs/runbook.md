@@ -93,6 +93,7 @@ cd /srv/grants
 git pull
 docker compose build
 docker compose run --rm web flask legal check       # no placeholder in the terms or the policy
+docker compose run --rm web flask invoices check    # the seller's ЕДБ, account and bank on proformas
 docker compose run --rm web alembic upgrade head    # migrations before the new code serves
 docker compose up -d
 curl -fsS https://<domain>/readyz                   # both dependencies must report ok

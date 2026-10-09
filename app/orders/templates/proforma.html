@@ -1,0 +1,80 @@
+{#- The proforma (roadmap P4 s49). Rendered by app/orders/proforma.py, never by Flask.
+    Claude's draft of the fields a Macedonian proforma carries: an accountant reviews a
+    sample (`flask invoices sample`) before the first real one is sent. -#}
+{%- macro fact(value) -%}{% if value %}{{ value }}{% else %}<span class="undecided">[се утврдува]</span>{% endif %}{%- endmacro -%}
+<!doctype html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<title>Профактура {{ invoice.number }}</title>
+<style>
+{{ font_faces }}
+{{ tokens }}
+</style>
+<link rel="stylesheet" href="{{ css }}">
+</head>
+<body>
+<main>
+<h1>Профактура</h1>
+<p class="number">бр. {{ invoice.number }}</p>
+<p class="dates">
+  <span>Издадена: {{ invoice.issued_at|mkdate }}</span>
+  <span>Рок за плаќање: {{ invoice.due_at|mkdate }}</span>
+  <span>Место: {{ fact(seller.place) }}</span>
+</p>
+
+<div class="parties">
+  <div class="party">
+    <h2>Издавач</h2>
+    <p class="name">{{ fact(seller.name) }}</p>
+    <p>{{ fact(seller.address) }}</p>
+    <p>ЕМБС: {{ fact(seller.embs) }}</p>
+    <p>ЕДБ: {{ fact(seller.edb) }}</p>
+    <p>Жиро сметка: {{ fact(seller.bank_account) }}, {{ fact(seller.bank) }}</p>
+  </div>
+  <div class="party">
+    <h2>Купувач</h2>
+    {# The buyer's own words: printed as given, never linted (app/reports/render.py does the same for an institution's). #}
+    <p class="name" data-theirs>{{ order.buyer_name }}</p>
+    <p data-theirs>{{ order.buyer_address }}</p>
+    {% if order.buyer_embs %}<p>ЕМБС: {{ order.buyer_embs }}</p>{% endif %}
+    {% if order.buyer_edb %}<p>ЕДБ: {{ order.buyer_edb }}</p>{% endif %}
+  </div>
+</div>
+
+<table class="lines">
+  <thead>
+    <tr><th>Р.бр.</th><th>Опис</th><th class="amount">Кол.</th><th class="amount">Цена без ДДВ</th><th class="amount">ДДВ {{ vat_percent }}%</th><th class="amount">Вкупно</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>{{ description }}</td>
+      <td class="amount">1</td>
+      <td class="amount">{{ invoice.amount_mkd|denars }}</td>
+      <td class="amount">{{ invoice.vat_mkd|denars }}</td>
+      <td class="amount">{{ invoice.total_mkd|denars }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="totals">
+  <tr><td>Основица</td><td>{{ invoice.amount_mkd|denars }} МКД</td></tr>
+  <tr><td>ДДВ {{ vat_percent }}%</td><td>{{ invoice.vat_mkd|denars }} МКД</td></tr>
+  <tr class="due"><td>Вкупно за плаќање</td><td>{{ invoice.total_mkd|denars }} МКД</td></tr>
+</table>
+
+<div class="pay">
+  <h2>Плаќање</h2>
+  <p>Уплатете {{ invoice.total_mkd|denars }} МКД на жиро сметка {{ fact(seller.bank_account) }} кај {{ fact(seller.bank) }}, до {{ invoice.due_at|mkdate }}.</p>
+  <p>Цел на дознаката: профактура {{ invoice.number }}. Без бројот уплатата не можеме да ја поврземе со нарачката.</p>
+</div>
+
+<div class="notes">
+  <p>Ова е профактура, не фискална фактура. Фактурата ја издаваме по уплатата.</p>
+  <p>Извештајот се изработува по уплатата и го прегледува човек пред да ви се испрати.</p>
+  <p>Документот е изработен електронски.</p>
+</div>
+</main>
+</body>
+</html>

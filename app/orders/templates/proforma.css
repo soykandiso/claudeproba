@@ -1,0 +1,46 @@
+/* The proforma on paper (P4 s49). Values come from tokens.css, as the report's do; this file
+   only lays out an A4 page. One face, the light theme, no colour: an invoice is read, filed and
+   photocopied, and nothing on it should depend on a printer having colour. */
+
+@page {
+  size: A4;
+  margin: 18mm 18mm 20mm;
+  @bottom-right {
+    content: "Страница " counter(page) " од " counter(pages);
+    font-family: var(--font-print); font-size: var(--print-8); color: var(--label-2);
+  }
+}
+
+html { font-feature-settings: "locl", "tnum"; }
+body {
+  margin: 0; font-family: var(--font-print); font-size: var(--print-10-5); line-height: 1.45;
+  color: var(--label); background: white; font-synthesis: none;
+}
+
+h1 { font-size: var(--print-22); font-weight: 700; letter-spacing: var(--tracking-title); margin: 0; }
+.number { font-size: var(--print-14); font-weight: 600; margin: 1mm 0 0; }
+.dates { margin: 3mm 0 0; color: var(--label-2); }
+.dates span { margin-right: 6mm; }
+
+.parties { display: flex; gap: 10mm; margin-top: 8mm; }
+.party { flex: 1; border-top: 1.5pt solid var(--label); padding-top: 2mm; }
+.party h2 { font-size: var(--print-8-5); font-weight: 600; color: var(--label-2); margin: 0 0 1mm; }
+.party p { margin: 0.6mm 0; }
+.party .name { font-weight: 600; }
+
+table.lines { width: 100%; border-collapse: collapse; margin-top: 10mm; }
+.lines th { font-size: var(--print-8-5); font-weight: 600; color: var(--label-2); text-align: left; }
+.lines th, .lines td { padding: 2mm 0 2mm 5mm; border-bottom: 0.5pt solid var(--separator); vertical-align: top; }
+.lines th:first-child, .lines td:first-child { padding-left: 0; }
+.lines .amount { text-align: right; white-space: nowrap; }
+
+table.totals { margin: 4mm 0 0 auto; border-collapse: collapse; }
+.totals td { padding: 1mm 0 1mm 10mm; text-align: right; white-space: nowrap; }
+.totals tr.due td { font-weight: 700; font-size: var(--print-12); border-top: 1.5pt solid var(--label); padding-top: 2mm; }
+
+.pay { margin-top: 10mm; padding: 3mm 4mm; border: 0.75pt solid var(--separator-strong); }
+.pay h2 { font-size: var(--print-10-5); font-weight: 600; margin: 0 0 1mm; }
+.pay p { margin: 0.6mm 0; }
+.notes { margin-top: 8mm; font-size: var(--print-8-5); color: var(--label-2); }
+.notes p { margin: 1mm 0; }
+.undecided { font-weight: 700; }

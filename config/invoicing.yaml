@@ -12,3 +12,13 @@ prefixes:
 # Days a proforma stays payable. After that the order may be cancelled; nothing is
 # cancelled automatically.
 proforma_due_days: 8
+
+# The seller's fiscal details on every proforma and invoice (P4 s49). The name, address and
+# ЕМБС are config/legal.yaml's `entity` (written once); these are the rest. Unknown until D4
+# is confirmed with the accountant; `flask invoices check` fails while any is missing, and an
+# undecided field prints as «[се утврдува]».
+seller:
+  edb: null           # ЕДБ, with the MK prefix if VAT-registered (МК4030…)
+  bank_account: null  # жиро сметка, 15 digits
+  bank: null          # the bank's name
+  place: Скопје       # place of issue
