@@ -100,7 +100,7 @@ def test_the_pricing_page_shows_every_price_without_and_with_vat(client):
 def test_what_cannot_be_bought_says_so(client):
     """Until P4's order flow and alerts exist, the page offers nothing it cannot sell."""
     body = client.get("/ceni").get_data(as_text=True)
-    assert body.count("наскоро") == 2
+    assert body.count("наскоро") == 1
 
 
 def test_a_closed_founding_price_is_not_offered(client, monkeypatch):

@@ -1,0 +1,60 @@
+{#- Ordering a detailed report (roadmap P4 s50). What is bought, for which profile, at what
+    price, and the four details the proforma needs. Nothing else is asked. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Нарачка на детален извештај') }}{% endblock %}
+{% macro field(key, label, hint=none, required=false, inputmode=none, autocomplete=none) -%}
+<div class="field">
+  <label for="{{ key }}">{{ label }}{% if not required %} <span class="optional">({{ _('по избор') }})</span>{% endif %}</label>
+  <input class="input" id="{{ key }}" name="{{ key }}" value="{{ typed.get(key, '') }}"
+         {%- if inputmode %} inputmode="{{ inputmode }}"{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if required %} required{% endif %}
+         {%- set ids = ([key ~ '-error'] if errors.get(key) else []) + ([key ~ '-hint'] if hint else []) %}{% if ids %} aria-describedby="{{ ids|join(' ') }}"{% endif %}{% if errors.get(key) %} aria-invalid="true"{% endif %}>
+  {% if errors.get(key) %}<span class="field-error" id="{{ key }}-error">{{ errors[key] }}</span>{% endif %}
+  {% if hint %}<span class="hint" id="{{ key }}-hint">{{ hint }}</span>{% endif %}
+</div>
+{%- endmacro %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Детален извештај') }}</h1>
+    <p class="lead">{{ _('За првите пет отворени повици во вашата листа: секој услов проверен според официјалниот текст, со цитат и извор, што ви недостасува и што треба да подготвите. Го прегледува човек пред да ви се испрати.') }}</p>
+  </div>
+
+  {% if errors %}
+  {{ c.error_summary(_('Нарачката не е испратена.'), items=errors.items()|list) }}
+  {% endif %}
+
+  {% if not has_profile %}
+  {{ c.empty(_('Прво профил на фирмата'), _('Извештајот е за повиците што одговараат на вашиот профил. Пополнете го, па вратете се тука.'), href=url_for('intake.form'), action=_('Пополни го профилот')) }}
+  {% else %}
+  <section class="stack" aria-labelledby="price-h">
+    <h2 id="price-h">{{ _('Цена') }}</h2>
+    {{ c.group([
+         (_('Без ДДВ'), net|money, none),
+         (_('Со ДДВ'), gross|money, none),
+       ], footer=(_('Почетна цена, за првите нарачки на платформата.') if founding else none)) }}
+  </section>
+
+  <section class="stack" aria-labelledby="profile-h">
+    <h2 id="profile-h">{{ _('За профилот') }}</h2>
+    {{ c.group(profile_summary, footer=_('Повиците во извештајот се првите пет од листата за овој профил во моментот кога почнува анализата, по уплатата.')) }}
+    <p><a class="btn btn--plain" href="{{ url_for('intake.form') }}">{{ _('Измени го профилот') }}</a></p>
+  </section>
+
+  <form class="form stack-lg" method="post" action="{{ url_for('checkout.place') }}" novalidate>
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="form-section">
+      <h2 class="form-section__title">{{ _('На кого се издава профактурата') }}</h2>
+      <div class="form-section__card">
+        {{ field('name', _('Назив'), hint=_('Целосниот назив на фирмата, или име и презиме.'), required=true, autocomplete='organization') }}
+        {{ field('address', _('Адреса'), required=true, autocomplete='street-address') }}
+        {{ field('edb', _('ЕДБ'), hint=_('Со МК напред ако сте обврзник за ДДВ.'), inputmode='numeric') }}
+        {{ field('embs', _('ЕМБС'), inputmode='numeric') }}
+      </div>
+    </div>
+    <p class="privacy-note">{{ _('Овие податоци се само за профактурата и фактурата. Не се дел од профилот и никогаш не стигнуваат до автоматската анализа.') }}</p>
+    <div class="actions form-submit">{{ c.submit(_('Нарачај и добиј профактура'), busy=_('Се издава профактура')) }}</div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

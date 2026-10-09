@@ -20,6 +20,12 @@ bp = Blueprint("public", __name__)
 
 
 @bp.app_template_global()
+def price_list():
+    """config/prices.yaml for any template (the shortlist's order card, P4 s50)."""
+    return prices()
+
+
+@bp.app_template_global()
 def robots_meta() -> Markup:
     """The robots tag of a public page: indexed on the real site only (P3 s46).
 

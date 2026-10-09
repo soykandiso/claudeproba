@@ -46,6 +46,8 @@ from app.db import session_factory
 from app.matching import intake as questions
 from app.matching.normalise import normalise, to_row
 from app.models import Account, ApplicantProfile, ConsentRecord, EmailEvent
+from app.models.commerce import Invoice, Order
+from app.models.enums import InvoiceKind
 from app.web import csrf
 from app.web.intake import ANSWERS, UNKNOWN
 
@@ -53,6 +55,7 @@ bp = Blueprint("account", __name__)
 csrf.protect(bp)
 
 ACCOUNT = "account_id"
+NEXT = "after_sign_in"  # where to go once signed in (checkout, P4 s50)
 LINK_MINUTES = 15
 SENT = "sign_in_sent"
 SENT_LIMIT, SENT_WINDOW = 3, 600
@@ -80,9 +83,23 @@ def current_account_id() -> str | None:
 
 @bp.get("/najava")
 def sign_in():
+    after = safe_next(request.args.get("next"))
     if current_account_id():
-        return redirect(url_for("account.home"))
+        return redirect(after or url_for("account.home"))
+    if after:
+        session[NEXT] = after
     return render_template("account/sign_in.html", sent=False, error=None, typed="")
+
+
+def safe_next(target: str | None) -> str | None:
+    """A page of this site to return to after signing in, or None.
+
+    A local path only: one leading slash, never two (a `//host` path leaves the site) and
+    no backslash (some browsers read it as a slash). Anything else is dropped, so a crafted
+    link cannot send someone elsewhere once they have signed in."""
+    if not target or not target.startswith("/") or target.startswith("//") or "\\" in target:
+        return None
+    return target
 
 
 @bp.post("/najava")
@@ -240,13 +257,13 @@ def use_link(token: str):
         db.commit()
     # A fresh session: what an earlier visitor of this browser left does not carry over,
     # except the profile they were filling in.
-    answers = session.get(ANSWERS)
+    answers, after = session.get(ANSWERS), safe_next(session.get(NEXT))
     session.clear()
     if answers:
         session[ANSWERS] = answers
     session[ACCOUNT] = account_id
     session.permanent = True
-    return redirect(url_for("account.home"))
+    return redirect(after or url_for("account.home"))
 
 
 @bp.post("/odjava")
@@ -274,11 +291,25 @@ def home():
             .select_from(ApplicantProfile)
             .where(ApplicantProfile.account_id == account.id)
         )
-    # (label, what it was read as, no link): the grouped list, as on /profil/pregled.
+        # (label, what it was read as, no link): the grouped list, as on /profil/pregled.
+        orders = db.execute(
+            select(Order, Invoice.number)
+            .outerjoin(
+                Invoice,
+                (Invoice.order_id == Order.id) & (Invoice.kind == InvoiceKind.PROFORMA),
+            )
+            .where(Order.account_id == account.id)
+            .order_by(Order.created_at.desc())
+        ).all()
     described = questions.describe(normalise(dict(profile.answers))) if profile else []
     rows = [(label, value or UNKNOWN, None) for label, value in described]
     return render_template(
-        "account/home.html", account=account, profile=profile, rows=rows, versions=versions
+        "account/home.html",
+        account=account,
+        profile=profile,
+        rows=rows,
+        versions=versions,
+        orders=orders,
     )
 
 

@@ -7,8 +7,8 @@ nothing else, and refuses to send until the host is set: a domain to send from i
 docs/decisions.md D2, still open, and a sign-in link from an unconfigured server would
 land in spam or nowhere.
 
-Plain text only. A sign-in mail is a sentence and a link; HTML adds a tracking surface
-and a rendering problem for no gain.
+Plain text only. A sign-in mail is a sentence and a link, a proforma's is a sentence and a
+PDF (P4 s50); HTML adds a tracking surface and a rendering problem for no gain.
 """
 
 import datetime as dt
@@ -28,14 +28,23 @@ class MailNotConfigured(RuntimeError):
     """Production has no SMTP host: nothing is sent, and the caller says so."""
 
 
-def send(settings: Settings, to: str, subject: str, body: str) -> str:
-    """Send one plain-text message; returns its Message-ID."""
+def send(
+    settings: Settings,
+    to: str,
+    subject: str,
+    body: str,
+    attachments: tuple[tuple[str, bytes, str], ...] = (),
+) -> str:
+    """Send one plain-text message, with (filename, bytes, type) attachments; its Message-ID."""
     message = EmailMessage()
     message["From"] = settings.mail_from
     message["To"] = to
     message["Subject"] = subject
     message["Message-ID"] = make_msgid(domain=_domain(settings.mail_from))
     message.set_content(body)
+    for filename, data, mimetype in attachments:
+        maintype, subtype = mimetype.split("/", 1)
+        message.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
 
     if settings.mail_backend == "outbox" and not settings.is_production:
         folder = Path(settings.outbox_dir)

@@ -21,6 +21,23 @@
     {% endif %}
   </section>
 
+  {% if orders %}
+  {# The account's orders, newest first (P4 s50): each leads to its page and proforma. #}
+    <section class="stack" aria-labelledby="orders-h">
+    <h2 id="orders-h">{{ _('Нарачки') }}</h2>
+    <ul class="rows">
+      {% for order, number in orders %}
+      <li>
+        <div class="stack--tight">
+          <a class="rows__link" href="{{ url_for('checkout.order', order_id=order.id) }}"><strong>{{ _('Детален извештај') }}{% if number %}, {{ number }}{% endif %}</strong></a>
+          <span class="small">{{ order_states[order.state] }}, {{ order.created_at|mkdate }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
   <section class="stack" aria-labelledby="out-h">
     <h2 id="out-h">{{ _('Одјава') }}</h2>
     <form method="post" action="{{ url_for('account.sign_out') }}">

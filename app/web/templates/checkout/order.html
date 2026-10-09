@@ -1,0 +1,34 @@
+{#- An order, as its buyer sees it (roadmap P4 s50): where it stands, and how to pay. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Нарачка') }} {{ invoice.number }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <a class="back" href="{{ url_for('account.home') }}">{{ _('Сметка') }}</a>
+  <div class="report-head stack">
+    <h1>{{ _('Нарачка') }} {{ invoice.number }}</h1>
+    <p class="lead">{{ order_states[order.state] }}.</p>
+  </div>
+
+  {% if sent == '1' %}
+  <div class="notice" role="status"><p>{{ _('Профактурата ви ја испративме на е-пошта. Ја имате и подолу.') }}</p></div>
+  {% elif sent == '0' %}
+  <div class="notice" role="alert"><p><strong>{{ _('Профактурата не успеавме да ја испратиме на е-пошта.') }}</strong> {{ _('Нарачката е примена; профактурата е подолу.') }}</p></div>
+  {% endif %}
+
+  {% if order.state == 'invoiced' %}
+  <section class="stack" aria-labelledby="pay-h">
+    <h2 id="pay-h">{{ _('Плаќање') }}</h2>
+    {{ c.group([
+         (_('Износ'), invoice.total_mkd|money, none),
+         (_('Жиро сметка'), seller.bank_account or '[се утврдува]', none),
+         (_('Банка'), seller.bank or '[се утврдува]', none),
+         (_('Цел на дознаката'), _('профактура %(n)s', n=invoice.number), none),
+         (_('Рок'), invoice.due_at|mkdate, none),
+       ], footer=_('Без бројот на профактурата уплатата не можеме да ја поврземе со нарачката. По уплатата почнува анализата; извештајот го прегледува човек пред да ви се испрати.')) }}
+  </section>
+  {% endif %}
+
+  <p><a class="btn btn--quiet" href="{{ url_for('checkout.proforma_pdf', order_id=order.id) }}">{{ _('Профактура (PDF)') }}</a></p>
+</div>
+{% endblock %}

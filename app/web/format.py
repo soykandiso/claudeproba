@@ -29,6 +29,17 @@ CRITERION_LABELS = {
     Verdict.NOT_ELIGIBLE: "Не е исполнето",
 }
 
+# An order's state as its buyer reads it (P4 s50).
+ORDER_STATES = {
+    "created": "Примена",
+    "invoiced": "Чека уплата",
+    "paid": "Платена",
+    "in_progress": "Во изработка",
+    "delivered": "Испорачана",
+    "cancelled": "Откажана",
+    "refunded": "Вратени средства",
+}
+
 # Deadlines are said in Skopje's calendar: 23:59 on the 30th is still the 30th.
 SKOPJE = ZoneInfo("Europe/Skopje")
 
@@ -125,3 +136,4 @@ def register(app: Flask) -> None:
     app.add_template_global(deadline_passed, "deadline_passed")
     app.add_template_global(VERDICT_LABELS, "verdict_labels")
     app.add_template_global(CRITERION_LABELS, "criterion_labels")
+    app.add_template_global(ORDER_STATES, "order_states")

@@ -17,8 +17,8 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > subscription** listed at 1.200 МКД/month or 12.000 МКД/year, marked «наскоро» until P4 builds
 > it. Document packages are not listed until P5. The numbers live in `config/prices.yaml`,
 > read by `app/pricing.py`; the page shows every price without and with ДДВ, as recommended
-> below. The founding price is switched off by hand in that file when the tenth founding order
-> is paid (there are no orders before P4).
+> below. The founding price ends by itself once ten orders not cancelled have
+> taken it (`app/orders/service.py`, P4 s48); `open: false` ends it earlier.
 
 ### The input that actually matters
 

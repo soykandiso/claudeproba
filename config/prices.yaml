@@ -8,15 +8,16 @@ vat_percent: 18
 
 report:
   net: 8900
-  # The founding price: the first ten orders, labelled as such and then gone. Set
-  # `open: false` when the tenth founding order is paid; the page stops offering it.
+  # The founding price: the first ten orders, labelled as such and then gone. The order
+  # service stops offering it once ten orders not cancelled have taken it
+  # (app/orders/service.py); `open: false` ends it earlier.
   founding:
     net: 4900
     orders: 10
     open: true
-  # The order flow is P4's (s47 onwards). Until it exists the page says so, and offers
-  # nothing that cannot be bought.
-  orderable: false
+  # Whether /naracka takes orders (P4 s50). A production deploy is still blocked until the
+  # seller's details exist (`flask invoices check`, `flask legal check`).
+  orderable: true
 
 monitoring:
   monthly_net: 1200
