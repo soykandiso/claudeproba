@@ -11,6 +11,7 @@ import uuid
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Date,
     ForeignKey,
     Index,
@@ -45,6 +46,12 @@ class Order(Base):
     __table_args__ = (
         Index("ix_order_state", "state", "created_at"),
         Index("ix_order_account", "account_id", text("created_at DESC")),
+        # A delivered order has the report it delivered on file (P4 s53): the PDF as sent
+        # is kept, because a report cannot be printed again once a call it cites closes.
+        CheckConstraint(
+            "state <> 'delivered' OR (delivered_at IS NOT NULL AND report_storage_key IS NOT NULL)",
+            name="delivered_has_report",
+        ),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
@@ -68,6 +75,8 @@ class Order(Base):
 
     created_at: Mapped[dt.datetime] = now_column()
     delivered_at: Mapped[dt.datetime | None] = timestamptz()
+    # The delivered report's PDF in the snapshot store (content-addressed, backed up with it).
+    report_storage_key: Mapped[str | None] = mapped_column(Text)
 
 
 class Invoice(Base):

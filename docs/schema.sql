@@ -774,7 +774,9 @@ CREATE TABLE public."order" (
     buyer_edb character varying(20),
     buyer_embs character varying(20),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    delivered_at timestamp with time zone
+    delivered_at timestamp with time zone,
+    report_storage_key text,
+    CONSTRAINT ck_order_delivered_has_report CHECK (((state <> 'delivered'::public.order_state) OR ((delivered_at IS NOT NULL) AND (report_storage_key IS NOT NULL))))
 );
 
 

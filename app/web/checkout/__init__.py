@@ -24,11 +24,12 @@ from sqlalchemy import select
 from app import mail
 from app.config import load_settings
 from app.db import session_factory
+from app.ingestion.snapshots import SnapshotStore
 from app.matching.normalise import normalise
 from app.models import Account
 from app.models.commerce import Invoice, Order
-from app.models.enums import InvoiceKind
-from app.orders import proforma, service
+from app.models.enums import InvoiceKind, OrderState
+from app.orders import deliver, proforma, service
 from app.pricing import prices
 from app.web import account as accounts_web
 from app.web import csrf
@@ -225,3 +226,46 @@ def proforma_pdf(order_id: uuid.UUID):
             f"filename*=UTF-8''{quote(invoice.number)}.pdf"
         },
     )
+
+
+# ------------------------------------------------------------------ delivered (P4 s53)
+
+
+def _delivered_pdf(order_id: uuid.UUID, which: str):
+    """A delivered PDF as it was sent: from the store, never printed again."""
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    with _sessions()() as db:
+        found = _own_order(db, order_id, account_id)
+        if found.state not in (OrderState.DELIVERED, OrderState.REFUNDED):
+            abort(404)
+        if which == "report":
+            key = found.report_storage_key
+            name = f"Извештај {_proforma(db, found.id).number}.pdf"
+        else:
+            invoice = db.scalar(
+                select(Invoice).where(
+                    Invoice.order_id == found.id, Invoice.kind == InvoiceKind.FINAL
+                )
+            )
+            key, name = invoice.pdf_storage_key, f"{invoice.number}.pdf"
+    document = deliver.stored(SnapshotStore(current_app.extensions["settings"].snapshot_dir), key)
+    return current_app.response_class(
+        document,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": 'inline; filename="document.pdf"; '
+            f"filename*=UTF-8''{quote(name)}"
+        },
+    )
+
+
+@bp.get("/<uuid:order_id>/izveshtaj.pdf")
+def report_pdf(order_id: uuid.UUID):
+    return _delivered_pdf(order_id, "report")
+
+
+@bp.get("/<uuid:order_id>/faktura.pdf")
+def invoice_pdf(order_id: uuid.UUID):
+    return _delivered_pdf(order_id, "invoice")

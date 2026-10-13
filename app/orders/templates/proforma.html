@@ -1,12 +1,15 @@
-{#- The proforma (roadmap P4 s49). Rendered by app/orders/proforma.py, never by Flask.
-    Claude's draft of the fields a Macedonian proforma carries: an accountant reviews a
-    sample (`flask invoices sample`) before the first real one is sent. -#}
+{#- The proforma (roadmap P4 s49) and the invoice issued on delivery (s53), one document
+    with two kinds. Rendered by app/orders/proforma.py, never by Flask. Claude's draft of
+    the fields a Macedonian invoice carries: an accountant reviews a sample of each
+    (`flask invoices sample OUT [--final]`) before the first real one is sent. -#}
+{%- set final = invoice.kind == 'final' -%}
+{%- set title = 'Фактура' if final else 'Профактура' -%}
 {%- macro fact(value) -%}{% if value %}{{ value }}{% else %}<span class="undecided">[се утврдува]</span>{% endif %}{%- endmacro -%}
 <!doctype html>
 <html lang="mk">
 <head>
 <meta charset="utf-8">
-<title>Профактура {{ invoice.number }}</title>
+<title>{{ title }} {{ invoice.number }}</title>
 <style>
 {{ font_faces }}
 {{ tokens }}
@@ -15,11 +18,12 @@
 </head>
 <body>
 <main>
-<h1>Профактура</h1>
+<h1>{{ title }}</h1>
 <p class="number">бр. {{ invoice.number }}</p>
 <p class="dates">
   <span>Издадена: {{ invoice.issued_at|mkdate }}</span>
-  <span>Рок за плаќање: {{ invoice.due_at|mkdate }}</span>
+  {% if final %}<span>Датум на промет: {{ invoice.issued_at|mkdate }}</span>
+  {% else %}<span>Рок за плаќање: {{ invoice.due_at|mkdate }}</span>{% endif %}
   <span>Место: {{ fact(seller.place) }}</span>
 </p>
 
@@ -61,9 +65,22 @@
 <table class="totals">
   <tr><td>Основица</td><td>{{ invoice.amount_mkd|denars }} МКД</td></tr>
   <tr><td>ДДВ {{ vat_percent }}%</td><td>{{ invoice.vat_mkd|denars }} МКД</td></tr>
-  <tr class="due"><td>Вкупно за плаќање</td><td>{{ invoice.total_mkd|denars }} МКД</td></tr>
+  <tr class="due"><td>{{ 'Вкупно' if final else 'Вкупно за плаќање' }}</td><td>{{ invoice.total_mkd|denars }} МКД</td></tr>
+  {% if final %}<tr><td>Платено</td><td>{{ invoice.total_mkd|denars }} МКД</td></tr>
+  <tr class="due"><td>Преостанато за плаќање</td><td>{{ 0|denars }} МКД</td></tr>{% endif %}
 </table>
 
+{% if final %}
+<div class="pay">
+  <h2>Плаќање</h2>
+  <p>Платено на {{ invoice.paid_at|mkdate }} по профактура {{ proforma.number }}, референца на изводот: <span data-theirs>{{ invoice.bank_reference }}</span>.</p>
+</div>
+
+<div class="notes">
+  <p>Услугата е извршена на {{ invoice.issued_at|mkdate }}: извештајот е испратен на адресата на нарачката.</p>
+  <p>Документот е изработен електронски.</p>
+</div>
+{% else %}
 <div class="pay">
   <h2>Плаќање</h2>
   <p>Уплатете {{ invoice.total_mkd|denars }} МКД на жиро сметка {{ fact(seller.bank_account) }} кај {{ fact(seller.bank) }}, до {{ invoice.due_at|mkdate }}.</p>
@@ -75,6 +92,7 @@
   <p>Извештајот се изработува по уплатата и го прегледува човек пред да ви се испрати.</p>
   <p>Документот е изработен електронски.</p>
 </div>
+{% endif %}
 </main>
 </body>
 </html>

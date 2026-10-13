@@ -35,7 +35,7 @@ def _text(html: str) -> str:
 
 def test_the_proforma_carries_every_field(monkeypatch):
     monkeypatch.setattr(proforma, "seller", lambda: SELLER)
-    invoice, order = proforma.sample()
+    invoice, order, _ = proforma.sample()
     text = _text(proforma.html_of(invoice, order))
     for field in (
         f"бр. {invoice.number}",
@@ -58,21 +58,21 @@ def test_the_proforma_carries_every_field(monkeypatch):
 
 def test_an_undecided_seller_shows_and_blocks(app):
     """Until D4 is confirmed: placeholders on the page, and the launch check fails."""
-    invoice, order = proforma.sample()
+    invoice, order, _ = proforma.sample()
     assert "[се утврдува]" in proforma.html_of(invoice, order)
     result = app.test_cli_runner().invoke(args=["invoices", "check"])
     assert result.exit_code == 1 and "seller.edb" in result.output
 
 
 def test_the_amounts_add_up():
-    invoice, _order = proforma.sample()
+    invoice, _order, _ = proforma.sample()
     assert float(invoice.amount_mkd) + float(invoice.vat_mkd) == float(invoice.total_mkd)
     assert proforma._denars(10502) == "10.502,00" and proforma._denars(1602.5) == "1.602,50"
 
 
 def test_the_pdf_is_set_in_our_fonts_only(monkeypatch):
     monkeypatch.setattr(proforma, "seller", lambda: SELLER)
-    invoice, order = proforma.sample()
+    invoice, order, _ = proforma.sample()
     document = proforma.pdf(invoice, order)
     assert document.startswith(b"%PDF")
     from app.reports import render
@@ -82,7 +82,7 @@ def test_the_pdf_is_set_in_our_fonts_only(monkeypatch):
 
 
 def test_only_a_proforma_is_printed_as_one():
-    invoice, order = proforma.sample()
+    invoice, order, _ = proforma.sample()
     invoice.kind = InvoiceKind.FINAL
     with pytest.raises(proforma.ProformaRefused):
         proforma.pdf(invoice, order)

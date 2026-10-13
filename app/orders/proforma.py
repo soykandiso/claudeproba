@@ -1,4 +1,6 @@
-"""The proforma as a PDF (roadmap P4 s49): what the customer pays from.
+"""The proforma as a PDF (roadmap P4 s49): what the customer pays from. And, since s53, the
+invoice issued when the report is delivered: the same document, `kind='final'`, which shows
+the payment against the proforma instead of how to pay.
 
 Rendered the way the report is (`app/reports/render.py`): WeasyPrint, only the fonts this
 repository ships, merged per weight, and refused rather than printed when a character could
@@ -8,8 +10,9 @@ not be drawn or a foreign font slipped in. A proforma with a wrong digit is wors
 ЕДБ, the account and the bank are `config/invoicing.yaml`'s. While any is undecided (D4) it
 prints as «[се утврдува]» and `flask invoices check` fails: the deploy runbook runs it.
 
-**Nothing is stored.** The proforma is made again from its `invoice` row whenever it is
-needed, as the report is from its draft; the row is what the accountant and the law keep.
+**A proforma is not stored.** It is made again from its `invoice` row whenever it is needed;
+the row is what the accountant and the law keep. **A final invoice is stored as sent**
+(`invoice.pdf_storage_key`, P4 s53), because it is the document the buyer files.
 
 **The acceptance is a person's:** an accountant reviews a sample (`flask invoices sample`)
 and confirms the fields before the first real proforma is sent.
@@ -89,13 +92,15 @@ def _environment() -> jinja2.Environment:
     return env
 
 
-def html_of(invoice: Invoice, order: Order) -> str:
+def html_of(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> str:
+    """`proforma` is the paid proforma a final invoice settles; unused for a proforma."""
     return (
         _environment()
         .get_template("proforma.html")
         .render(
             invoice=invoice,
             order=order,
+            proforma=proforma,
             seller=seller(),
             vat_percent=prices().vat_percent,
             description=DESCRIPTION,
@@ -106,11 +111,11 @@ def html_of(invoice: Invoice, order: Order) -> str:
     )
 
 
-def pdf(invoice: Invoice, order: Order) -> bytes:
-    """The proforma's PDF, after the same checks the report passes. Raises ProformaRefused."""
-    if invoice.kind != InvoiceKind.PROFORMA:
-        raise ProformaRefused(f"invoice {invoice.number} is not a proforma")
-    html = html_of(invoice, order)
+def pdf(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> bytes:
+    """The document's PDF, after the same checks the report passes. Raises ProformaRefused."""
+    if invoice.kind == InvoiceKind.FINAL and (proforma is None or invoice.paid_at is None):
+        raise ProformaRefused(f"invoice {invoice.number}: a final invoice settles a paid proforma")
+    html = html_of(invoice, order, proforma)
     banned = find_banned(render.own_voice(html))
     if banned:
         raise ProformaRefused(f"banned phrase on proforma {invoice.number}: {banned}")
@@ -125,8 +130,8 @@ def pdf(invoice: Invoice, order: Order) -> bytes:
     return document
 
 
-def sample() -> tuple[Invoice, Order]:
-    """An invented order and its proforma, never saved: what the accountant reviews."""
+def sample(final: bool = False) -> tuple[Invoice, Order, Invoice | None]:
+    """An invented order and its proforma, or its final invoice, never saved: for the accountant."""
     p = prices()
     net = p.report.net
     order = Order(
@@ -150,7 +155,21 @@ def sample() -> tuple[Invoice, Order]:
         vat_mkd=order.vat_mkd,
         total_mkd=p.gross(net),
     )
-    return invoice, order
+    if not final:
+        return invoice, order, None
+    paid = Invoice(
+        order_id=order.id,
+        kind=InvoiceKind.FINAL,
+        number=f"{numbering.settings()['prefixes']['final']}-{today.year}-0001",
+        fiscal_year=today.year,
+        issued_at=today,
+        amount_mkd=order.amount_mkd,
+        vat_mkd=order.vat_mkd,
+        total_mkd=p.gross(net),
+        paid_at=dt.datetime.combine(today, dt.time(12), dt.UTC),
+        bank_reference="Пример: извод 123 од 01.01, НЛБ",
+    )
+    return paid, order, invoice
 
 
 # ------------------------------------------------------------------ the operator's side
@@ -171,8 +190,9 @@ def check():
 
 @cli.command("sample")
 @click.argument("out", type=click.Path(dir_okay=False))
-def sample_command(out):
-    """Write a sample proforma (an invented buyer) for the accountant to review."""
-    invoice, order = sample()
-    Path(out).write_bytes(pdf(invoice, order))
-    click.echo(f"wrote {out}: proforma {invoice.number}, an invented buyer")
+@click.option("--final", is_flag=True, help="The invoice issued on delivery, not the proforma.")
+def sample_command(out, final):
+    """Write a sample proforma or invoice (an invented buyer) for the accountant to review."""
+    invoice, order, proforma = sample(final)
+    Path(out).write_bytes(pdf(invoice, order, proforma))
+    click.echo(f"wrote {out}: {invoice.kind} {invoice.number}, an invented buyer")

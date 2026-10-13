@@ -39,8 +39,15 @@ from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
 from app.models.commerce import Invoice
-from app.models.enums import CriterionKind, InvoiceKind, ReviewState, TextSource, Verdict
-from app.orders import fulfil, reconcile
+from app.models.enums import (
+    CriterionKind,
+    InvoiceKind,
+    OrderState,
+    ReviewState,
+    TextSource,
+    Verdict,
+)
+from app.orders import deliver, fulfil, reconcile
 from app.reports import render
 from app.review import extraction as review
 from app.review import reasons
@@ -648,6 +655,16 @@ def _render_report(db, item, *, error=None, open_form=None, typed=None):
         "decided_by_labels": DECIDED_BY_LABELS,
         "verdicts": Verdict,
     }
+    order = deliver.order_for(db, item)
+    context.update(
+        order=order,
+        order_number=order
+        and db.scalar(
+            select(Invoice.number).where(
+                Invoice.order_id == order.id, Invoice.kind == InvoiceKind.PROFORMA
+            )
+        ),
+    )
     if not reports.is_draft(item):
         context.update(invalid=item.payload or {}, draft=None, problems=[])
         return render_template("admin/report.html", **context), 422 if error else 200
@@ -755,7 +772,41 @@ def approve_report(item_id: int):
         reports.approve(db, item, note=note, now=_now())
         return f"Извештајот {item.id} е прифатен за испраќање." + _minutes_spent(item.id)
 
-    return _decide_report(item_id, act) or redirect(url_for("admin.queue"))
+    shown = _decide_report(item_id, act)
+    if shown:
+        return shown
+    # A paid order's report goes to its buyer now (P4 s53); a failure is said, not lost.
+    if not _send(item_id):
+        return redirect(url_for("admin.report", item_id=item_id))
+    return redirect(url_for("admin.queue"))
+
+
+def _send(item_id: int) -> bool:
+    """Deliver the order an approved report belongs to. False when it could not be sent."""
+    with _sessions()() as db:
+        order = deliver.order_for(db, _report_or_404(db, item_id))
+        if order is None or order.state != OrderState.IN_PROGRESS:
+            return True  # nothing to send: a demo run, or already delivered
+        try:
+            done = deliver.deliver(
+                db,
+                _store(),
+                _settings(),
+                order.id,
+                link=url_for("checkout.order", order_id=order.id, _external=True),
+            )
+        except deliver.Refused as refused:
+            db.rollback()
+            flash(f"Извештајот не е испратен до купувачот. {refused}")
+            return False
+    flash(f"Извештајот е испратен на {done.to}, со фактурата {done.invoice_number}.")
+    return True
+
+
+@bp.post("/izveshtaj/<int:item_id>/isprati")
+def send_report(item_id: int):
+    _send(item_id)
+    return redirect(url_for("admin.report", item_id=item_id))
 
 
 @bp.post("/izveshtaj/<int:item_id>/zatvori")

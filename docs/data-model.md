@@ -91,3 +91,11 @@ by discipline:
   `field` and an `operator`, because otherwise it could never be evaluated.
 
 Both are covered by tests in `tests/test_models_integration.py`.
+
+**What was delivered is kept as it was sent** (added 13.10.2026, P4 s53). A report is printed
+from its approved draft with every check run again, so once a call it cites closes it can no
+longer be printed. The PDF a buyer received is therefore stored, like a raw snapshot, in the
+snapshot store under `delivered/<order id>/<sha256>`: `order.report_storage_key` for the report,
+`invoice.pdf_storage_key` for the invoice issued on delivery. A third check constraint,
+`ck_order_delivered_has_report`, refuses a `delivered` order without a delivery time and a
+stored report. The proforma is not stored: it is made again from its row whenever needed.

@@ -368,3 +368,17 @@ docker compose exec web flask orders retry <order-id>
 
 The draft lands in the review queue like any other report. The five-day promise runs from the
 payment date, so a failure on day four is worth a short e-mail to the customer.
+
+## 10. A report is ready for its buyer
+
+Approving the report of a paid order (`/admin/izveshtaj/<id>`, the page says «Платена нарачка»
+above the button) sends it at once: the checks run again, the invoice is issued, and the buyer
+gets both PDFs by e-mail. The order becomes «Испорачана».
+
+If it was not sent, the page says why and nothing was spent: no invoice number, no e-mail.
+- **The e-mail failed**: fix the mail settings, then «Испрати го на купувачот» on the same page.
+- **A call in the report closed since approval**: the report cannot go out as it is. Run the
+  analysis again (`flask orders retry <order-id>`) and review the new draft; tell the buyer.
+
+What the buyer received is kept in the snapshot store (`delivered/<order-id>/…`, backed up with
+the snapshots) and on their order page, unchanged, for as long as the store is kept.
