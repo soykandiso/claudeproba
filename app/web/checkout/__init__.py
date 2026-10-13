@@ -155,6 +155,29 @@ def _mail_proforma(db, order: Order) -> bool:
         return False
 
 
+def mail_paid(db, order_id) -> bool:
+    """Tell the buyer the payment arrived and what happens next (P4 s52). False if not sent."""
+    order = db.get(Order, order_id)
+    invoice = _proforma(db, order.id)
+    account = db.get(Account, order.account_id)
+    try:
+        mail.send(
+            current_app.extensions["settings"],
+            account.email,
+            f"Уплатата по {invoice.number} е примена",
+            render_template(
+                "checkout/paid_mail.txt",
+                invoice=invoice,
+                days=prices().report.delivery_working_days,
+                link=url_for("checkout.order", order_id=order.id, _external=True),
+            ),
+        )
+        return True
+    except (mail.MailNotConfigured, OSError):
+        current_app.logger.exception("payment notice for %s not mailed", invoice.number)
+        return False
+
+
 def _proforma(db, order_id) -> Invoice:
     return db.scalar(
         select(Invoice).where(Invoice.order_id == order_id, Invoice.kind == InvoiceKind.PROFORMA)

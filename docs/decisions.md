@@ -19,6 +19,9 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > read by `app/pricing.py`; the page shows every price without and with ДДВ, as recommended
 > below. The founding price ends by itself once ten orders not cancelled have
 > taken it (`app/orders/service.py`, P4 s48); `open: false` ends it earlier.
+> **Decided 13.10.2026 by the user:** the report reaches the buyer **within five working days
+> of payment** (`report.delivery_working_days`), said in the payment e-mail, on the order page
+> and in terms §2.
 
 ### The input that actually matters
 

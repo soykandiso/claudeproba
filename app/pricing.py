@@ -29,6 +29,7 @@ class Report(_Strict):
     net: int = Field(gt=0)
     founding: Founding
     orderable: bool
+    delivery_working_days: int = Field(gt=0)
 
 
 class Monitoring(_Strict):

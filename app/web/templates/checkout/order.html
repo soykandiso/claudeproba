@@ -27,6 +27,14 @@
          (_('Рок'), invoice.due_at|mkdate, none),
        ], footer=_('Без бројот на профактурата уплатата не можеме да ја поврземе со нарачката. По уплатата почнува анализата; извештајот го прегледува човек пред да ви се испрати.')) }}
   </section>
+  {% elif order.state in ('paid', 'in_progress') %}
+  <section class="stack" aria-labelledby="next-h">
+    <h2 id="next-h">{{ _('Што следи') }}</h2>
+    <p>{{ _('Уплатата ја примивме на %(date)s. Анализата на првите пет отворени повици во вашата листа е во тек.', date=invoice.paid_at|mkdate) }}</p>
+    <p>{{ ngettext('Извештајот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работен ден од уплатата.', 'Извештајот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работни дена од уплатата.', price_list().report.delivery_working_days) }}</p>
+  </section>
+  {% elif order.state == 'cancelled' %}
+  <p>{{ _('Нарачката е откажана. Ако сте уплатиле по неа, пишете ни за враќање на уплатата.') }}</p>
   {% endif %}
 
   <p><a class="btn btn--quiet" href="{{ url_for('checkout.proforma_pdf', order_id=order.id) }}">{{ _('Профактура (PDF)') }}</a></p>

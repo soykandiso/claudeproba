@@ -345,3 +345,26 @@ month. Useful questions: how many reach `/profil/` from `/`, how many `/povici/`
 **Search Console** (once the domain exists, D2): verify by DNS, submit `/sitemap.xml`.
 `/robots.txt` in production allows the public pages and the archive and disallows the form,
 the shortlist, the account, the admin and the demo (`PRIVATE` in `app/web/public.py`).
+
+## 9. A payment arrived
+
+1. Open `/admin/uplati`, paste the line from the bank statement, press «Најди профактура».
+2. Check the amount against the statement and press «Означи … како платена». The amount must
+   be the proforma's total to the denar; a partial or doubled payment is refused on purpose:
+   settle it with the customer and the accountant, then mark it.
+
+The customer gets an e-mail at once: the payment arrived, a person reviews the report, and it
+comes within five working days of payment (`config/prices.yaml`, `delivery_working_days`). The
+order goes to the analysis worker straight away. If the message says the worker did not answer,
+do nothing: `flask orders dispatch` (cron, every ten minutes) hands it over.
+
+**A failed analysis is not retried by itself**, because running it again costs model calls. Read
+the failure (`docker compose exec web rq info`, then the failed job's traceback), fix the cause,
+then:
+
+```bash
+docker compose exec web flask orders retry <order-id>
+```
+
+The draft lands in the review queue like any other report. The five-day promise runs from the
+payment date, so a failure on day four is worth a short e-mail to the customer.

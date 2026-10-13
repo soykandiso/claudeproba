@@ -18,6 +18,9 @@ report:
   # Whether /naracka takes orders (P4 s50). A production deploy is still blocked until the
   # seller's details exist (`flask invoices check`, `flask legal check`).
   orderable: true
+  # Working days from payment to the reviewed report, as the customer is told (the user's
+  # decision of 13.10.2026). The analysis takes minutes; a person's review is the wait.
+  delivery_working_days: 5
 
 monitoring:
   monthly_net: 1200

@@ -30,3 +30,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Retention (docs/decisions.md D5, app/accounts.py): the profiles of accounts with no
 # activity for 24 months are forgotten. Monthly, on the 2nd, after the night's backup.
 30 4 2 * *  root  cd /srv/grants && docker compose exec -T web flask accounts anonymise-stale >> /var/log/grants-retention.log 2>&1
+
+# Paid orders to the analysis worker (app/orders/fulfil.py, P4 s52). Marking a payment
+# hands the order over at once; this catches any order whose hand-over failed (Redis
+# down, a deploy). A job per order id, so nothing is analysed twice.
+*/10 * * * *  root  cd /srv/grants && docker compose exec -T web flask orders dispatch >> /var/log/grants-orders.log 2>&1

@@ -40,12 +40,12 @@ from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
 from app.models.commerce import Invoice
 from app.models.enums import CriterionKind, InvoiceKind, ReviewState, TextSource, Verdict
-from app.orders import reconcile
+from app.orders import fulfil, reconcile
 from app.reports import render
 from app.review import extraction as review
 from app.review import reasons
 from app.review import report as reports
-from app.web import csrf, format
+from app.web import checkout, csrf, format
 from app.web.format import SKOPJE, mkdate
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -831,5 +831,17 @@ def confirm_payment(invoice_id: uuid.UUID):
             )
         )
         db.commit()
-    flash(f"Профактурата {number} е платена; нарачката чека анализа.")
+        order_id = order.id
+        # After the commit, never before: the payment stands whatever happens next.
+        mailed = checkout.mail_paid(db, order_id)
+    queued = fulfil.after_payment(_settings(), order_id)
+    flash(
+        f"Профактурата {number} е платена. "
+        + ("Купувачот е известен. " if mailed else "Известувањето до купувачот не замина. ")
+        + (
+            "Анализата е предадена на работникот."
+            if queued
+            else "Работникот не одговара; анализата ќе ја предаде «flask orders dispatch»."
+        )
+    )
     return redirect(url_for("admin.payments"))

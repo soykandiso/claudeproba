@@ -117,3 +117,28 @@ def test_someone_elses_order_does_not_exist(site):
     _signed_in(client, outbox)
     assert client.get(mine).status_code == 404
     assert client.get(mine + "/profaktura.pdf").status_code == 404
+
+
+@db
+def test_a_paid_order_says_what_happens_next_and_when(site, registry):  # noqa: F811
+    import datetime as dt
+    import uuid
+    from decimal import Decimal
+
+    from app.models.commerce import Invoice
+    from app.orders import reconcile
+    from app.pricing import prices
+
+    client, outbox = site
+    _signed_in(client, outbox)
+    page = _order(client).location.split("?")[0]
+    with registry[0]() as s:
+        invoice = s.query(Invoice).filter_by(order_id=uuid.UUID(page.rsplit("/", 1)[1])).one()
+        reconcile.confirm(s, invoice.id, Decimal(invoice.total_mkd), "ref", dt.date.today())
+        s.commit()
+
+    shown = client.get(page).get_data(as_text=True)
+    days = prices().report.delivery_working_days
+    assert "Платена" in shown and "Што следи" in shown and "Цел на дознаката" not in shown
+    assert f"во рок од {days} работни дена од уплатата" in shown
+    assert dt.date.today().strftime("%d.%m.%Y") in shown

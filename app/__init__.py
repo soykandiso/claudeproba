@@ -76,6 +76,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     from app.orders.proforma import cli as invoices_cli
 
     app.cli.add_command(invoices_cli)
+    # Paid orders and the analysis worker (app/orders/fulfil.py, P4 s52).
+    from app.orders.fulfil import cli as orders_cli
+
+    app.cli.add_command(orders_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 
