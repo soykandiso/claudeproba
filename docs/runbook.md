@@ -382,3 +382,24 @@ If it was not sent, the page says why and nothing was spent: no invoice number, 
 
 What the buyer received is kept in the snapshot store (`delivered/<order-id>/…`, backed up with
 the snapshots) and on their order page, unchanged, for as long as the store is kept.
+
+## 11. Invoice numbers and the year end
+
+Numbers run `ПФ-<year>-0001`, `Ф-<year>-0001`… per kind and year, without gaps. The year is
+Skopje's: an order at 00:30 on 1 January is numbered, dated and filed in the new year, even
+though the server's clock still says 31 December. The database refuses an invoice whose
+`fiscal_year` is not the year of its date.
+
+Before sending the month's or the year's invoices to the accountant:
+
+```bash
+docker compose exec web flask invoices audit
+```
+
+It prints nothing but «every invoice series is whole» when all is well; otherwise each gap,
+duplicate, odd format or wrong year on a line of its own. Do not «fix» a gap by renumbering:
+show the line to the accountant.
+
+**Changing a prefix** (`config/invoicing.yaml`) is done on 1 January, with the accountant, or not
+at all. Changed in the middle of a year, numbering refuses to continue rather than start again
+at 0001 under the new prefix.

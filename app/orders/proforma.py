@@ -27,6 +27,7 @@ from pathlib import Path
 
 import click
 import jinja2
+from flask import current_app
 from flask.cli import AppGroup
 from markupsafe import Markup
 
@@ -143,7 +144,7 @@ def sample(final: bool = False) -> tuple[Invoice, Order, Invoice | None]:
         buyer_edb="МК4000000000000",
         buyer_embs="1234567",
     )
-    today = dt.date.today()
+    today = numbering.today()
     invoice = Invoice(
         order_id=order.id,
         kind=InvoiceKind.PROFORMA,
@@ -186,6 +187,20 @@ def check():
     if gaps:
         raise SystemExit(1)
     click.echo("the seller's details are complete")
+
+
+@cli.command("audit")
+def audit_command():
+    """Read every invoice series back: gaps, duplicates, formats, years. Silent when all is well."""
+    from app.db import session_factory
+
+    with session_factory(current_app.extensions["settings"])() as session:
+        problems = numbering.audit(session)
+    for problem in problems:
+        click.echo(problem)
+    if problems:
+        raise SystemExit(1)
+    click.echo("every invoice series is whole")
 
 
 @cli.command("sample")

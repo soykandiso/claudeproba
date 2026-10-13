@@ -47,7 +47,7 @@ from app.models.enums import (
     TextSource,
     Verdict,
 )
-from app.orders import deliver, fulfil, reconcile
+from app.orders import deliver, fulfil, numbering, reconcile
 from app.reports import render
 from app.review import extraction as review
 from app.review import reasons
@@ -834,7 +834,7 @@ def _payments_page(db, line: str = "", *, error=None, typed=None, status=200):
         closed=closed,
         waiting=reconcile.open_proformas(db),
         paid=reconcile.recently_paid(db),
-        today=mkdate(dt.date.today()),
+        today=mkdate(numbering.today()),
         error=error,
         typed=typed or {},
     ), status

@@ -83,6 +83,9 @@ class Invoice(Base):
     __tablename__ = "invoice"
     __table_args__ = (
         Index("ix_invoice_unpaid", "issued_at", postgresql_where=text("paid_at IS NULL")),
+        # The number's year, the fiscal year and the date on the paper are one year (P4 s54):
+        # a document issued on New Year's night belongs wholly to one of them.
+        CheckConstraint("fiscal_year = EXTRACT(YEAR FROM issued_at)", name="fiscal_year"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()

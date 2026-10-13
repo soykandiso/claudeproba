@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.models.commerce import Order, Product
 from app.models.enums import OrderState
-from app.orders import states
+from app.orders import numbering, states
 from app.orders.providers import Evidence, PaymentRequest, provider_for
 from app.pricing import prices
 
@@ -90,7 +90,7 @@ def create(
     )
     session.add(order)
     session.flush()
-    request = provider_for(order).request(session, order, today or dt.date.today())
+    request = provider_for(order).request(session, order, today or numbering.today())
     states.move(order, OrderState.INVOICED)
     session.flush()
     return order, request

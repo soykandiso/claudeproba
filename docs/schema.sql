@@ -614,7 +614,8 @@ CREATE TABLE public.invoice (
     pdf_storage_key text,
     paid_at timestamp with time zone,
     bank_reference text,
-    reconciled_by uuid
+    reconciled_by uuid,
+    CONSTRAINT ck_invoice_fiscal_year CHECK (((fiscal_year)::numeric = EXTRACT(year FROM issued_at)))
 );
 
 

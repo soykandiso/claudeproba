@@ -99,3 +99,8 @@ snapshot store under `delivered/<order id>/<sha256>`: `order.report_storage_key`
 `invoice.pdf_storage_key` for the invoice issued on delivery. A third check constraint,
 `ck_order_delivered_has_report`, refuses a `delivered` order without a delivery time and a
 stored report. The proforma is not stored: it is made again from its row whenever needed.
+
+**The invoice's year is one year** (added 13.10.2026, P4 s54). `ck_invoice_fiscal_year` holds
+`fiscal_year` equal to the year of `issued_at`; the number carries the same year, because
+`app/orders/numbering.py` numbers a series by kind and `fiscal_year` and dates by Skopje's
+calendar, not the server's UTC clock.

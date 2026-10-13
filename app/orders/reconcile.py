@@ -64,7 +64,7 @@ class Open:
 
     @property
     def overdue(self) -> bool:
-        return self.invoice.due_at is not None and self.invoice.due_at < dt.date.today()
+        return self.invoice.due_at is not None and self.invoice.due_at < numbering.today()
 
 
 def numbers_in(line: str) -> list[str]:
@@ -178,7 +178,7 @@ def confirm(
             "Делумна или двојна уплата не се означува тука: договорете се "
             "со купувачот и сметководителот."
         )
-    if on > dt.date.today():
+    if on > numbering.today():
         raise Refused("Датумот на уплата не може да биде во иднина.")
     try:
         service.confirm_payment(
