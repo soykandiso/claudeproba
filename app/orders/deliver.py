@@ -35,6 +35,7 @@ from app.models.enums import InvoiceKind, OrderState, ReviewKind
 from app.orders import numbering, proforma, states
 from app.reports import render
 from app.reports.lint import find_banned
+from app.review import report as review
 from app.web.format import SKOPJE, mkdate
 
 TEMPLATES = Path(__file__).resolve().parent / "templates"
@@ -120,7 +121,7 @@ def deliver(
     now: dt.datetime | None = None,
 ) -> Delivered:
     """Send the order's approved report and its invoice, or raise Refused having changed nothing."""
-    now = now or dt.datetime.now(dt.UTC)
+    now = now or numbering.now()
     today = now.astimezone(SKOPJE).date()
     order = session.get(Order, order_id)
     if order is None:
@@ -151,7 +152,9 @@ def deliver(
         body = (
             _environment()
             .get_template("delivery_mail.txt")
-            .render(proforma=paid, invoice=invoice, link=link)
+            .render(
+                proforma=paid, invoice=invoice, link=link, calls=len(review.draft_of(item)["calls"])
+            )
         )
         banned = find_banned(body)
         if banned:

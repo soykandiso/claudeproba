@@ -28,7 +28,7 @@ PF = InvoiceKind.PROFORMA
 
 def _clock(monkeypatch, utc: dt.datetime):
     """The server's clock reads `utc`; numbering turns it into Skopje's date itself."""
-    monkeypatch.setattr(numbering, "_now", lambda: utc)
+    monkeypatch.setattr(numbering, "now", lambda: utc)
 
 
 # ------------------------------------------------------------------ the business date

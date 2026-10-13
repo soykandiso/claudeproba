@@ -47,13 +47,13 @@ def settings() -> dict:
     return yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
 
 
-def _now() -> dt.datetime:
+def now() -> dt.datetime:
     return dt.datetime.now(dt.UTC)  # the server's clock; the tests set it
 
 
 def today() -> dt.date:
     """The business date: Skopje's, whatever the server's clock is set to."""
-    return _now().astimezone(SKOPJE).date()
+    return now().astimezone(SKOPJE).date()
 
 
 def _format(prefix: str, year: int) -> re.Pattern:

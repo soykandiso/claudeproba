@@ -22,6 +22,9 @@ def site(registry, monkeypatch, tmp_path):  # noqa: F811
     factory = registry[0]
     monkeypatch.setattr(account, "_sessions", lambda: factory)
     monkeypatch.setattr(checkout, "_sessions", lambda: factory)
+    # The shortlist's open calls are counted against the dev database's registry, which has
+    # none open today; the tests about counting set their own.
+    monkeypatch.setattr(checkout, "open_calls", lambda db, profile: 5)
     app = create_app(load_settings(env="testing", outbox_dir=str(tmp_path / "outbox")))
     return app.test_client(), tmp_path / "outbox"
 
@@ -142,3 +145,37 @@ def test_a_paid_order_says_what_happens_next_and_when(site, registry):  # noqa: 
     assert "Платена" in shown and "Што следи" in shown and "Цел на дознаката" not in shown
     assert f"во рок од {days} работни дена од уплатата" in shown
     assert dt.date.today().strftime("%d.%m.%Y") in shown
+
+
+@db
+def test_no_report_is_sold_when_no_call_is_open(site, monkeypatch):
+    client, outbox = site
+    monkeypatch.setattr(checkout, "open_calls", lambda db, profile: 0)
+    _signed_in(client, outbox)
+    page = client.get("/naracka/").get_data(as_text=True)
+    assert "нема отворени повици за вашиот профил" in page and 'name="edb"' not in page
+    assert _order(client).status_code == 409
+    assert "Нарачки" not in client.get("/smetka").get_data(as_text=True)
+
+
+@db
+def test_fewer_than_five_open_calls_are_said_before_paying(site, monkeypatch):
+    client, outbox = site
+    monkeypatch.setattr(checkout, "open_calls", lambda db, profile: 3)
+    _signed_in(client, outbox)
+    page = client.get("/naracka/").get_data(as_text=True)
+    assert "има 3 отворени повици: извештајот ќе ги опфати сите 3, не пет" in page
+
+
+@db
+def test_the_count_is_the_shortlists_open_calls_at_most_five(registry, monkeypatch):  # noqa: F811
+    from types import SimpleNamespace as NS
+
+    from app.matching import shortlist
+
+    calls = [NS(excluded=False)] * 7 + [NS(excluded=True)] * 2
+    monkeypatch.setattr(shortlist, "ranked", lambda db, profile, now: (calls, {}))
+    monkeypatch.setattr(checkout, "normalise_row", lambda row, today: None)
+    assert checkout.open_calls(None, object()) == 5
+    calls[:] = [NS(excluded=False)] * 2 + [NS(excluded=True)] * 4
+    assert checkout.open_calls(None, object()) == 2

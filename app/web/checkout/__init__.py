@@ -25,11 +25,12 @@ from app import mail
 from app.config import load_settings
 from app.db import session_factory
 from app.ingestion.snapshots import SnapshotStore
+from app.matching.normalise import from_row as normalise_row
 from app.matching.normalise import normalise
 from app.models import Account
 from app.models.commerce import Invoice, Order
 from app.models.enums import InvoiceKind, OrderState
-from app.orders import deliver, proforma, service
+from app.orders import deliver, numbering, proforma, service
 from app.pricing import prices
 from app.web import account as accounts_web
 from app.web import csrf
@@ -76,6 +77,16 @@ def _clean(form) -> tuple[dict, dict]:
     return typed, errors
 
 
+def open_calls(db, profile) -> int:
+    """How many calls the report would cover if the analysis ran now: the shortlist's open
+    calls the rules do not exclude, at most five (`deep.run` takes the same ones)."""
+    from app.matching import deep, shortlist
+
+    now = numbering.now()
+    scored, _ = shortlist.ranked(db, normalise_row(profile, now.date()), now)
+    return min(sum(1 for s in scored if not s.excluded), deep.DEPTH)
+
+
 def _form(db, account_id, typed, errors, status=200):
     profile = accounts_web._latest(db, account_id)
     net = service.report_price(db)
@@ -88,6 +99,7 @@ def _form(db, account_id, typed, errors, status=200):
         founding=net == prices().report.founding.net,
         has_profile=profile is not None,
         profile_summary=_summary(profile),
+        calls=open_calls(db, profile) if profile is not None else 0,
     ), status
 
 
@@ -121,6 +133,9 @@ def place():
         profile = accounts_web._latest(db, account_id)
         if profile is None:
             return redirect(url_for("intake.form"))
+        if open_calls(db, profile) == 0:
+            # Nothing to analyse: a report of no calls is not sold (the form says so too).
+            return _form(db, account_id, typed, {}, 409)
         if errors:
             return _form(db, account_id, typed, errors, 422)
         order, payment = service.create(

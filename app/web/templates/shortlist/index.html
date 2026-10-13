@@ -35,8 +35,8 @@
     {% set report = price_list().report %}
     {% if report.orderable %}
     <div class="empty stack" id="report">
-      <h2>{{ _('Детален извештај за првите пет повици') }}</h2>
-      <p class="soft">{{ _('Секој услов проверен според официјалниот текст, што ви недостасува и што треба да подготвите, прегледано од човек.') }} {% if report.founding.open %}{{ _('%(founding)s без ДДВ за првите нарачки, потоа %(net)s.', founding=report.founding.net|money, net=report.net|money) }}{% else %}{{ report.net|money }} {{ _('без ДДВ') }}.{% endif %}</p>
+      <h2>{{ _('Детален извештај за отворените повици') }}</h2>
+      <p class="soft">{{ _('За првите пет отворени повици во листата, или за сите ако се помалку: секој услов проверен според официјалниот текст, што ви недостасува и што треба да подготвите, прегледано од човек.') }} {% if report.founding.open %}{{ _('%(founding)s без ДДВ за првите нарачки, потоа %(net)s.', founding=report.founding.net|money, net=report.net|money) }}{% else %}{{ report.net|money }} {{ _('без ДДВ') }}.{% endif %}</p>
       <div class="actions"><a class="btn" href="{{ url_for('checkout.form') }}">{{ _('Нарачај извештај') }}</a></div>
     </div>
     {% endif %}

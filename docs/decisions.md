@@ -22,6 +22,10 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > **Decided 13.10.2026 by the user:** the report reaches the buyer **within five working days
 > of payment** (`report.delivery_working_days`), said in the payment e-mail, on the order page
 > and in terms §2.
+> **13.10.2026, default taken by Claude (P4 s55 rehearsal):** a list with fewer than five open
+> calls costs the same; the order form says how many calls the report will cover before the
+> buyer pays, and no report is sold when none is open. A lower price for fewer calls is the
+> user's to decide.
 
 ### The input that actually matters
 
