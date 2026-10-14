@@ -105,6 +105,7 @@ six and later arrives as a separate scheduled container (`docs/architecture.md` 
 
 | Question | File |
 |---|---|
+| How does the whole thing work, and how do I set up a fresh session? | `docs/how-it-works.md` |
 | Why is it built this way? | `docs/architecture.md` (§9 lists disagreements with the brief) |
 | What does the data look like? | `app/models/` is the truth; `docs/schema.sql` is generated |
 | Why is the schema shaped that way? | `docs/data-model.md` |
