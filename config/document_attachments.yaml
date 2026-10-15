@@ -1,0 +1,34 @@
+# What an applicant may have to attach, said once (roadmap P5 s57). A template's manifest
+# (<version>.yaml beside its .docx) names the ones its call asks for, by key, and may add a
+# note: how old a certificate may be, how many offers, a notary's stamp. The checklist
+# (app/documents/checklist.py) prints the label, then how to obtain it, then the note.
+#
+# The `how_mk` texts are Claude's drafts: a native reader checks them before a package is
+# sold, as every customer-facing Macedonian text (CLAUDE.md). They say where a document comes
+# from, never how long it takes or what it costs: that changes, and is not ours to promise.
+
+attachments:
+  tekovna_sostojba:
+    label_mk: "Тековна состојба на субјектот"
+    how_mk: "Се добива од Централниот регистар на Република Северна Македонија, на шалтер или електронски."
+  ujp_potvrda:
+    label_mk: "Потврда за платени даноци и придонеси"
+    how_mk: "Се добива од Управата за јавни приходи, електронски или на шалтер."
+  godishna_smetka:
+    label_mk: "Годишна сметка за претходната година"
+    how_mk: "Ја подготвува вашиот сметководител; поднесената годишна сметка се добива и од Централниот регистар."
+  bankarska_potvrda:
+    label_mk: "Потврда од банката за отворена трансакциска сметка"
+    how_mk: "Се добива од банката во која е отворена сметката."
+  ponudi:
+    label_mk: "Понуди или профактури од добавувачите"
+    how_mk: "Ги добивате од добавувачите на опремата или услугите за кои барате средства."
+  vraboteni_potvrda:
+    label_mk: "Потврда за бројот на вработени"
+    how_mk: "Ја издава институцијата што ја наведува повикот; прочитајте во повикот која."
+  licna_karta_odgovorno:
+    label_mk: "Копија од личната карта на одговорното лице"
+    how_mk: "Копија од важечка лична карта или пасош."
+  ovlastuvanje:
+    label_mk: "Овластување, ако барањето го потпишува друго лице"
+    how_mk: "Писмено овластување од одговорното лице на субјектот."

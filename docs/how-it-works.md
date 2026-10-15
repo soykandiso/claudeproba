@@ -227,4 +227,4 @@ From `docs/handoff.md` §4, the ones that block launch:
 | **D3** | Which two programmes get document templates first (recommended: ФИТР, then the Employment Agency) | P5 from session 58 |
 | s55 | The real rehearsal: your own profile, a real transfer, the real server | Brief §14's proof that money flows |
 
-Next by the roadmap: **P5 s57, the checklist model and rendering** (s56, the template engine, is built), which needs no decision.
+Next by the roadmap: **P5 s58, template set 1** (s56 the engine and s57 the checklist are built). It needs **D3**: which programme first.

@@ -155,6 +155,8 @@ def test_the_check_command_fails_on_a_bad_template(tmp_path):
     good, bad = tmp_path / "good.docx", tmp_path / "bad.docx"
     good.write_bytes(FORM)
     bad.write_bytes(template("{{ call_title }}"))
+    for form in (good, bad):
+        form.with_suffix(".yaml").write_text("title_mk: Образец\n", encoding="utf-8")
     runner = create_app(load_settings(env="testing")).test_cli_runner()
     result = runner.invoke(args=["documents", "check", str(good), str(bad)])
     assert result.exit_code == 1 and "1 of 2 templates can be filled" in result.output

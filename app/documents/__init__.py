@@ -1,6 +1,7 @@
 """Document packages (roadmap P5): templates per programme, filled as drafts for the applicant.
 
-`engine.py` fills one template (s56). Templates live in `app/documents/templates/<programme>/`
+`engine.py` fills one template (s56); `checklist.py` lists what the applicant must still
+provide (s57). Templates live in `app/documents/templates/<programme>/`
 as Word files under version control; `flask documents check` lints every one of them.
 """
 
@@ -17,13 +18,17 @@ cli = AppGroup("documents", help="Document templates (P5).")
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, dir_okay=False))
 def check_command(paths):
-    """Lint templates (default: every .docx under app/documents/templates/)."""
-    from app.documents import engine
+    """Lint templates and their manifests (default: every .docx under app/documents/templates/)."""
+    from app.documents import checklist, engine
 
     files = [Path(p) for p in paths] or sorted(TEMPLATES.rglob("*.docx"))
     failed = 0
     for path in files:
         problems = engine.check(path.read_bytes())
+        try:
+            checklist.manifest_for(path)
+        except (checklist.ChecklistRefused, ValueError) as refused:
+            problems.append(str(refused))
         for problem in problems:
             click.echo(f"{path}: {problem}")
         failed += bool(problems)
