@@ -118,7 +118,7 @@ sources:
     staleness_sla_days: 180
     rate_limit_rps: 0.2
     terms_url: null
-    terms_note: UNVERIFIED -- host did not respond from a datacenter (sources.md §6.1)
+    terms_note: UNVERIFIED -- fitr.mk lapsed (a parking page, 15.10.2026); the new address is unknown (sources.md §6.1)
     priority: 3
     active: false
 

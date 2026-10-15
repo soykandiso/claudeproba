@@ -126,6 +126,12 @@ files and their hashes are listed in `tests/fixtures/README.md`.
 
 ### 6.1 FITR did not respond
 
+> **15.10.2026: fitr.mk has lapsed.** The domain now serves a parking page («Buy this domain»),
+> and `fitr.gov.mk` does not resolve. ФИТР still exists (the State Audit Office reported on its
+> 2024 accounts in December 2025), but where it publishes calls now is unknown. The source stays
+> `active: false` with its old URL until the new one is found; until then a ФИТР call comes in
+> by manual entry (§3).
+
 `fitr.mk` and `www.fitr.mk` resolve (104.247.81.99) but every connection timed out, on HTTPS and
 HTTP. The likeliest explanation is that the host drops traffic from datacenter or non-Macedonian IP
 ranges. That matters beyond reconnaissance: **the production crawler also runs from a datacenter**.

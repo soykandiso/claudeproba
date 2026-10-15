@@ -197,7 +197,7 @@ from the same components without adding new ones.
 
 ---
 
-## P5 — Document packages · 12 sessions · → ~29 Dec 2026
+## P5 — Document packages · 20 sessions (was 12: all programmes, D3) · → ~late Jan 2027
 
 Which two programmes get templates first is `decisions.md` D3. **My recommendation is not IPARD
 first**, despite it being the highest-value segment — reasoning is in that document.
@@ -206,8 +206,10 @@ first**, despite it being the highest-value segment — reasoning is in that doc
 |---|------|-----------|
 | 56 | Template engine: `docxtpl`, field registry, unfilled-field marking — *built 15.10.2026: `app/documents/engine.py` over `config/document_fields.yaml` (each field's label, type and **source**). A field whose source is `applicant` (every money field, exact counts, people, declarations, signatures) is never filled: it prints «[Пополнува барателот: …]», highlighted, and handing it a value raises `InventedValue`. Any other field without a value prints «[Недостасува: …]». `render` returns the .docx with `filled` and `unfilled`. Templates write every field `{{r key }}`: a plain `{{ key }}` makes docxtpl drop a highlighted marker silently, so `check` refuses it, as it refuses unknown fields and `{% %}` logic; `flask documents check`* | Financial and legal fields are **marked as requiring the applicant's real data, never invented** (brief §8) |
 | 57 | Checklist model and rendering — *built 15.10.2026: `app/documents/checklist.py`. The list is made, never written: every field the engine left unfilled across the package (one line per field, naming its documents) and every attachment the templates' manifests ask for (`<version>.yaml` beside each `.docx`, keys of `config/document_attachments.yaml`, with how to obtain it and the call's own condition). Grouped as an applicant works: data, figures, declarations, signatures, attachments. `as_rows` for `document_package.checklist`; `to_docx` prints it as the package's last document (Macedonian proofing language, linted). `flask documents check` now requires each template's manifest* | Every package ships a list of what the applicant must still provide |
-| 58–61 | Template set 1 | A complete draft package for a real call, human-reviewed |
-| 62–65 | Template set 2 | Same |
+| 58–61 | Template set 1: **Агенција за вработување** (D3, 15.10.2026: all programmes) | A complete draft package for a real call, human-reviewed |
+| 62–65 | Template set 2: **Министерство за економија и труд** | Same |
+| 66–69 | Template set 3: **IPARD** | Same, on an open IPARD call |
+| 70–73 | Template set 4: **ФИТР**, once its current site is known (fitr.mk lapsed, `sources.md` §6.1) | Same |
 | 66 | AI-assisted labelling and "draft for human completion" copy throughout | Labelling appears on the artefact itself, not only on the web page |
 | 67 | Package delivery + review gate | **Brief P5:** a complete draft package produced and human-reviewed for a real call |
 

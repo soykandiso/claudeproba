@@ -105,6 +105,15 @@ both referenced in the crawler's User-Agent. Crawling ministries anonymously is 
 
 ## D3 — Which two programmes get document templates first (P5)
 
+> **Decided 15.10.2026 by the user: all of them**, not two. P5 grows from two template sets to
+> four. The order is set by which official forms can be had, because a template reproduces the
+> institution's own form and is never invented: **1) Агенција за вработување** (its calls are
+> already ingested, the documents are the simplest), **2) Министерство за економија и труд**,
+> **3) IPARD** (validated when an IPARD call is open), **4) ФИТР**, last because **its domain
+> fitr.mk lapsed** and now shows a parking page «Buy this domain» (checked 15.10.2026,
+> `sources.md` §6.1); its current address is not known. The recommendation below (ФИТР first)
+> was written before that was known.
+
 **Recommendation: 1) FITR, 2) Employment Agency measures. Explicitly *not* IPARD first.**
 
 FITR has the most structured forms and clearest criteria, and its applicants are the most comfortable
