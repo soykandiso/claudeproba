@@ -20,7 +20,7 @@ the proven pattern.
 
 | # | Source | Segment | Access (observed) | Legal check | Cadence (observed) | Parsing difficulty | Priority |
 |---|--------|---------|-------------------|-------------|--------------------|--------------------|----------|
-| 1 | **ФИТР** — Фонд за иновации и технолошки развој (`fitr.mk`) | Startups / tech | HTML listing → per-call page + PDF guidelines `UNVERIFIED` — **host did not respond** (§6.1) | robots + ToS `UNVERIFIED` | Bursty: several calls/year, clustered `UNVERIFIED` | **Medium** `UNVERIFIED` | ~~1~~ **3** (§6.1) |
+| 1 | **ИНОВА** — Агенција за иновации, научно-технолошки развој и претприемништво (`inova.gov.mk`), successor to **ФИТР** (`fitr.mk`, lapsed) | Startups / tech / SMEs | **WordPress REST API** (`/wp-json/wp/v2/`): posts and pages as JSON, documents in `/wp-content/uploads/` (§6.12) | robots: only `/wp-admin/` disallowed. No ToS found | A new agency, few posts yet; the Greening Business Facility's co-grant calls are to come | **Low** — clean JSON; calls are PDFs | built 15.10.2026 (§6.12) |
 | 2 | **EU Funding & Tenders Portal** (Horizon Europe, SMP, IPA III) | All / international | **JSON search API** (`api.tech.ec.europa.eu/search-api`, public key `SEDIA`) + per-topic JSON (`…/data/topicDetails/<id>.json`). No HTML scraping needed | robots: portal paths allowed. Reuse terms not yet read — P3 s43 | Continuous: 1.405 open/forthcoming topics on 13.09.2026 | **Low** for metadata. Eligible countries live in the linked call-document PDF, not the JSON | **2** — built in P1 s13 for the scope in `decisions.md` D10 (§6.6) |
 | 3 | **Агенција за вработување на РСМ** (`av.gov.mk`) | SME employment | **JSON endpoint** behind the listing: `POST /services/ServiceJobAnnouncements.asmx/GetActiveEmploymentMeasures` (full archive since 2016) and `…DescriptionForBusinessMk` with `{detailId}` (full call text as HTML). The HTML listing itself is empty without JavaScript | robots allows `/services/`; **disallows `*.pdf`**, which the JSON makes unnecessary. No ToS published | 20–44 announcements/year (2016–2025); 10 so far in 2026. Peaks May–June and September | **Low-medium** — clean JSON; description HTML splits numbers across spans (§6.3) | ~~3~~ **1** — built in P1 s11 (§6.1) |
 | 4 | **Министерство за економија и труд** (`www.economy.gov.mk`, attachments on `portal.mdt.gov.mk`) | SME / trade | Server-rendered HTML: "Јавни огласи" and "Завршени јавни огласи" are separate listings, so call-vs-news is **not** a problem. Call page = title, deadline, attachment links. Call text is in PDF or DOCX attachments | robots: only `/login` disallowed on both hosts. No ToS published | ~14 closed calls with deadlines in 2024–2026 (3 / 8 / 3); archive starts 2024. Deadlines cluster Aug and Nov | **High** — both open calls' PDFs have **no text layer** (glyphs exported as images); one call is DOCX only (§6.2) | 4 |
@@ -402,3 +402,30 @@ applied where the Macedonian one demonstrably failed, so it cannot corrupt Cyril
   the `%` pass, which found nothing here — this call has no rates.
 - The source PDFs are too large to commit, so the test set is the recorded **word tables**
   (`tests/fixtures/economy/call-1.words.json`, pages 1 and 12).
+
+### 6.12 ИНОВА, ФИТР's successor — 15.10.2026
+
+The owner pointed out that ФИТР is now **ИНОВА**, `https://inova.gov.mk/`: «Агенција за иновации,
+научно-технолошки развој и претприемништво». The site's own pages show it took over ФИТР's
+innovation financing *and* the entrepreneurship agency's (АППРМ) programmes: the pages marked
+`-old` in its sitemap are АППРМ's voucher consulting, mentoring and SME observatory. Its first
+news is from April 2026; its programmes are in Службен весник 53/2026 and 65/2026.
+
+- **Access.** WordPress 7, with the public REST API. `robots.txt` disallows only `/wp-admin/` and
+  names `wp-sitemap.xml`. The fetcher reads the API, not the themed HTML, so a redesign of the site
+  does not break it (`app/ingestion/sources/inova.py`).
+- **Where calls are.** Posts whose title says «повик», with the documents they link from
+  `/wp-content/uploads/`; and the «Јавни повици» page (id 4005), each linked document one call.
+  On 15.10.2026 no post was a call, and the page held two calls *for consultants and
+  business-support organisations* (voucher programme 4/2025), not for companies: the model will
+  read them as not funding calls, once.
+- **What is coming.** The **Greening Business Facility** (EU and Government, EUR 25m,
+  15.01.2026–15.01.2030, about 300 SMEs): advisory support up to EUR 5.000 (20% co-financing),
+  small co-grants up to EUR 30.000 (30%), large co-grants up to EUR 300.000 (50%). Calls are
+  announced, not yet published. This is the source to watch.
+- **Self-employment with a grant 2026** is posted by ИНОВА but applied for only at the Employment
+  Agency's centres: it is АВ's call, which the АВ fetcher already reads. The post title has no
+  «повик», so it is not fetched twice.
+- **From this machine** the server dropped one request with a percent-encoded Cyrillic slug in the
+  query string; by numeric id it answered. The fetcher uses ids.
+- `active: true`, priority 2, quiet SLA 180 days: a new agency publishes rarely.

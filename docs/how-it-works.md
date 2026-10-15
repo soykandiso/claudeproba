@@ -65,7 +65,7 @@ silently). In order:
 | Министерство за економија и труд | `economy.py` | HTML listings + PDFs | yes |
 | Град Скопје (and municipalities) | `municipal.py` | an index of PDFs | yes |
 | IPARD agency | `ipard.py` | HTML + PDFs | yes |
-| ФИТР | — | did not respond to reconnaissance (`sources.md` §6.1) | no |
+| ИНОВА (ФИТР's successor) | `inova.py` | its WordPress API (posts and the «Јавни повици» page) | yes |
 | Рачен внес | `manual.py` | URLs you paste in the admin | always |
 
 **Schedule.** On the server, cron runs `flask ingest due` **every 4 hours**
@@ -224,8 +224,7 @@ From `docs/handoff.md` §4, the ones that block launch:
 | **D2** | The domain | Deploy, e-mail to customers, Search Console |
 | **D4** | Your ЕДБ, bank account and bank; the accountant's look at the sample proforma and invoice (`flask invoices sample OUT [--final]`) | No real proforma can be issued; `flask invoices check` fails until then |
 | — | A native reader for the public pages, a lawyer for the terms and privacy policy | Customer-facing text |
-| **Forms** | **Decided (D3): all programmes**, in the order АВ, Economy, IPARD, ФИТР. Each set needs the institution's **official blank application forms** (the owner's copies, or a current call's attachments) | P5 from session 58 |
-| **ФИТР** | Its current website: fitr.mk lapsed (a parking page) | ФИТР's source and its template set |
+| **Forms** | **Decided (D3): all programmes**, in the order АВ, Economy, IPARD, ИНОВА. Each set needs the institution's **official blank application forms** (the owner's copies, or a current call's attachments) | P5 from session 58 |
 | s55 | The real rehearsal: your own profile, a real transfer, the real server | Brief §14's proof that money flows |
 
 Next by the roadmap: **P5 s58, template set 1, the Employment Agency** (s56 the engine and s57 the checklist are built). It needs the Agency's official blank forms.

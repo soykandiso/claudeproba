@@ -109,10 +109,11 @@ both referenced in the crawler's User-Agent. Crawling ministries anonymously is 
 > four. The order is set by which official forms can be had, because a template reproduces the
 > institution's own form and is never invented: **1) Агенција за вработување** (its calls are
 > already ingested, the documents are the simplest), **2) Министерство за економија и труд**,
-> **3) IPARD** (validated when an IPARD call is open), **4) ФИТР**, last because **its domain
-> fitr.mk lapsed** and now shows a parking page «Buy this domain» (checked 15.10.2026,
-> `sources.md` §6.1); its current address is not known. The recommendation below (ФИТР first)
-> was written before that was known.
+> **3) IPARD** (validated when an IPARD call is open), **4) ИНОВА** (ФИТР's successor). fitr.mk lapsed; the owner
+> found the successor the same day, `inova.gov.mk` (`sources.md` §6.12), now ingested. It stays
+> last: it has no call for companies open, and its first will be the Greening Business
+> Facility's co-grants, whose forms do not exist yet. The recommendation below (ФИТР first) was
+> written before any of that was known.
 
 **Recommendation: 1) FITR, 2) Employment Agency measures. Explicitly *not* IPARD first.**
 

@@ -53,4 +53,11 @@ so the elided URLs are recoverable: they are the `.pdf` links inside `economy/ca
 above; the PDFs themselves stay out of the repo.
 | IPARD call 01/2025, long version (no text layer) | https://www.ipardpa.gov.mk/Upload/Documents/Јавен Повик 01_2025 Долга верзија.pdf | 5,2 MB | `461051a3c096ec2d20a94a8e63428c46d629fd870eb25eb08312bc1de05c3b2f` |
 
-No FITR fixtures: the host did not respond (`docs/sources.md` §6.1).
+No FITR fixtures: the host did not respond (`docs/sources.md` §6.1), and fitr.mk has since lapsed.
+ФИТР's successor is ИНОВА, captured 15.10.2026 with the crawler's own client (§6.12):
+
+| File | Source | Note | SHA-256 |
+|---|---|---|---|
+| `inova/posts.json` | https://inova.gov.mk/wp-json/wp/v2/posts?per_page=100&_fields=id,date,modified,link,title | 13 posts, none a call | `29044a0656f7bde3…` |
+| `inova/post-2924.json` | https://inova.gov.mk/wp-json/wp/v2/posts/2924?_fields=id,date,modified,link,title,content | «Самовработување со грант 2026» | `2409476f9a235525…` |
+| `inova/page-4005.json` | https://inova.gov.mk/wp-json/wp/v2/pages/4005?_fields=id,date,modified,link,title,content | «Јавни повици»: two calls for consultants | `df645503dd5c1eb1…` |

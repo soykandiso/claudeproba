@@ -108,19 +108,25 @@ sources:
     priority: 6
     active: true
 
-  - slug: fitr
-    name_mk: Фонд за иновации и технолошки развој
-    name_en: Fund for Innovation and Technology Development
-    institution: ФИТР
-    base_url: https://fitr.mk
-    access_method: html
+  # ИНОВА took over from ФИТР (and the entrepreneurship agency) in 2026; fitr.mk lapsed
+  # (sources.md §6.1, §6.12). Read through WordPress's public REST API (app/ingestion/sources/inova.py).
+  - slug: inova
+    name_mk: ИНОВА – Агенција за иновации, научно-технолошки развој и претприемништво
+    name_en: INOVA – Agency for Innovation, Scientific and Technological Development and Entrepreneurship
+    institution: ИНОВА
+    base_url: https://inova.gov.mk
+    access_method: api
+    # A new agency: few posts yet. The Greening Business Facility (EUR 25m, 2026-2030)
+    # is to open calls for co-grants; until then the source may be quiet for months.
     expected_cadence_days: 60
     staleness_sla_days: 180
     rate_limit_rps: 0.2
     terms_url: null
-    terms_note: UNVERIFIED -- fitr.mk lapsed (a parking page, 15.10.2026); the new address is unknown (sources.md §6.1)
-    priority: 3
-    active: false
+    terms_note: >-
+      robots.txt disallows only /wp-admin/ (checked 15.10.2026); the REST API is public.
+      No terms of use found on the site; reuse of quotes follows legal-notes §3.
+    priority: 2
+    active: true
 
   # Calls the operator pastes by URL (docs/sources.md §3, app/ingestion/sources/manual.py).
   # Inactive on purpose: never scheduled, never judged by `flask ingest health`; each

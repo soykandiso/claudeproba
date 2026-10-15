@@ -209,7 +209,7 @@ first**, despite it being the highest-value segment — reasoning is in that doc
 | 58–61 | Template set 1: **Агенција за вработување** (D3, 15.10.2026: all programmes) | A complete draft package for a real call, human-reviewed |
 | 62–65 | Template set 2: **Министерство за економија и труд** | Same |
 | 66–69 | Template set 3: **IPARD** | Same, on an open IPARD call |
-| 70–73 | Template set 4: **ФИТР**, once its current site is known (fitr.mk lapsed, `sources.md` §6.1) | Same |
+| 70–73 | Template set 4: **ИНОВА** (ФИТР's successor), on the Greening Business Facility's first co-grant call | Same |
 | 66 | AI-assisted labelling and "draft for human completion" copy throughout | Labelling appears on the artefact itself, not only on the web page |
 | 67 | Package delivery + review gate | **Brief P5:** a complete draft package produced and human-reviewed for a real call |
 
