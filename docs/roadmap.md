@@ -204,7 +204,7 @@ first**, despite it being the highest-value segment — reasoning is in that doc
 
 | # | Task | Acceptance |
 |---|------|-----------|
-| 56 | Template engine: `docxtpl`, field registry, unfilled-field marking | Financial and legal fields are **marked as requiring the applicant's real data, never invented** (brief §8) |
+| 56 | Template engine: `docxtpl`, field registry, unfilled-field marking — *built 15.10.2026: `app/documents/engine.py` over `config/document_fields.yaml` (each field's label, type and **source**). A field whose source is `applicant` (every money field, exact counts, people, declarations, signatures) is never filled: it prints «[Пополнува барателот: …]», highlighted, and handing it a value raises `InventedValue`. Any other field without a value prints «[Недостасува: …]». `render` returns the .docx with `filled` and `unfilled`. Templates write every field `{{r key }}`: a plain `{{ key }}` makes docxtpl drop a highlighted marker silently, so `check` refuses it, as it refuses unknown fields and `{% %}` logic; `flask documents check`* | Financial and legal fields are **marked as requiring the applicant's real data, never invented** (brief §8) |
 | 57 | Checklist model and rendering | Every package ships a list of what the applicant must still provide |
 | 58–61 | Template set 1 | A complete draft package for a real call, human-reviewed |
 | 62–65 | Template set 2 | Same |

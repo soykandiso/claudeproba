@@ -1,0 +1,56 @@
+# The fields a document template may use (roadmap P5 s56, brief §8). app/documents/engine.py
+# reads this; a template naming any other field is refused by `flask documents check`.
+#
+# In a template every field is written {{r key }} (with the r): a plain {{ key }} would drop
+# the highlighted marker without a trace, and the engine refuses it.
+#
+# source: where a value may come from. This is the rule brief §8 makes into code.
+#   buyer      the applicant's legal identity, as typed on the order (never sent to a model)
+#   profile    the profile's answers, as the customer gave them
+#   call       the call, as published after review
+#   system     made here (today's date)
+#   applicant  ONLY the applicant can supply it: money, exact counts, declarations, signatures.
+#              Never filled, whatever is passed: passing a value is refused as an invention.
+#              It always prints «[Пополнува барателот: <label>]», highlighted.
+# A field from another source with no value prints «[Недостасува: <label>]», highlighted.
+#
+# type: text | date (dd.mm.yyyy) | money (8.900,00 МКД) | number
+#
+# A field is renamed or removed only with every template that uses it: the check finds them.
+
+fields:
+  # -- the applicant, from the order's buyer details
+  applicant_name: {label_mk: "Назив на барателот", source: buyer, type: text}
+  applicant_address: {label_mk: "Седиште на барателот", source: buyer, type: text}
+  applicant_edb: {label_mk: "ЕДБ на барателот", source: buyer, type: text}
+  applicant_embs: {label_mk: "ЕМБС на барателот", source: buyer, type: text}
+
+  # -- the applicant, from the profile
+  applicant_legal_form: {label_mk: "Правна форма", source: profile, type: text}
+  applicant_municipality: {label_mk: "Општина на седиштето", source: profile, type: text}
+  applicant_activity: {label_mk: "Основна дејност (НКД)", source: profile, type: text}
+  applicant_size: {label_mk: "Големина на субјектот", source: profile, type: text}
+  applicant_founded: {label_mk: "Година на основање", source: profile, type: number}
+
+  # -- the call
+  call_title: {label_mk: "Назив на јавниот повик", source: call, type: text}
+  call_institution: {label_mk: "Институција што го објавила повикот", source: call, type: text}
+  call_deadline: {label_mk: "Рок за пријавување", source: call, type: date}
+
+  # -- made here
+  document_date: {label_mk: "Датум на документот", source: system, type: date}
+
+  # -- only the applicant: identity of people, money, counts, declarations
+  responsible_person: {label_mk: "Одговорно лице (име и презиме)", source: applicant, type: text}
+  contact_phone: {label_mk: "Телефон за контакт", source: applicant, type: text}
+  contact_email: {label_mk: "Е-пошта за контакт", source: applicant, type: text}
+  bank_account: {label_mk: "Жиро сметка на барателот", source: applicant, type: text}
+  employees_exact: {label_mk: "Број на вработени на денот на пријавата", source: applicant, type: number}
+  revenue_last_year: {label_mk: "Вкупен приход во претходната година", source: applicant, type: money}
+  project_budget_total: {label_mk: "Вкупна вредност на проектот", source: applicant, type: money}
+  requested_amount: {label_mk: "Барани средства", source: applicant, type: money}
+  own_contribution: {label_mk: "Сопствено учество", source: applicant, type: money}
+  projected_revenue: {label_mk: "Проектиран приход по проектот", source: applicant, type: money}
+  declaration_no_tax_debt: {label_mk: "Изјава за немање долг кон државата", source: applicant, type: text}
+  declaration_no_double_funding: {label_mk: "Изјава за неискористени други средства за истата намена", source: applicant, type: text}
+  signature_and_stamp: {label_mk: "Потпис на одговорното лице и печат", source: applicant, type: text}

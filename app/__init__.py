@@ -80,6 +80,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     from app.orders.fulfil import cli as orders_cli
 
     app.cli.add_command(orders_cli)
+    # Document templates (app/documents, P5 s56).
+    from app.documents import cli as documents_cli
+
+    app.cli.add_command(documents_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 
