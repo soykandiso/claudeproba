@@ -1,0 +1,26 @@
+title_mk: Барање – ОО 2026 (стандарди и извештаи за општествено прифатливи практики)
+source_url: https://portal.mdt.gov.mk/post-body-files/javen-povik-za-nadomesti-standardi-od-oblasta-na-dokumenti-i-izvestai-od-blasta-na-prerabotuvacka-industrija-potrebni-za-poddrska-na-razvivanje-oddrzuvanje-i-primenuvanje-na-socijalno-prifatlivi-praktiki-na-delovnite-file-1s9N.doc
+source_sha256: 02bc4daa8853d24ccd95c1c496f49094425d9f02d6affda9f0e26ad658311e5d
+retrieved: '2026-10-16'
+fill_by_hand_mk: 'Во барањето: главните производи и услуги, продажбата за 2025 и проекцијата за 2026,
+  сертификациското тело, видот на сертификација (само еден), датумот на договорот и трошоците во денари'
+package_note_mk: Барањето со прилозите се доставува до Министерството за економија и труд, како што е
+  наведено во повикот. Проверете ја последната верзија на повикот пред да поднесете.
+attachments:
+- key: notarska_zaverka
+  note_mk: 'Според барањето: двете изјави од пакетот, во оригинал и заверени на нотар.'
+- key: tekovna_sostojba
+  note_mk: 'Според барањето: не постара од 2 (два) месеци.'
+- key: ujp_potvrda
+  note_mk: 'Според барањето: не постаро од 2 (два) месеци.'
+- key: ekonomsko_finansiska_informacija
+  note_mk: 'Според барањето: не постара од 2 (два) месеци, со позитивно работење.'
+- key: dogovor_izveduvac
+  note_mk: 'Според барањето: со сертификациското тело или телото за оценување, склучен пред датумот на
+    сертификатот или извештајот.'
+- key: sertifikat_izvestaj
+  note_mk: 'Според барањето: од акредитирано тело, издаден во 2025 или 2026 година.'
+- key: fakturi
+- key: izvod_plakanje
+- key: administrativna_taksa
+  note_mk: 'Според барањето: 250,00 и 50,00 денари административна такса; сметките се во барањето.'

@@ -1,0 +1,11 @@
+title_mk: Изјава за доделена државна помош 2026
+source_url: https://portal.mdt.gov.mk/post-body-files/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii-file-WNW2.doc
+source_sha256: 2bacb03eb7f4d5f8c9c621a7de7519b1e8c2a7dc74c1ad00312e56eee97c5ce6
+retrieved: '2026-10-16'
+fill_by_hand_mk: Табелата за примената државна помош од мало значење по години и вкупниот износ, името
+  на одговорното лице во изјавите А) и Б), местото и датумот
+package_note_mk: Барањето со прилозите се доставува до Министерството за економија и труд, како што е
+  наведено во повикот. Проверете ја последната верзија на повикот пред да поднесете.
+attachments:
+- key: notarska_zaverka
+  note_mk: 'Според барањето: двете изјави од пакетот, во оригинал и заверени на нотар.'

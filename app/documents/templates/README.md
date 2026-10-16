@@ -16,4 +16,6 @@ One folder per programme, one Word file per document and version:
       note_mk: Не постара од шест месеци.   # the call's own condition, if it has one
     - key: ujp_potvrda
   ```
+- Templates are made from the institution's own form, never retyped: `ops/dev/build_<programme>_templates.py`
+  lists one `FormSpec` per form (`app/documents/forms.py`) and rebuilds them.
 - `flask documents check` lints every template here; it must print nothing but the count.

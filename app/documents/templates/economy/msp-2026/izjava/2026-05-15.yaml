@@ -1,0 +1,10 @@
+title_mk: Изјава 2026 (дека субјектот не користел средства од Буџетот за истата намена)
+source_url: https://portal.mdt.gov.mk/post-body-files/javen-povik-za-finansiska-poddrska-na-mikro-mali-i-sredni-pretprijatija-i-zanaetcii-file-uVLz.docx
+source_sha256: e517de62eb1455b7aa19e765e9e424e5b21e3cdfd38a8d26709686618c962ca2
+retrieved: '2026-10-16'
+fill_by_hand_mk: Адресата на седиштето (улица и место) во изјавата
+package_note_mk: Барањето со прилозите се доставува до Министерството за економија и труд, како што е
+  наведено во повикот. Проверете ја последната верзија на повикот пред да поднесете.
+attachments:
+- key: notarska_zaverka
+  note_mk: 'Според барањето: двете изјави од пакетот, во оригинал и заверени на нотар.'

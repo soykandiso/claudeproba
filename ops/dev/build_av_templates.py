@@ -20,14 +20,10 @@ one checklist line saying so. «Пополнува Агенцијата» is nev
 
 import argparse
 import datetime as dt
-import hashlib
-from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 
-import docx
-import yaml
-
-from app.documents import TEMPLATES, derive, engine
+from app.documents.forms import FormSpec, build
 
 OBRASCI = "https://av.gov.mk/content/Обрасци/"
 RETRIEVED = dt.date(2026, 10, 15)
@@ -37,25 +33,14 @@ COMMON_NOTE = (
 )
 
 
-@dataclass
-class Form:
-    slug: str
-    title_mk: str
-    file: str  # as served
-    converted: str | None  # the .docx Word made of a .doc, if any
-    version: str  # the form's own date (the server's Last-Modified)
-    sha256: str  # of the file as served
-    cells: list[tuple[str, str]]
-    appended: list[tuple[str, str]] = field(default_factory=list)
-    signature_after: str | None = None
-    by_hand_mk: str | None = None
-    attachments: list[dict] = field(default_factory=list)
+Form = partial(FormSpec, programme="av", retrieved=RETRIEVED, package_note_mk=COMMON_NOTE)
 
 
 FORMS = [
     Form(
         slug="ppr",
         title_mk="Пријава за потреба од работник (образец ППР)",
+        source_url=OBRASCI + "PPR 24 word.docx",
         file="PPR 24 word.docx",
         converted=None,
         version="2024-04-11",
@@ -84,6 +69,7 @@ FORMS = [
     Form(
         slug="oglas-praktikant",
         title_mk="Оглас за практикантска работа",
+        source_url=OBRASCI + "Oglas za praktikant.doc",
         file="Oglas za praktikant.doc",
         converted="Oglas za praktikant.docx",
         version="2022-09-16",
@@ -104,6 +90,7 @@ FORMS = [
     Form(
         slug="ovlastuvanje-praktikant",
         title_mk="Овластување за пријавување на практикант/и",
+        source_url=OBRASCI + "Prijava praktikant.docx",
         file="Prijava praktikant.docx",
         converted=None,
         version="2022-09-16",
@@ -124,41 +111,6 @@ FORMS = [
         ),
     ),
 ]
-
-
-def build(form: Form, forms_dir: Path) -> Path:
-    served = (forms_dir / form.file).read_bytes()
-    digest = hashlib.sha256(served).hexdigest()
-    if not digest.startswith(form.sha256):
-        raise SystemExit(f"{form.file}: not the form this template was made from ({digest[:16]})")
-    document = docx.Document(forms_dir / (form.converted or form.file))
-    for label, key in form.cells:
-        derive.place(document, label, key)
-    for label, key in form.appended:
-        derive.append(document, label, key)
-    if form.signature_after:
-        derive.mark_after(document, form.signature_after, "signature_and_stamp")
-    template = derive.to_bytes(document)
-    problems = engine.check(template)
-    if problems:
-        raise SystemExit(f"{form.slug}: {problems}")
-
-    out = TEMPLATES / "av" / form.slug / f"{form.version}.docx"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(template)
-    manifest = {
-        "title_mk": form.title_mk,
-        "source_url": OBRASCI + form.file,
-        "source_sha256": digest,
-        "retrieved": RETRIEVED.isoformat(),
-        "fill_by_hand_mk": form.by_hand_mk,
-        "package_note_mk": COMMON_NOTE,
-        "attachments": form.attachments,
-    }
-    out.with_suffix(".yaml").write_text(
-        yaml.safe_dump(manifest, allow_unicode=True, sort_keys=False, width=100), encoding="utf-8"
-    )
-    return out
 
 
 def main() -> None:

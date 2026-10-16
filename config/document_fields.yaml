@@ -46,6 +46,12 @@ fields:
   contact_person: {label_mk: "Лице за контакт", source: applicant, type: text}
   contact_phone: {label_mk: "Телефон за контакт", source: applicant, type: text}
   contact_email: {label_mk: "Е-пошта за контакт", source: applicant, type: text}
+  contact_details: {label_mk: "Телефон, е-пошта и веб-страница", source: applicant, type: text}
+  website: {label_mk: "Веб-страница на субјектот", source: applicant, type: text}
+  bank_name: {label_mk: "Банка депонент", source: applicant, type: text}
+  funding_purpose: {label_mk: "Намена на бараните средства", source: applicant, type: text}
+  activity_description: {label_mk: "Краток опис на дејноста", source: applicant, type: text}
+  costs_description: {label_mk: "Опис на направените трошоци", source: applicant, type: text}
   bank_account: {label_mk: "Жиро сметка на барателот", source: applicant, type: text}
   employees_exact: {label_mk: "Број на вработени на денот на пријавата", source: applicant, type: number}
   revenue_last_year: {label_mk: "Вкупен приход во претходната година", source: applicant, type: money}
