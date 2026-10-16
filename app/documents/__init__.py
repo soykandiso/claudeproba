@@ -33,5 +33,13 @@ def check_command(paths):
             click.echo(f"{path}: {problem}")
         failed += bool(problems)
     click.echo(f"{len(files) - failed} of {len(files)} templates can be filled")
+    if not paths:  # the whole set: the packages that name the templates too
+        from app.documents import packages
+
+        problems = packages.check()
+        for problem in problems:
+            click.echo(f"config/packages.yaml: {problem}")
+        click.echo(f"{len(packages.catalogue())} packages in config/packages.yaml")
+        failed += len(problems)
     if failed:
         raise SystemExit(1)

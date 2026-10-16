@@ -32,6 +32,11 @@ class Report(_Strict):
     delivery_working_days: int = Field(gt=0)
 
 
+class Package(_Strict):
+    net: int = Field(gt=0)
+    orderable: bool
+
+
 class Monitoring(_Strict):
     monthly_net: int = Field(gt=0)
     yearly_net: int = Field(gt=0)
@@ -41,6 +46,7 @@ class Monitoring(_Strict):
 class Prices(_Strict):
     vat_percent: int = Field(ge=0, le=100)
     report: Report
+    package: Package
     monitoring: Monitoring
 
     def gross(self, net: int) -> int:

@@ -415,12 +415,13 @@ CREATE TABLE public.document_package (
 
 CREATE TABLE public.document_template (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    programme_id uuid NOT NULL,
+    programme_id uuid,
     slug character varying(100) NOT NULL,
     version character varying(50) NOT NULL,
     file_path text NOT NULL,
     lang public.lang DEFAULT 'mk'::public.lang NOT NULL,
-    required_fields jsonb DEFAULT '[]'::jsonb NOT NULL
+    required_fields jsonb DEFAULT '[]'::jsonb NOT NULL,
+    sha256 character varying(64)
 );
 
 
@@ -530,7 +531,7 @@ ALTER SEQUENCE public.evidence_id_seq OWNED BY public.evidence.id;
 CREATE TABLE public.generated_document (
     id bigint NOT NULL,
     package_id uuid NOT NULL,
-    template_id uuid NOT NULL,
+    template_id uuid,
     storage_key text NOT NULL,
     format character varying(10) NOT NULL,
     is_ai_assisted boolean DEFAULT true NOT NULL,
@@ -1295,6 +1296,14 @@ ALTER TABLE ONLY public.account
 
 ALTER TABLE ONLY public.chunk
     ADD CONSTRAINT uq_chunk_snapshot_ordinal UNIQUE (snapshot_id, ordinal);
+
+
+--
+-- Name: document_template uq_document_template_file_path; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_template
+    ADD CONSTRAINT uq_document_template_file_path UNIQUE (file_path);
 
 
 --

@@ -22,10 +22,17 @@ class DocumentTemplate(Base):
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    programme_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("programme.id", ondelete="CASCADE"))
+    # A template is a file version (P5 s75): programmes in the registry are mostly one per call,
+    # so a template may be offered for several (config/packages.yaml) and names none here.
+    programme_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("programme.id", ondelete="CASCADE")
+    )
     slug: Mapped[str] = mapped_column(String(100))
     version: Mapped[str] = mapped_column(String(50))
-    file_path: Mapped[str] = mapped_column(Text)
+    # Under app/documents/templates/, e.g. «av/ppr/2024-04-11.docx», and the file's hash:
+    # a delivered package names exactly the bytes it was filled from.
+    file_path: Mapped[str] = mapped_column(Text, unique=True)
+    sha256: Mapped[str | None] = mapped_column(String(64))
     lang: Mapped[Lang] = mapped_column(pg_enum(Lang, "lang"), server_default=text("'mk'"))
     required_fields: Mapped[list] = mapped_column(JSONB, server_default=text("'[]'::jsonb"))
 
@@ -53,7 +60,8 @@ class GeneratedDocument(Base):
     package_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("document_package.id", ondelete="CASCADE")
     )
-    template_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("document_template.id"))
+    # None for the checklist, which the platform makes rather than fills (P5 s75).
+    template_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("document_template.id"))
     storage_key: Mapped[str] = mapped_column(Text)
     format: Mapped[str] = mapped_column(String(10))
     is_ai_assisted: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))

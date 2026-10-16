@@ -22,6 +22,14 @@ report:
   # decision of 13.10.2026). The analysis takes minutes; a person's review is the wait.
   delivery_working_days: 5
 
+# A document package (roadmap P5 s75): the call's official forms filled with the company's
+# data, the applicant's fields marked, the checklist, a person's review. Decided by the user
+# on 16.10.2026: 2.900 МКД without ДДВ. Which calls have one is config/packages.yaml.
+package:
+  net: 2900
+  # Whether packages can be ordered: off until the review screen and delivery exist (s75b).
+  orderable: false
+
 monitoring:
   monthly_net: 1200
   yearly_net: 12000

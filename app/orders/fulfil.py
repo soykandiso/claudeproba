@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 
 from app.models.commerce import Order
 from app.models.enums import OrderState
-from app.orders import states
+from app.orders import service, states
 
 log = logging.getLogger(__name__)
 
@@ -70,8 +70,11 @@ def job(order_id: str) -> dict:
     from app.db import session_factory
     from app.matching import deep
 
-    sessions = session_factory(load_settings())
+    settings = load_settings()
+    sessions = session_factory(settings)
     with sessions() as session:
+        if service.sku_of(session, session.get(Order, uuid.UUID(str(order_id)))) == service.PACKAGE:
+            return package_job(session, settings, uuid.UUID(str(order_id)))
         profile_id = begin(session, uuid.UUID(str(order_id)))
     if profile_id is None:
         return {"order": str(order_id), "skipped": True}
@@ -79,6 +82,29 @@ def job(order_id: str) -> dict:
     with sessions() as session:
         link(session, uuid.UUID(str(order_id)), uuid.UUID(result["match_run_id"]))
     return {"order": str(order_id), **result}
+
+
+def package_job(session: Session, settings, order_id) -> dict:
+    """A paid package order: made, stored and queued for review (P5 s75). Made once."""
+    from app.documents import packages
+    from app.ingestion.snapshots import SnapshotStore
+    from app.models import ReviewQueueItem
+    from app.models.enums import ReviewKind
+    from app.orders import numbering
+
+    made = session.scalar(
+        select(ReviewQueueItem.id).where(
+            ReviewQueueItem.order_id == order_id,
+            ReviewQueueItem.kind == ReviewKind.DOCUMENT_PACKAGE,
+        )
+    )
+    if made is not None or begin(session, order_id) is None:
+        return {"order": str(order_id), "skipped": True}
+    item = packages.prepare(
+        session, SnapshotStore(settings.snapshot_dir), order_id, numbering.today()
+    )
+    session.commit()
+    return {"order": str(order_id), "review_item_id": item}
 
 
 def _queue(settings):

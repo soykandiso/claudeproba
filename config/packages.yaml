@@ -1,0 +1,51 @@
+# Document packages (roadmap P5 s75): which templates make up a package, and which calls it is
+# offered for. app/documents/packages.py reads this; `flask documents check` checks that every
+# document named here exists and can be filled.
+#
+# A call gets a package when its source matches and, if `title_contains` is set, its Macedonian
+# title contains one of the phrases (case ignored). A call matching no package, or more than
+# one, is offered none: two would be a mistake in this file, and a guess is not a product.
+#
+# The forms are the institution's of the year named; a newer call may publish newer forms. The
+# reviewer checks that before approving (the review page shows each form's source and date),
+# and the label tells the applicant to check too.
+
+packages:
+  - slug: av-rabotodavaci
+    title_mk: Образци на Агенцијата за вработување за работодавачи
+    documents:
+      - av/ppr/2024-04-11.docx
+      - av/oglas-praktikant/2022-09-16.docx
+      - av/ovlastuvanje-praktikant/2022-09-16.docx
+    calls:
+      source: av
+
+  - slug: economy-msp
+    title_mk: Финансиска поддршка на микро, мали и средни претпријатија и занаетчии
+    documents:
+      - economy/msp-2026/barane/2026-05-15.docx
+      - economy/msp-2026/izjava-drzavna-pomos/2026-05-15.docx
+      - economy/msp-2026/izjava/2026-05-15.docx
+    calls:
+      source: economy
+      title_contains: ["микро, мали и средни претпријатија и занаетчии"]
+
+  - slug: economy-socijalni-praktiki
+    title_mk: Надоместување на трошоци за општествено прифатливи практики
+    documents:
+      - economy/socijalni-praktiki-2026/barane/2026-08-24.docx
+      - economy/socijalni-praktiki-2026/izjava-drzavna-pomos/2026-08-24.docx
+      - economy/oo-2026/izjava/2026-08-24.docx
+    calls:
+      source: economy
+      title_contains: ["социјално прифатливи практики", "општествено прифатливи практики"]
+
+  - slug: economy-univerziteti
+    title_mk: Соработка помеѓу преработувачката индустрија и универзитетите
+    documents:
+      - economy/univerziteti-2026/barane/2026-08-24.docx
+      - economy/univerziteti-2026/izjava-drzavna-pomos/2026-08-24.docx
+      - economy/oo-2026/izjava/2026-08-24.docx
+    calls:
+      source: economy
+      title_contains: ["универзитетите"]

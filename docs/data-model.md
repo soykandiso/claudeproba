@@ -104,3 +104,9 @@ stored report. The proforma is not stored: it is made again from its row wheneve
 `fiscal_year` equal to the year of `issued_at`; the number carries the same year, because
 `app/orders/numbering.py` numbers a series by kind and `fiscal_year` and dates by Skopje's
 calendar, not the server's UTC clock.
+
+**A document template is a file version** (added 16.10.2026, P5 s75). `document_template.file_path`
+is unique (a path under `app/documents/templates/`, the version in its name) and `sha256` is the
+file's hash, so a delivered package names exactly the bytes it was filled from. `programme_id` is
+optional: programmes in the registry are mostly one per call, and which calls a template serves is
+`config/packages.yaml`. The package's checklist is a `generated_document` with no template.
