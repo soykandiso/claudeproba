@@ -42,6 +42,8 @@ fields:
 
   # -- only the applicant: identity of people, money, counts, declarations
   responsible_person: {label_mk: "Одговорно лице (име и презиме)", source: applicant, type: text}
+  authorized_person: {label_mk: "Овластено лице (име, презиме и ЕМБГ)", source: applicant, type: text}
+  contact_person: {label_mk: "Лице за контакт", source: applicant, type: text}
   contact_phone: {label_mk: "Телефон за контакт", source: applicant, type: text}
   contact_email: {label_mk: "Е-пошта за контакт", source: applicant, type: text}
   bank_account: {label_mk: "Жиро сметка на барателот", source: applicant, type: text}
@@ -51,6 +53,8 @@ fields:
   requested_amount: {label_mk: "Барани средства", source: applicant, type: money}
   own_contribution: {label_mk: "Сопствено учество", source: applicant, type: money}
   projected_revenue: {label_mk: "Проектиран приход по проектот", source: applicant, type: money}
+  basic_salary: {label_mk: "Износ на основната плата за работното место", source: applicant, type: money}
+  intern_monthly_allowance: {label_mk: "Месечен надоместок на практикантот", source: applicant, type: money}
   declaration_no_tax_debt: {label_mk: "Изјава за немање долг кон државата", source: applicant, type: text}
   declaration_no_double_funding: {label_mk: "Изјава за неискористени други средства за истата намена", source: applicant, type: text}
   signature_and_stamp: {label_mk: "Потпис на одговорното лице и печат", source: applicant, type: text}

@@ -61,10 +61,22 @@ class Asked(_Strict):
 
 
 class Manifest(_Strict):
-    """`<version>.yaml` beside a template: what the document is and what it needs attached."""
+    """`<version>.yaml` beside a template: what the document is and what it needs attached.
+
+    A template made from an institution's own form says where the form came from
+    (`source_url`, `source_sha256`, `retrieved`), so a newer form is noticed and the template
+    made again (`ops/dev/build_av_templates.py`). `fill_by_hand_mk` is one checklist line for the
+    blank cells the form leaves to the applicant (the vacancy, the trainee's tasks).
+    """
 
     title_mk: str
     attachments: list[Asked] = []
+    source_url: str | None = None
+    source_sha256: str | None = None
+    retrieved: dt.date | None = None
+    fill_by_hand_mk: str | None = None
+    # Said once at the top of the checklist, however many documents carry it.
+    package_note_mk: str | None = None
 
 
 class ChecklistRefused(ValueError):
@@ -133,6 +145,12 @@ def build(documents: list[tuple[Manifest, engine.Rendered]]) -> list[Item]:
             )
             if manifest.title_mk not in item.documents:
                 item.documents.append(manifest.title_mk)
+        if manifest.fill_by_hand_mk:
+            key = f"by-hand:{manifest.title_mk}"
+            items.setdefault(
+                key,
+                Item("data", key, manifest.fill_by_hand_mk, "applicant", [manifest.title_mk]),
+            )
         for asked in manifest.attachments:
             known = catalogue()[asked.key]
             item = items.setdefault(
@@ -147,12 +165,19 @@ def build(documents: list[tuple[Manifest, engine.Rendered]]) -> list[Item]:
     return sorted(items.values(), key=lambda i: order.index(i.group))
 
 
+def package_notes(manifests: list[Manifest]) -> list[str]:
+    """Each manifest's package note, once, in order."""
+    return list(dict.fromkeys(m.package_note_mk for m in manifests if m.package_note_mk))
+
+
 def as_rows(items: list[Item]) -> list[dict]:
     """For `document_package.checklist`."""
     return [item.as_row() for item in items]
 
 
-def to_docx(items: list[Item], *, applicant: str, call: str, on: dt.date) -> bytes:
+def to_docx(
+    items: list[Item], *, applicant: str, call: str, on: dt.date, notes: list[str] = ()
+) -> bytes:
     """The checklist as the package's last document. Raises ChecklistRefused on a banned phrase."""
     document = docx.Document()
     document.core_properties.language = "mk-MK"
@@ -165,6 +190,8 @@ def to_docx(items: list[Item], *, applicant: str, call: str, on: dt.date) -> byt
         "со вистинските податоци на субјектот. Пред да поднесете, проверете ги барањата "
         "во последната верзија на повикот."
     )
+    for note in notes:
+        document.add_paragraph(note)
     for group, heading in HEADINGS.items():
         mine = [i for i in items if i.group == group]
         if not mine:
