@@ -114,6 +114,10 @@ both referenced in the crawler's User-Agent. Crawling ministries anonymously is 
 > last: it has no call for companies open, and its first will be the Greening Business
 > Facility's co-grants, whose forms do not exist yet. The recommendation below (ФИТР first) was
 > written before any of that was known.
+> **16.10.2026, default taken by Claude:** IPARD's set waits for call 02/2025's forms. Its only
+> published forms (01/2025, Measure 1, closed) are PDFs, the application without a text layer;
+> making templates of them is a new fill-the-PDF path for a call nobody can apply to. The
+> labelling (s66) and delivery (s67) of the АВ and Ministry packages come first.
 
 **Recommendation: 1) FITR, 2) Employment Agency measures. Explicitly *not* IPARD first.**
 

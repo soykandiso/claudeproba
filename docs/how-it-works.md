@@ -227,4 +227,4 @@ From `docs/handoff.md` §4, the ones that block launch:
 | **Forms** | **Decided (D3): all programmes**, in the order АВ, Economy, IPARD, ИНОВА. Each set needs the institution's **official blank application forms** (the owner's copies, or a current call's attachments) | P5 from session 58 |
 | s55 | The real rehearsal: your own profile, a real transfer, the real server | Brief §14's proof that money flows |
 
-Next by the roadmap: **P5, template set 3, IPARD** (built: the engine, the checklist, the Employment Agency's three forms and the Ministry of Economy's eight).
+Next by the roadmap: **P5 s75, package delivery and the review gate** (built: the engine, the checklist, the Employment Agency's three forms, the Ministry of Economy's eight, the draft label; IPARD's set waits for its next call's forms).
