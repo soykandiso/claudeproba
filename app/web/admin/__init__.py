@@ -38,7 +38,7 @@ from app.ingestion.snapshots import CorruptSnapshot, SnapshotStore
 from app.ingestion.sources import manual
 from app.matching.operators import FIELDS, Operator, ProfileField
 from app.models import Call, RawSnapshot, SourceFeed
-from app.models.commerce import Invoice
+from app.models.commerce import Invoice, Order
 from app.models.enums import (
     CriterionKind,
     InvoiceKind,
@@ -50,6 +50,7 @@ from app.models.enums import (
 from app.orders import deliver, fulfil, numbering, reconcile
 from app.reports import render
 from app.review import extraction as review
+from app.review import package as package_review
 from app.review import reasons
 from app.review import report as reports
 from app.web import checkout, csrf, format
@@ -210,12 +211,15 @@ def queue():
         pending, decided = review.queue(db)
         titles = _titles(db, pending + decided)
         report_pending, report_decided = reports.queue(db)
+        package_pending, package_decided = package_review.queue(db)
         return render_template(
             "admin/queue.html",
             pending=pending,
             decided=decided,
             report_pending=report_pending,
             report_decided=report_decided,
+            package_pending=package_pending,
+            package_decided=package_decided,
             report_titles={i.id: _report_title(i) for i in report_pending + report_decided},
             report_state_labels=REPORT_STATE_LABELS,
             titles=titles,
@@ -896,3 +900,137 @@ def confirm_payment(invoice_id: uuid.UUID):
         )
     )
     return redirect(url_for("admin.payments"))
+
+
+# Document packages (roadmap P5 s75): open every document, then approve, which sends it.
+
+
+def _package_or_404(db, item_id: int):
+    item = package_review.get_item(db, item_id)
+    if item is None:
+        abort(404)
+    return item
+
+
+def _render_package(db, item, *, error=None, typed=None):
+    from app.documents import TEMPLATES, checklist
+    from app.models.documents import DocumentPackage
+
+    order = db.get(Order, item.order_id)
+    call = db.get(Call, item.call_id)
+    package = db.scalar(select(DocumentPackage).where(DocumentPackage.order_id == order.id))
+    documents = []
+    for n, document in enumerate(item.payload.get("documents", []), 1):
+        manifest = checklist.manifest_for(TEMPLATES / document["template"])
+        documents.append({"n": n, "title": document["title_mk"], "manifest": manifest})
+    context = {
+        "item": item,
+        "pending": item.state == ReviewState.PENDING,
+        "state_label": REPORT_STATE_LABELS[item.state],
+        "order": order,
+        "number": db.scalar(
+            select(Invoice.number).where(
+                Invoice.order_id == order.id, Invoice.kind == InvoiceKind.PROFORMA
+            )
+        ),
+        "call": call,
+        "documents": documents,
+        "checklist": package.checklist if package else [],
+        "problems": package_review.problems(_store(), item),
+        "error": error,
+        "typed": typed or {},
+    }
+    return render_template("admin/package.html", **context), 422 if error else 200
+
+
+@bp.get("/paket/<int:item_id>")
+def package(item_id: int):
+    with _sessions()() as db:
+        return _render_package(db, _package_or_404(db, item_id))
+
+
+@bp.get("/paket/<int:item_id>/dokument/<int:n>")
+def package_document(item_id: int, n: int):
+    """One document of the package as stored (0 is the checklist), to open in Word."""
+    with _sessions()() as db:
+        item = _package_or_404(db, item_id)
+        documents = item.payload.get("documents", [])
+        if n == 0:
+            key, name = item.payload["checklist_key"], "Што уште треба да подготвите.docx"
+        elif 1 <= n <= len(documents):
+            key, name = documents[n - 1]["key"], f"{n}. {documents[n - 1]['title_mk'][:80]}.docx"
+        else:
+            abort(404)
+    from urllib.parse import quote
+
+    return Response(
+        _store().get(key),
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={
+            "Content-Disposition": 'attachment; filename="document.docx"; '
+            f"filename*=UTF-8''{quote(name)}"
+        },
+    )
+
+
+def _send_package(item_id: int) -> bool:
+    """Deliver an approved package's order. False when it could not be sent."""
+    with _sessions()() as db:
+        item = _package_or_404(db, item_id)
+        order = db.get(Order, item.order_id)
+        if order is None or order.state != OrderState.IN_PROGRESS:
+            return True
+        try:
+            done = deliver.deliver_package(
+                db,
+                _store(),
+                _settings(),
+                order.id,
+                link=url_for("checkout.order", order_id=order.id, _external=True),
+            )
+        except deliver.Refused as refused:
+            db.rollback()
+            flash(f"Пакетот не е испратен до купувачот. {refused}")
+            return False
+    flash(f"Пакетот е испратен на {done.to}, со фактурата {done.invoice_number}.")
+    return True
+
+
+@bp.post("/paket/<int:item_id>/odobri")
+def approve_package(item_id: int):
+    note = request.form.get("note", "")
+    with _sessions()() as db:
+        item = _package_or_404(db, item_id)
+        try:
+            package_review.approve(db, _store(), item, note=note, now=_now())
+        except review.ReviewError as exc:
+            db.rollback()
+            return _render_package(db, _package_or_404(db, item_id), error=str(exc))
+        db.commit()
+    flash(f"Пакетот {item_id} е прифатен.")
+    if not _send_package(item_id):
+        return redirect(url_for("admin.package", item_id=item_id))
+    return redirect(url_for("admin.queue"))
+
+
+@bp.post("/paket/<int:item_id>/zatvori")
+def close_package(item_id: int):
+    note = request.form.get("note", "")
+    with _sessions()() as db:
+        item = _package_or_404(db, item_id)
+        try:
+            package_review.close(db, item, note=note, now=_now())
+        except review.ReviewError as exc:
+            db.rollback()
+            return _render_package(
+                db, _package_or_404(db, item_id), error=str(exc), typed={"note": note}
+            )
+        db.commit()
+    flash(f"Пакетот {item_id} е затворен и нема да се испрати. Нарачката останува во изработка.")
+    return redirect(url_for("admin.queue"))
+
+
+@bp.post("/paket/<int:item_id>/isprati")
+def send_package(item_id: int):
+    _send_package(item_id)
+    return redirect(url_for("admin.package", item_id=item_id))

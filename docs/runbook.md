@@ -403,3 +403,23 @@ show the line to the accountant.
 **Changing a prefix** (`config/invoicing.yaml`) is done on 1 January, with the accountant, or not
 at all. Changed in the middle of a year, numbering refuses to continue rather than start again
 at 0001 under the new prefix.
+
+## 12. A document package is ready for review
+
+A paid package order is made by the worker and waits in `/admin/` under «Пакети што чекаат».
+Open it (`/admin/paket/<id>`) and open **every document in Word**:
+
+- the form is the institution's **current** one: each shows where it was taken from and when.
+  If the institution has published a newer form, close the package with that reason, rebuild the
+  template (`ops/dev/build_<programme>_templates.py`, after downloading the new form), and tell
+  the buyer;
+- the company's details are right (they come from the order and the profile);
+- nothing of the applicant's (amounts, people, declarations, signatures) was filled.
+
+**Approve** sends it at once: the forms and the checklist as Word files, the invoice, and the
+order page then offers the whole package as a ZIP. If the e-mail fails, nothing is spent and
+«Испрати го на купувачот» on the same page sends it again. **Close** needs a reason, sends
+nothing and leaves the order in progress: settle it with the buyer (a refund is by hand).
+
+Which calls are offered a package is `config/packages.yaml`; a call that fits two packages is
+offered none, which `flask documents check` will not catch: read the shortlist after editing it.

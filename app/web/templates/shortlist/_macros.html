@@ -72,6 +72,10 @@
   {% endif %}
   <div class="actions">
     <a class="btn btn--quiet" href="{{ call.canonical_url }}" rel="noopener">Повикот на страницата на институцијата</a>
+    {% if package_for is defined and package_for.get(call.id) and not e.scored.excluded %}
+    {# A package for this call (P5 s75): the institution's forms, filled and checked. #}
+    <a class="btn btn--plain" href="{{ url_for('checkout.package_form', call_id=call.id) }}">{{ _('Пакет на документи, %(price)s', price=price_list().package.net|money) }}</a>
+    {% endif %}
   </div>
 </li>
 {% endmacro %}

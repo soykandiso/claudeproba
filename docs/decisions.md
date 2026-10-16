@@ -26,6 +26,8 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > (`package.net`): the call's official forms filled with the company's data, the checklist and a
 > person's review. Below D1's 25.000–45.000 for a package with a project description and
 > budget tables, which these packages do not yet have.
+> **16.10.2026, default taken by Claude:** a package promises the same **five working days** as a
+> report (the payment e-mail and the order page say so).
 > **13.10.2026, default taken by Claude (P4 s55 rehearsal):** a list with fewer than five open
 > calls costs the same; the order form says how many calls the report will cover before the
 > buyer pays, and no report is sold when none is open. A lower price for fewer calls is the

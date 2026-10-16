@@ -46,7 +46,7 @@ from app.db import session_factory
 from app.matching import intake as questions
 from app.matching.normalise import normalise, to_row
 from app.models import Account, ApplicantProfile, ConsentRecord, EmailEvent
-from app.models.commerce import Invoice, Order
+from app.models.commerce import Invoice, Order, Product
 from app.models.enums import InvoiceKind
 from app.web import csrf
 from app.web.intake import ANSWERS, UNKNOWN
@@ -293,7 +293,8 @@ def home():
         )
         # (label, what it was read as, no link): the grouped list, as on /profil/pregled.
         orders = db.execute(
-            select(Order, Invoice.number)
+            select(Order, Invoice.number, Product.name_mk)
+            .join(Product, Product.id == Order.product_id)
             .outerjoin(
                 Invoice,
                 (Invoice.order_id == Order.id) & (Invoice.kind == InvoiceKind.PROFORMA),

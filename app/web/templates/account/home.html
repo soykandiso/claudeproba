@@ -26,10 +26,10 @@
     <section class="stack" aria-labelledby="orders-h">
     <h2 id="orders-h">{{ _('Нарачки') }}</h2>
     <ul class="rows">
-      {% for order, number in orders %}
+      {% for order, number, product in orders %}
       <li>
         <div class="stack--tight">
-          <a class="rows__link" href="{{ url_for('checkout.order', order_id=order.id) }}"><strong>{{ _('Детален извештај') }}{% if number %}, {{ number }}{% endif %}</strong></a>
+          <a class="rows__link" href="{{ url_for('checkout.order', order_id=order.id) }}"><strong>{{ product }}{% if number %}, {{ number }}{% endif %}</strong></a>
           <span class="small">{{ order_states[order.state] }}, {{ order.created_at|mkdate }}</span>
         </div>
       </li>

@@ -27,8 +27,9 @@ report:
 # on 16.10.2026: 2.900 МКД without ДДВ. Which calls have one is config/packages.yaml.
 package:
   net: 2900
-  # Whether packages can be ordered: off until the review screen and delivery exist (s75b).
-  orderable: false
+  # Whether packages can be ordered (P5 s75b: the review screen and delivery exist). A call is
+  # offered one only when config/packages.yaml has exactly one for it.
+  orderable: true
 
 monitoring:
   monthly_net: 1200

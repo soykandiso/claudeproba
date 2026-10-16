@@ -139,22 +139,43 @@ def deliver(
         report = render.render(session, item, issued=today).pdf
     except render.RenderRefused as refused:
         raise Refused(f"Извештајот не може да се отпечати: {refused}") from None
+    return _finish(
+        session,
+        store,
+        settings,
+        order,
+        paid,
+        report,
+        now=now,
+        subject=f"Вашиот детален извештај, нарачка {paid.number}",
+        template="delivery_mail.txt",
+        context={"calls": len(review.draft_of(item)["calls"]), "link": link},
+        attachments=[(f"Извештај {paid.number}.pdf", report, "application/pdf")],
+    )
+
+
+def _finish(
+    session, store, settings, order, paid, artefact, *, now, subject, template, context, attachments
+) -> Delivered:
+    """Issue the invoice, keep what is sent, mark the order delivered, then mail; all or nothing.
+
+    The e-mail is the last thing before the commit: if it fails, everything rolls back, no
+    invoice number is spent and the order stays in progress.
+    """
+    today = now.astimezone(SKOPJE).date()
     try:
         invoice = _issue(session, order, paid, today)
         invoice_pdf = proforma.pdf(invoice, order, paid)
         invoice.pdf_storage_key = _keep(store, order, invoice_pdf)
-        order.report_storage_key = _keep(store, order, report)
+        # The artefact as delivered: the report's PDF, or a package's archive (P5 s75).
+        order.report_storage_key = _keep(store, order, artefact)
         states.move(order, OrderState.DELIVERED)
         order.delivered_at = now
         session.flush()
 
         account = session.get(Account, order.account_id)
         body = (
-            _environment()
-            .get_template("delivery_mail.txt")
-            .render(
-                proforma=paid, invoice=invoice, link=link, calls=len(review.draft_of(item)["calls"])
-            )
+            _environment().get_template(template).render(proforma=paid, invoice=invoice, **context)
         )
         banned = find_banned(body)
         if banned:
@@ -162,10 +183,10 @@ def deliver(
         mail.send(
             settings,
             account.email,
-            f"Вашиот детален извештај, нарачка {paid.number}",
+            subject,
             body,
             attachments=(
-                (f"Извештај {paid.number}.pdf", report, "application/pdf"),
+                *attachments,
                 (f"{invoice.number}.pdf", invoice_pdf, "application/pdf"),
             ),
         )
@@ -184,3 +205,88 @@ def deliver(
 def stored(store, key: str) -> bytes:
     """A delivered PDF, exactly as it was sent (the store checks it against its hash)."""
     return store.get(key)
+
+
+# ------------------------------------------------------------------ a document package (P5 s75)
+
+DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+CHECKLIST_NAME = "Што уште треба да подготвите"
+
+
+def package_item(session: Session, order: Order) -> ReviewQueueItem | None:
+    """The newest review item of an order's package, whatever its state."""
+    return session.scalar(
+        select(ReviewQueueItem)
+        .where(
+            ReviewQueueItem.order_id == order.id,
+            ReviewQueueItem.kind == ReviewKind.DOCUMENT_PACKAGE,
+        )
+        .order_by(ReviewQueueItem.id.desc())
+    )
+
+
+_NOT_IN_FILENAMES = set('\\/:*?"<>|')
+
+
+def _filename(n: int, title: str) -> str:
+    safe = "".join(c for c in title if c not in _NOT_IN_FILENAMES).strip()
+    return f"{n}. {safe[:80]}.docx"
+
+
+def package_files(store, item: ReviewQueueItem) -> list[tuple[str, bytes]]:
+    """The package's documents as stored, named in order, the checklist last."""
+    files = [
+        (_filename(n, d["title_mk"]), store.get(d["key"]))
+        for n, d in enumerate(item.payload["documents"], 1)
+    ]
+    files.append((f"{CHECKLIST_NAME}.docx", store.get(item.payload["checklist_key"])))
+    return files
+
+
+def _archive(files: list[tuple[str, bytes]]) -> bytes:
+    import io
+    import zipfile
+
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, content in files:
+            archive.writestr(name, content)
+    return out.getvalue()
+
+
+def deliver_package(
+    session: Session,
+    store,
+    settings,
+    order_id,
+    *,
+    link: str,
+    now: dt.datetime | None = None,
+) -> Delivered:
+    """Send an approved package and its invoice, or raise Refused having changed nothing."""
+    now = now or numbering.now()
+    order = session.get(Order, order_id)
+    if order is None:
+        raise Refused("Нема таква нарачка.")
+    if order.state == OrderState.DELIVERED:
+        raise Refused("Нарачката е веќе испорачана.")
+    if order.state != OrderState.IN_PROGRESS:
+        raise Refused(f"Нарачката не е во изработка (состојба: {order.state}).")
+    item = package_item(session, order)
+    if item is None or item.state not in render.RENDERABLE:
+        raise Refused("Пакетот за оваа нарачка уште не е прифатен.")
+    files = package_files(store, item)
+    paid = _proforma(session, order)
+    return _finish(
+        session,
+        store,
+        settings,
+        order,
+        paid,
+        _archive(files),
+        now=now,
+        subject=f"Вашиот пакет на документи, нарачка {paid.number}",
+        template="delivery_package_mail.txt",
+        context={"title": item.payload["title_mk"], "link": link},
+        attachments=[(name, content, DOCX) for name, content in files],
+    )

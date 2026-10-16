@@ -46,10 +46,22 @@ def _sessions():
     return session_factory(load_settings())
 
 
+PACKAGE_ENDPOINTS = {"checkout.package_form", "checkout.place_package"}
+REPORT_ENDPOINTS = {"checkout.form", "checkout.place"}
+
+
 @bp.before_request
 def _open_for_orders():
-    # The prices say whether reports can be ordered yet (config/prices.yaml).
-    if not prices().report.orderable:
+    # The prices say what can be ordered yet (config/prices.yaml): each product by its own
+    # switch, and the order pages while either is on.
+    p = prices()
+    if request.endpoint in PACKAGE_ENDPOINTS:
+        allowed = p.package.orderable
+    elif request.endpoint in REPORT_ENDPOINTS:
+        allowed = p.report.orderable
+    else:
+        allowed = p.report.orderable or p.package.orderable
+    if not allowed:
         abort(404)
 
 
@@ -152,6 +164,96 @@ def place():
     return redirect(url_for("checkout.order", order_id=order_id, sent="1" if sent else "0"))
 
 
+# ------------------------------------------------------------------ a document package (P5 s75)
+
+
+def _package_call(db, call_id):
+    """The call and its package, or 404: published, open, with exactly one package."""
+    from app.documents import packages
+    from app.models import Call, SourceFeed
+
+    call = db.get(Call, call_id)
+    if call is None or not call.is_published:
+        abort(404)
+    if call.deadline_at is not None and call.deadline_at <= numbering.now():
+        abort(404)  # a package for a call that has closed is not sold
+    source = db.get(SourceFeed, call.source_feed_id)
+    package = packages.for_call(source.slug, call.title_mk)
+    if package is None:
+        abort(404)
+    return call, package
+
+
+def _package_page(db, account_id, call, package, typed, errors, status=200):
+    from app.documents import TEMPLATES, checklist
+
+    net = prices().package.net
+    titles = [checklist.manifest_for(TEMPLATES / d).title_mk for d in package.documents]
+    included = [*titles, "Што уште треба да подготвите"]  # the checklist comes last
+    profile = accounts_web._latest(db, account_id)
+    return render_template(
+        "checkout/package_form.html",
+        call=call,
+        package=package,
+        included=included,
+        net=net,
+        gross=prices().gross(net),
+        typed=typed,
+        errors=errors,
+        has_profile=profile is not None,
+    ), status
+
+
+@bp.get("/paket/<uuid:call_id>")
+def package_form(call_id: uuid.UUID):
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    with _sessions()() as db:
+        call, package = _package_call(db, call_id)
+        return _package_page(db, account_id, call, package, {}, {})
+
+
+@bp.post("/paket/<uuid:call_id>")
+def place_package(call_id: uuid.UUID):
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    typed, errors = _clean(request.form)
+    with _sessions()() as db:
+        call, package = _package_call(db, call_id)
+        profile = accounts_web._latest(db, account_id)
+        if profile is None:
+            return redirect(url_for("intake.form"))
+        if errors:
+            return _package_page(db, account_id, call, package, typed, errors, 422)
+        order, _ = service.create_package(
+            db,
+            account_id,
+            profile.id,
+            call.id,
+            service.Buyer(
+                typed["name"], typed["address"], typed["edb"] or None, typed["embs"] or None
+            ),
+        )
+        db.commit()
+        order_id = order.id
+        sent = _mail_proforma(db, order)
+    return redirect(url_for("checkout.order", order_id=order_id, sent="1" if sent else "0"))
+
+
+def _what(db, order: Order) -> dict:
+    """What the order is for, as its pages and mails say it: a report, or a call's package."""
+    from app.models import Call
+    from app.models.documents import DocumentPackage
+
+    if service.sku_of(db, order) != service.PACKAGE:
+        return {"is_package": False, "call_title": None}
+    package = db.scalar(select(DocumentPackage).where(DocumentPackage.order_id == order.id))
+    call = db.get(Call, package.call_id) if package else None
+    return {"is_package": True, "call_title": call.title_mk if call else None}
+
+
 def _mail_proforma(db, order: Order) -> bool:
     """The proforma to the account's address, as a PDF. False when it could not be sent."""
     invoice = _proforma(db, order.id)
@@ -186,6 +288,7 @@ def mail_paid(db, order_id) -> bool:
                 invoice=invoice,
                 days=prices().report.delivery_working_days,
                 link=url_for("checkout.order", order_id=order.id, _external=True),
+                **_what(db, order),
             ),
         )
         return True
@@ -220,6 +323,7 @@ def order(order_id: uuid.UUID):
             invoice=_proforma(db, found.id),
             seller=proforma.seller(),
             sent=request.args.get("sent"),
+            **_what(db, found),
         )
 
 
@@ -256,6 +360,8 @@ def _delivered_pdf(order_id: uuid.UUID, which: str):
         if found.state not in (OrderState.DELIVERED, OrderState.REFUNDED):
             abort(404)
         if which == "report":
+            if service.sku_of(db, found) == service.PACKAGE:
+                abort(404)  # a package is served as its archive (package_zip)
             key = found.report_storage_key
             name = f"Извештај {_proforma(db, found.id).number}.pdf"
         else:
@@ -279,6 +385,30 @@ def _delivered_pdf(order_id: uuid.UUID, which: str):
 @bp.get("/<uuid:order_id>/izveshtaj.pdf")
 def report_pdf(order_id: uuid.UUID):
     return _delivered_pdf(order_id, "report")
+
+
+@bp.get("/<uuid:order_id>/paket.zip")
+def package_zip(order_id: uuid.UUID):
+    """A delivered package, exactly as it was sent: the forms and the checklist."""
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    with _sessions()() as db:
+        found = _own_order(db, order_id, account_id)
+        if found.state not in (OrderState.DELIVERED, OrderState.REFUNDED):
+            abort(404)
+        if service.sku_of(db, found) != service.PACKAGE:
+            abort(404)
+        key, number = found.report_storage_key, _proforma(db, found.id).number
+    document = deliver.stored(SnapshotStore(current_app.extensions["settings"].snapshot_dir), key)
+    return current_app.response_class(
+        document,
+        mimetype="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="paket.zip"; '
+            f"filename*=UTF-8''{quote(f'Пакет {number}.zip')}"
+        },
+    )
 
 
 @bp.get("/<uuid:order_id>/faktura.pdf")

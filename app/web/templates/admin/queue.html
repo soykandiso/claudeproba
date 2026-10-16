@@ -77,6 +77,48 @@
     {% endif %}
   </section>
 
+  {# Document packages (P5 s75): nothing is sent to a buyer until it is approved here. #}
+  <section class="stack-lg" aria-labelledby="packages-h">
+    <div class="stack">
+      <h2 id="packages-h">Пакети што чекаат{% if package_pending %}, {{ package_pending|length }}{% endif %}</h2>
+      <p class="soft">Ниту еден пакет не стига до купувач додека не го прифатите тука. Прифаќањето го испраќа веднаш, со фактурата.</p>
+    </div>
+    {% if package_pending %}
+    <ul class="rows">
+      {% for item in package_pending %}
+      <li>
+        <div class="stack">
+          <span class="small soft">Платена нарачка</span>
+          <a class="rows__link break" href="{{ url_for('admin.package', item_id=item.id) }}"><strong>{{ item.payload.title_mk }}</strong></a>
+        </div>
+        <div class="rows__meta small">
+          <span>Ставка <span class="id id--14">{{ item.id }}</span></span>
+          <span class="soft">{{ item.created_at|datetime_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Нема пакети за преглед. Пакет се појавува кога ќе се уплати нарачка за пакет на документи.</p>
+    {% endif %}
+    {% if package_decided %}
+    <details class="why">
+      <summary>Последни одлуки за пакети, {{ package_decided|length }}</summary>
+      <ul class="rows">
+        {% for item in package_decided %}
+        <li class="rows--closed">
+          <div class="stack">
+            <span class="small">{{ report_state_labels[item.state] }}</span>
+            <a class="rows__link break" href="{{ url_for('admin.package', item_id=item.id) }}">{{ item.payload.title_mk }}</a>
+            {% if item.reviewer_note %}<span class="soft break">{{ item.reviewer_note }}</span>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </section>
+
   {% if decided %}
   <section class="stack-lg" aria-labelledby="decided-h">
     <h2 id="decided-h">Последни одлуки</h2>

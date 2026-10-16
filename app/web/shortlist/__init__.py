@@ -55,6 +55,25 @@ def _sessions():
     return session_factory(load_settings())
 
 
+def _packages(session, entries) -> dict:
+    """The package each open call is offered with (config/packages.yaml), while orderable."""
+    from sqlalchemy import select
+
+    from app.documents import packages
+    from app.models import SourceFeed
+    from app.pricing import prices
+
+    if not prices().package.orderable or not entries:
+        return {}
+    slugs = dict(session.execute(select(SourceFeed.id, SourceFeed.slug)).all())
+    found = {}
+    for e in entries:
+        package = packages.for_call(slugs.get(e.call.source_feed_id, ""), e.call.title_mk)
+        if package:
+            found[e.call.id] = package
+    return found
+
+
 @bp.get("/")
 def index():
     profile = current_profile()
@@ -66,6 +85,7 @@ def index():
             "shortlist/index.html",
             profile=profile,
             result=result,
+            package_for=_packages(session, result.open),
             summary=_summary(profile),
             score_labels=SCORE_LABELS,
         )

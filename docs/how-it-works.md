@@ -31,6 +31,7 @@ proforma. Document packages (P5) and a monitoring subscription (P6) come later.
 | 6 | (bank) | The buyer pays by transfer, quoting the proforma number |
 | 7 | e-mail | «Уплатата е примена»: a person reviews the report, which arrives within **five working days** |
 | 8 | e-mail + `/naracka/<id>` | The report and the invoice (Ф-2026-0001…) as PDFs, also downloadable from the order page |
+| 5b | `/naracka/paket/<call>` | From a call on the shortlist: a **document package**, 2.900 МКД: the institution's own forms filled with the company's details, the applicant's fields marked, and the checklist; reviewed by a person, delivered as Word files and a ZIP |
 | — | `/smetka` | The account: profile versions, orders, data export, deletion |
 | — | `/arhiva/`, `/ceni`, `/uslovi`, `/privatnost` | The public archive of calls, prices, terms and privacy policy |
 
@@ -44,6 +45,7 @@ All under `/admin` (not switched on in production until the operator can sign in
 | `/admin/rachen-vnes` | When you hear of a call no source fetched | Paste its URLs; it goes through the same path and lands in Преглед |
 | `/admin/uplati` (Уплати) | A transfer arrived | Paste the bank statement line, then «Означи како платена». The buyer is told and the analysis starts (runbook §9) |
 | `/admin/izveshtaj/<id>` | A paid report's draft is ready | Read it against the quoted documents, edit the wording if needed, approve. **Approving sends it** with the invoice (runbook §10) |
+| `/admin/paket/<id>` | A paid document package is made | Open every form in Word; check it is the institution's current form and the company's details are right; approve. **Approving sends it** (runbook §12) |
 
 Commands you will use: `flask invoices audit` before handing invoices to the accountant (runbook
 §11); `flask orders retry <id>` if an analysis failed; `flask ingest health` to see whether any
@@ -227,4 +229,4 @@ From `docs/handoff.md` §4, the ones that block launch:
 | **Forms** | **Decided (D3): all programmes**, in the order АВ, Economy, IPARD, ИНОВА. Each set needs the institution's **official blank application forms** (the owner's copies, or a current call's attachments) | P5 from session 58 |
 | s55 | The real rehearsal: your own profile, a real transfer, the real server | Brief §14's proof that money flows |
 
-Next by the roadmap: **P5 s75b, the package review screen, delivery and the order form** (s75a, the ordering and making of packages, is built; the price is 2.900 МКД) (built: the engine, the checklist, the Employment Agency's three forms, the Ministry of Economy's eight, the draft label; IPARD's set waits for its next call's forms).
+Next by the roadmap: **P6, the monitoring subscription** (P5 is built: document packages at 2.900 МКД for the Employment Agency's and the Ministry of Economy's calls (built: the engine, the checklist, the Employment Agency's three forms, the Ministry of Economy's eight, the draft label; IPARD's set waits for its next call's forms).

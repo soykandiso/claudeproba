@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% import "_components.html" as ui with context %}
+{% block title %}Пакет, ставка {{ item.id }}{% endblock %}
+{#- A document package for review (roadmap P5 s75): open every document in Word, check the
+    forms are the institution's current ones and the company's details are right, approve. -#}
+{% block main %}
+<div class="wrap grouped">
+  <a class="back" href="{{ url_for('admin.queue') }}">Преглед</a>
+  <div class="report-head stack">
+    <p class="small soft">Пакет на документи, ставка <span class="id id--14">{{ item.id }}</span></p>
+    <h1>{{ item.payload.title_mk }}</h1>
+    {% if not pending %}
+    <p class="review-stamp">{{ state_label }}, {{ item.resolved_at|datetime_mk }}{% if item.reviewer_note %}: {{ item.reviewer_note }}{% endif %}</p>
+    {% endif %}
+  </div>
+
+  {% if error %}
+  <div class="notice" role="alert" id="error" tabindex="-1"><p><strong>Не е зачувано.</strong> {{ error }}</p></div>
+  {% endif %}
+
+  <section class="stack" aria-labelledby="order-h">
+    <h2 id="order-h">Нарачка</h2>
+    {{ ui.group([
+         ('Профактура', number, none),
+         ('Купувач', order.buyer_name, none),
+         ('Повик', call.title_mk if call else '—', call.canonical_url if call else none),
+         ('Состојба на нарачката', order_states[order.state], none),
+       ]) }}
+    {% if order.state == 'in_progress' and item.state in ('approved', 'edited') %}
+    <form method="post" action="{{ url_for('admin.send_package', item_id=item.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {{ ui.submit('Испрати го на купувачот', busy='Се испраќа') }}
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="stack" aria-labelledby="docs-h">
+    <div class="stack">
+      <h2 id="docs-h">Документи</h2>
+      <p class="soft">Отворете го секој во Word. Проверете дека образецот е последниот на институцијата, дека податоците за фирмата се точни и дека ништо од барателот не е пополнето.</p>
+    </div>
+    <ul class="rows">
+      {% for d in documents %}
+      <li>
+        <div class="stack">
+          <a class="rows__link break" href="{{ url_for('admin.package_document', item_id=item.id, n=d.n) }}"><strong>{{ d.n }}. {{ d.title }}</strong></a>
+          <span class="small soft break">Образец од {{ d.manifest.source_url.split('/')[2] }}, преземен {{ d.manifest.retrieved|date_mk }}</span>
+        </div>
+      </li>
+      {% endfor %}
+      <li>
+        <div class="stack">
+          <a class="rows__link" href="{{ url_for('admin.package_document', item_id=item.id, n=0) }}"><strong>Што уште треба да подготвите</strong></a>
+          <span class="small soft">Листата на барателот, {{ checklist|length }} ставки</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  {% if problems %}
+  <div class="notice" role="alert"><p><strong>Пакетот не може да се испрати како што е:</strong> {{ problems|join('; ') }}</p></div>
+  {% endif %}
+
+  {% if pending %}
+  <section class="stack-lg" id="odluka" aria-labelledby="decide-h">
+    <h2 id="decide-h">Одлука</h2>
+    <form class="stack form-narrow" method="post" action="{{ url_for('admin.approve_package', item_id=item.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <p><strong>Платена нарачка {{ number }}.</strong> Прифаќањето го испраќа пакетот на купувачот веднаш, со фактурата.</p>
+      <div class="field">
+        <label for="approve-note">Белешка, ако има</label>
+        <input class="input" id="approve-note" name="note">
+      </div>
+      <div class="actions">
+        {{ ui.submit('Прифати го пакетот', busy='Се прифаќа', id='approve',
+             disabled_reason=('Пакетот има проблем; видете погоре.' if problems else none)) }}
+      </div>
+    </form>
+    <form class="stack form-narrow" method="post" action="{{ url_for('admin.close_package', item_id=item.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="close-note">Причина за затворање</label>
+        <input class="input" id="close-note" name="note" value="{{ typed.get('note', '') }}" required>
+      </div>
+      <div class="actions">{{ ui.submit('Затвори без испраќање', kind='gray', busy='Се затвора') }}</div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

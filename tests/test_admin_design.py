@@ -133,6 +133,7 @@ def test_each_queue_row_is_one_tap_target():
     """DL6: the row's title is its link, stretched over the row, with iOS's chevron; it is
     not underlined as a link inside a sentence is."""
     queue = (TEMPLATES / "queue.html").read_text(encoding="utf-8")
-    assert queue.count('class="rows__link') == 4
+    # Calls, reports and (P5 s75) packages: pending and decided each.
+    assert queue.count('class="rows__link') == 6
     css = (TEMPLATES.parents[1] / "static" / "css" / "site.css").read_text(encoding="utf-8")
     assert ":not(.rows__link)" in css and ".rows__link::after" in css
