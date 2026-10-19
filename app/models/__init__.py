@@ -8,7 +8,7 @@ imported is a table that silently disappears from the next migration.
 from app.models.ai import EmailEvent, ModelCall, ModelCallPayload, PromptVersion
 from app.models.applicant import Account, ApplicantProfile, ConsentRecord
 from app.models.base import Base
-from app.models.commerce import Invoice, Order, Product, Subscription
+from app.models.commerce import Alert, Invoice, Order, Product, Subscription
 from app.models.documents import DocumentPackage, DocumentTemplate, GeneratedDocument
 from app.models.matching import (
     Evidence,
@@ -59,4 +59,5 @@ __all__ = [
     "SourceFeed",
     "SourceHealth",
     "Subscription",
+    "Alert",
 ]

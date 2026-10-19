@@ -10,6 +10,7 @@ import datetime as dt
 import uuid
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Date,
@@ -19,12 +20,13 @@ from sqlalchemy import (
     SmallInteger,
     String,
     Text,
+    UniqueConstraint,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, now_column, pg_enum, timestamptz, uuid_pk
-from app.models.enums import InvoiceKind, OrderState
+from app.models.enums import InvoiceKind, OrderState, Verdict
 
 
 class Product(Base):
@@ -129,3 +131,28 @@ class Subscription(Base):
     renews_on: Mapped[dt.date] = mapped_column(Date)
     cancelled_at: Mapped[dt.datetime | None] = timestamptz()
     last_alert_at: Mapped[dt.datetime | None] = timestamptz()
+
+
+class Alert(Base):
+    """A newly published call that fits a subscriber's profile (roadmap P6 s77).
+
+    Written when a call is published and matched (`app/alerts.py`); sent by s78. One per
+    subscription and call, ever: a call re-approved after a change does not alert twice. The
+    profile version it matched is kept, so an alert can be explained after the profile changes.
+    """
+
+    __tablename__ = "alert"
+    __table_args__ = (
+        UniqueConstraint("subscription_id", "call_id", name="uq_alert_subscription_call"),
+        Index("ix_alert_unsent", "created_at", postgresql_where=text("sent_at IS NULL")),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    subscription_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("subscription.id", ondelete="CASCADE")
+    )
+    call_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("call.id", ondelete="CASCADE"))
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("applicant_profile.id"))
+    verdict: Mapped[Verdict] = mapped_column(pg_enum(Verdict, "verdict"))
+    created_at: Mapped[dt.datetime] = now_column()
+    sent_at: Mapped[dt.datetime | None] = timestamptz()

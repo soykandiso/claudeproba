@@ -224,6 +224,40 @@ CREATE TABLE public.alembic_version (
 
 
 --
+-- Name: alert; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.alert (
+    id bigint NOT NULL,
+    subscription_id uuid NOT NULL,
+    call_id uuid NOT NULL,
+    profile_id uuid NOT NULL,
+    verdict public.verdict NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    sent_at timestamp with time zone
+);
+
+
+--
+-- Name: alert_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.alert_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: alert_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.alert_id_seq OWNED BY public.alert.id;
+
+
+--
 -- Name: applicant_profile; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -968,6 +1002,13 @@ CREATE TABLE public.subscription (
 
 
 --
+-- Name: alert id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert ALTER COLUMN id SET DEFAULT nextval('public.alert_id_seq'::regclass);
+
+
+--
 -- Name: call_document id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1065,6 +1106,14 @@ ALTER TABLE ONLY public.alembic_version
 
 ALTER TABLE ONLY public.account
     ADD CONSTRAINT pk_account PRIMARY KEY (id);
+
+
+--
+-- Name: alert pk_alert; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert
+    ADD CONSTRAINT pk_alert PRIMARY KEY (id);
 
 
 --
@@ -1292,6 +1341,14 @@ ALTER TABLE ONLY public.account
 
 
 --
+-- Name: alert uq_alert_subscription_call; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert
+    ADD CONSTRAINT uq_alert_subscription_call UNIQUE (subscription_id, call_id);
+
+
+--
 -- Name: chunk uq_chunk_snapshot_ordinal; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1369,6 +1426,13 @@ ALTER TABLE ONLY public.raw_snapshot
 
 ALTER TABLE ONLY public.source_feed
     ADD CONSTRAINT uq_source_feed_slug UNIQUE (slug);
+
+
+--
+-- Name: ix_alert_unsent; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_alert_unsent ON public.alert USING btree (created_at) WHERE (sent_at IS NULL);
 
 
 --
@@ -1551,6 +1615,30 @@ CREATE INDEX ix_snapshot_url_time ON public.raw_snapshot USING btree (url, fetch
 --
 
 CREATE INDEX ix_subscription_due ON public.subscription USING btree (renews_on) WHERE (cancelled_at IS NULL);
+
+
+--
+-- Name: alert fk_alert_call_id_call; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert
+    ADD CONSTRAINT fk_alert_call_id_call FOREIGN KEY (call_id) REFERENCES public.call(id) ON DELETE CASCADE;
+
+
+--
+-- Name: alert fk_alert_profile_id_applicant_profile; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert
+    ADD CONSTRAINT fk_alert_profile_id_applicant_profile FOREIGN KEY (profile_id) REFERENCES public.applicant_profile(id);
+
+
+--
+-- Name: alert fk_alert_subscription_id_subscription; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.alert
+    ADD CONSTRAINT fk_alert_subscription_id_subscription FOREIGN KEY (subscription_id) REFERENCES public.subscription(id) ON DELETE CASCADE;
 
 
 --

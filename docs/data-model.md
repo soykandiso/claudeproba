@@ -110,3 +110,8 @@ is unique (a path under `app/documents/templates/`, the version in its name) and
 file's hash, so a delivered package names exactly the bytes it was filled from. `programme_id` is
 optional: programmes in the registry are mostly one per call, and which calls a template serves is
 `config/packages.yaml`. The package's checklist is a `generated_document` with no template.
+
+**An alert is once per subscription and call** (added 19.10.2026, P6 s77). `alert` has a unique
+(`subscription_id`, `call_id`) pair, so matching a call again, or a call re-approved after a
+change, never alerts twice; `profile_id` is the profile version it matched, kept so an alert can be
+explained after the profile changes. `sent_at` is empty until the e-mail goes (s78).

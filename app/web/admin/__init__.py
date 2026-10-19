@@ -31,6 +31,7 @@ from flask import (
 from markupsafe import Markup
 from sqlalchemy import select
 
+from app import alerts
 from app.db import session_factory
 from app.ingestion.normalise import NormaliseError, page_of
 from app.ingestion.normalise.pdf import PAGE_IMAGE_TYPE, can_render_pages, render_page
@@ -414,11 +415,28 @@ def _decide(item_id: int, action, *, open_form=None, typed=None):
 def approve(item_id: int):
     note = request.form.get("note", "")
 
+    published = {}
+
     def act(db, item):
         call = review.approve_call(db, item, note=note, now=_now())
+        published["call_id"] = call.id
         return f"Повикот „{call.title_mk}“ е објавен."
 
-    return _decide(item_id, act) or redirect(url_for("admin.queue"))
+    shown = _decide(item_id, act)
+    if shown:
+        return shown
+    # New for subscribers now that it is published (P6 s77); matching never undoes it.
+    matched = alerts.after_publish(_sessions(), published["call_id"])
+    if matched is None:
+        flash(
+            "Претплатниците не се проверени за овој повик: пуштете «flask alerts match --since …»."
+        )
+    elif matched:
+        flash(
+            f"Повикот одговара на {matched} претплатени профили; "
+            "известувањата заминуваат со следното праќање."
+        )
+    return redirect(url_for("admin.queue"))
 
 
 @bp.post("/stavka/<int:item_id>/zatvori")

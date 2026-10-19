@@ -84,6 +84,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     from app.documents import cli as documents_cli
 
     app.cli.add_command(documents_cli)
+    # New calls for subscribers (app/alerts.py, P6 s77).
+    from app.alerts import cli as alerts_cli
+
+    app.cli.add_command(alerts_cli)
     app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(days=30)
     app.add_template_global(lambda: bool(current_account_id()), "signed_in")
 
