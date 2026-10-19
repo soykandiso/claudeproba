@@ -22,7 +22,7 @@ from app.ingestion.snapshots import SnapshotStore
 from app.models import Call, Programme, ReviewQueueItem, SourceFeed
 from app.models.commerce import Invoice, Order
 from app.models.enums import InvoiceKind, OrderState, ReviewKind
-from app.orders import fulfil, reconcile
+from app.orders import fulfil, numbering, reconcile
 from app.orders.deliver import DOCX
 from app.pricing import prices
 from app.web import checkout
@@ -31,7 +31,9 @@ from tests.test_checkout import BUYER, _signed_in
 from tests.test_shortlist import db, registry  # noqa: F401 (fixture)
 
 MSP = "ЈАВЕН ПОВИК за финансиска поддршка на микро, мали и средни претпријатија и занаетчии"
-TODAY = dt.date.today()
+# The business date (Skopje's), as the code under test uses it: this machine's clock may
+# be on another day near midnight.
+TODAY = numbering.today()
 
 
 def _open(monkeypatch, package=True):

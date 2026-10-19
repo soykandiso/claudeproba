@@ -778,6 +778,7 @@ CREATE TABLE public."order" (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     delivered_at timestamp with time zone,
     report_storage_key text,
+    subscription_id uuid,
     CONSTRAINT ck_order_delivered_has_report CHECK (((state <> 'delivered'::public.order_state) OR ((delivered_at IS NOT NULL) AND (report_storage_key IS NOT NULL))))
 );
 
@@ -1830,6 +1831,14 @@ ALTER TABLE ONLY public."order"
 
 ALTER TABLE ONLY public."order"
     ADD CONSTRAINT fk_order_profile_id_applicant_profile FOREIGN KEY (profile_id) REFERENCES public.applicant_profile(id);
+
+
+--
+-- Name: order fk_order_subscription_id_subscription; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."order"
+    ADD CONSTRAINT fk_order_subscription_id_subscription FOREIGN KEY (subscription_id) REFERENCES public.subscription(id);
 
 
 --

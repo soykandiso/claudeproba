@@ -43,6 +43,24 @@ from app.web.format import mkdate
 
 TEMPLATES = Path(__file__).resolve().parent / "templates"
 DESCRIPTION = "Детален извештај за подобност за јавен повик, прегледан од човек"
+# The line on a proforma or invoice, by what was bought (P5 s75, P6 s76).
+DESCRIPTIONS = {
+    "report": DESCRIPTION,
+    "package": "Пакет на документи за јавен повик: образци пополнети со податоците на барателот "
+    "и листа за дополнување, прегледан од човек",
+    "monitoring-month": "Следење на нови јавни повици за профилот на барателот, еден месец",
+    "monitoring-year": "Следење на нови јавни повици за профилот на барателот, една година",
+}
+
+
+def describe(session, order: Order, period: tuple[dt.date, dt.date] | None = None) -> str:
+    """The invoice line for an order's product, with the period for a subscription."""
+    from app.orders import service
+
+    text = DESCRIPTIONS.get(service.sku_of(session, order), DESCRIPTION)
+    if period:
+        text += f", од {mkdate(period[0])} до {mkdate(period[1])}"
+    return text
 
 
 class ProformaRefused(ValueError):
@@ -93,7 +111,9 @@ def _environment() -> jinja2.Environment:
     return env
 
 
-def html_of(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> str:
+def html_of(
+    invoice: Invoice, order: Order, proforma: Invoice | None = None, description: str = DESCRIPTION
+) -> str:
     """`proforma` is the paid proforma a final invoice settles; unused for a proforma."""
     return (
         _environment()
@@ -104,7 +124,7 @@ def html_of(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> 
             proforma=proforma,
             seller=seller(),
             vat_percent=prices().vat_percent,
-            description=DESCRIPTION,
+            description=description,
             font_faces=Markup(render.font_faces()),
             tokens=Markup(render.token_values()),
             css=(TEMPLATES / "proforma.css").as_uri(),
@@ -112,11 +132,16 @@ def html_of(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> 
     )
 
 
-def pdf(invoice: Invoice, order: Order, proforma: Invoice | None = None) -> bytes:
+def pdf(
+    invoice: Invoice,
+    order: Order,
+    proforma: Invoice | None = None,
+    description: str = DESCRIPTION,
+) -> bytes:
     """The document's PDF, after the same checks the report passes. Raises ProformaRefused."""
     if invoice.kind == InvoiceKind.FINAL and (proforma is None or invoice.paid_at is None):
         raise ProformaRefused(f"invoice {invoice.number}: a final invoice settles a paid proforma")
-    html = html_of(invoice, order, proforma)
+    html = html_of(invoice, order, proforma, description)
     banned = find_banned(render.own_voice(html))
     if banned:
         raise ProformaRefused(f"banned phrase on proforma {invoice.number}: {banned}")

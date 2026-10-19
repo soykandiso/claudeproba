@@ -73,8 +73,11 @@ def job(order_id: str) -> dict:
     settings = load_settings()
     sessions = session_factory(settings)
     with sessions() as session:
-        if service.sku_of(session, session.get(Order, uuid.UUID(str(order_id)))) == service.PACKAGE:
+        sku = service.sku_of(session, session.get(Order, uuid.UUID(str(order_id))))
+        if sku == service.PACKAGE:
             return package_job(session, settings, uuid.UUID(str(order_id)))
+        if sku in (service.MONTH, service.YEAR):
+            return subscription_job(session, settings, uuid.UUID(str(order_id)))
         profile_id = begin(session, uuid.UUID(str(order_id)))
     if profile_id is None:
         return {"order": str(order_id), "skipped": True}
@@ -105,6 +108,21 @@ def package_job(session: Session, settings, order_id) -> dict:
     )
     session.commit()
     return {"order": str(order_id), "review_item_id": item}
+
+
+def subscription_job(session: Session, settings, order_id) -> dict:
+    """A paid monitoring order starts or extends its subscription (P6 s76). Once."""
+    from app.ingestion.snapshots import SnapshotStore
+    from app.orders import subscriptions
+
+    if session.get(Order, order_id).state != OrderState.PAID:
+        return {"order": str(order_id), "skipped": True}
+    done = subscriptions.activate(session, SnapshotStore(settings.snapshot_dir), settings, order_id)
+    return {
+        "order": str(order_id),
+        "subscription": str(done.subscription_id),
+        "until": done.until.isoformat(),
+    }
 
 
 def _queue(settings):

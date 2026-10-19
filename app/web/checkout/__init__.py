@@ -259,7 +259,7 @@ def _mail_proforma(db, order: Order) -> bool:
     invoice = _proforma(db, order.id)
     account = db.get(Account, order.account_id)
     try:
-        document = proforma.pdf(invoice, order)
+        document = proforma.pdf(invoice, order, description=proforma.describe(db, order))
         mail.send(
             current_app.extensions["settings"],
             account.email,
@@ -276,6 +276,8 @@ def _mail_proforma(db, order: Order) -> bool:
 def mail_paid(db, order_id) -> bool:
     """Tell the buyer the payment arrived and what happens next (P4 s52). False if not sent."""
     order = db.get(Order, order_id)
+    if service.sku_of(db, order) in (service.MONTH, service.YEAR):
+        return True  # a subscription's activation e-mail says it, with the period and invoice
     invoice = _proforma(db, order.id)
     account = db.get(Account, order.account_id)
     try:
@@ -335,7 +337,7 @@ def proforma_pdf(order_id: uuid.UUID):
     with _sessions()() as db:
         found = _own_order(db, order_id, account_id)
         invoice = _proforma(db, found.id)
-        document = proforma.pdf(invoice, found)
+        document = proforma.pdf(invoice, found, description=proforma.describe(db, found))
     return current_app.response_class(
         document,
         mimetype="application/pdf",

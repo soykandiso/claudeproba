@@ -75,8 +75,11 @@ class Order(Base):
 
     created_at: Mapped[dt.datetime] = now_column()
     delivered_at: Mapped[dt.datetime | None] = timestamptz()
-    # The delivered report's PDF in the snapshot store (content-addressed, backed up with it).
+    # What was delivered, in the snapshot store as sent (content-addressed, backed up with it):
+    # the report's PDF, a package's archive (P5 s75), a subscription period's invoice (P6).
     report_storage_key: Mapped[str | None] = mapped_column(Text)
+    # The subscription a monitoring order starts or renews (P6 s76).
+    subscription_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("subscription.id"))
 
 
 class Invoice(Base):

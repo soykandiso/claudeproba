@@ -23,6 +23,8 @@ from app.pricing import prices
 
 REPORT = "report"
 PACKAGE = "package"
+MONTH = "monitoring-month"
+YEAR = "monitoring-year"
 
 
 @dataclass(frozen=True)
@@ -36,11 +38,21 @@ class Buyer:
 
 
 # What each product is called and costs: config/prices.yaml, never a template (D1).
-NAMES = {REPORT: "Детален извештај", PACKAGE: "Пакет на документи"}
+NAMES = {
+    REPORT: "Детален извештај",
+    PACKAGE: "Пакет на документи",
+    MONTH: "Следење на нови повици, месечно",
+    YEAR: "Следење на нови повици, годишно",
+}
 
 
 def _list_price(sku: str) -> int:
-    return prices().package.net if sku == PACKAGE else prices().report.net
+    p = prices()
+    return {
+        PACKAGE: p.package.net,
+        MONTH: p.monitoring.monthly_net,
+        YEAR: p.monitoring.yearly_net,
+    }.get(sku, p.report.net)
 
 
 def ensure_product(session: Session, sku: str = REPORT) -> Product:
@@ -48,7 +60,13 @@ def ensure_product(session: Session, sku: str = REPORT) -> Product:
     net, vat = _list_price(sku), prices().vat_percent
     product = session.scalar(select(Product).where(Product.sku == sku))
     if product is None:
-        product = Product(sku=sku, name_mk=NAMES[sku], price_mkd=net, vat_rate=vat)
+        product = Product(
+            sku=sku,
+            name_mk=NAMES[sku],
+            price_mkd=net,
+            vat_rate=vat,
+            is_recurring=sku in (MONTH, YEAR),
+        )
         session.add(product)
     else:
         product.price_mkd, product.vat_rate = net, vat

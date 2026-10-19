@@ -165,7 +165,7 @@ def _finish(
     today = now.astimezone(SKOPJE).date()
     try:
         invoice = _issue(session, order, paid, today)
-        invoice_pdf = proforma.pdf(invoice, order, paid)
+        invoice_pdf = proforma.pdf(invoice, order, paid, proforma.describe(session, order))
         invoice.pdf_storage_key = _keep(store, order, invoice_pdf)
         # The artefact as delivered: the report's PDF, or a package's archive (P5 s75).
         order.report_storage_key = _keep(store, order, artefact)

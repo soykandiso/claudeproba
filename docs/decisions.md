@@ -28,6 +28,11 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > budget tables, which these packages do not yet have.
 > **16.10.2026, default taken by Claude:** a package promises the same **five working days** as a
 > report (the payment e-mail and the order page say so).
+> **16.10.2026, defaults taken by Claude (P6 s76):** the subscription is **paid periods, never
+> renewed by itself** (no card on file: a renewal proforma, paid or not); periods are calendar
+> months or years; an early renewal runs from the end already paid; **cancelling keeps the paid
+> period and refunds nothing**; it follows the account's newest profile. The user may want a
+> pro-rata refund on cancelling, or a trial.
 > **13.10.2026, default taken by Claude (P4 s55 rehearsal):** a list with fewer than five open
 > calls costs the same; the order form says how many calls the report will cover before the
 > buyer pays, and no report is sold when none is open. A lower price for fewer calls is the

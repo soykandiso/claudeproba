@@ -217,14 +217,16 @@ first**, despite it being the highest-value segment — reasoning is in that doc
 
 ## P6 — Monitoring subscription · 6 sessions · → ~8 Jan 2027
 
+Numbered 76–81 since 16.10.2026 (68–73 went to P5's template sets 3–4).
+
 | # | Task | Acceptance |
 |---|------|-----------|
-| 68 | Saved profiles + subscription model | Profile versioning preserved (architecture §9.3) |
-| 69 | New-call matching against saved profiles | Runs after each ingestion, not on a separate schedule |
-| 70 | Alert email with full citation quality | An alert is as trustworthy as a report line |
-| 71 | Recurring invoicing | Renewal invoice issued automatically, reconciled manually |
-| 72 | Unsubscribe and consent handling | One click, no dark pattern |
-| 73 | Digest behaviour in quiet and busy periods | Bursty call seasons do not produce email spam (`risks.md` R4) |
+| 76 | Saved profiles + subscription model | Profile versioning preserved (architecture §9.3) — *built 16.10.2026: saved, versioned profiles exist since P3 s44; `app/orders/subscriptions.py` adds the subscription: monthly 1.200 or yearly 12.000 МКД (`prices.yaml` `monitoring`), an order and proforma like any other, and on reconciliation the worker starts it (from the payment date) or extends it (from the paid end, so an early renewal loses no day), issues the period's invoice and mails it. Calendar periods (31.01 + a month = 28.02). **Nothing renews by itself**; cancelling keeps the paid period. It keeps the profile version it was bought with and follows the newest; no version is changed. Migration `628c2fad9688` (`order.subscription_id`). Still not on sale (`monitoring.available: false`) until alerts exist* |
+| 77 | New-call matching against saved profiles | Runs after each ingestion, not on a separate schedule |
+| 78 | Alert email with full citation quality | An alert is as trustworthy as a report line |
+| 79 | Recurring invoicing | Renewal invoice issued automatically, reconciled manually |
+| 80 | Unsubscribe and consent handling | One click, no dark pattern |
+| 81 | Digest behaviour in quiet and busy periods | Bursty call seasons do not produce email spam (`risks.md` R4) |
 
 ---
 

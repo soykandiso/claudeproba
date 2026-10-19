@@ -17,13 +17,15 @@ from app.models import Call, Programme, ReviewQueueItem, SourceFeed
 from app.models.commerce import Order
 from app.models.documents import DocumentPackage, DocumentTemplate, GeneratedDocument
 from app.models.enums import OrderState, ReviewKind
-from app.orders import fulfil, reconcile, service
+from app.orders import fulfil, numbering, reconcile, service
 from tests.test_account import ANSWERS
 from tests.test_accounts import _account
 from tests.test_orders import BUYER, _profile_id
 from tests.test_shortlist import db, registry  # noqa: F401 (fixture)
 
-TODAY = dt.date.today()
+# The business date (Skopje's), as the code under test uses it: this machine's clock may
+# be on another day near midnight.
+TODAY = numbering.today()
 MSP = "ЈАВЕН ПОВИК за финансиска поддршка на микро, мали и средни претпријатија и занаетчии"
 
 

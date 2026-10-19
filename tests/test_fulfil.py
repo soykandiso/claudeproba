@@ -5,7 +5,6 @@ is replaced by a recording queue (no Redis on the development machine, and none 
 test what is handed over). Against PostgreSQL in a rolled-back transaction.
 """
 
-import datetime as dt
 import email
 import re
 import uuid
@@ -19,12 +18,14 @@ from app import create_app
 from app.config import load_settings
 from app.models import MatchRun
 from app.models.enums import OrderState
-from app.orders import fulfil, reconcile
+from app.orders import fulfil, numbering, reconcile
 from app.pricing import prices
 from tests.test_reconcile import _ordered
 from tests.test_shortlist import db, registry  # noqa: F401 (fixture)
 
-TODAY = dt.date.today()
+# The business date (Skopje's), as the code under test uses it: this machine's clock may
+# be on another day near midnight.
+TODAY = numbering.today()
 TERMS = Path(__file__).resolve().parents[1] / "app/web/templates/legal/terms/2026-10-07.html"
 
 

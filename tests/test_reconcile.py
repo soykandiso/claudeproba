@@ -15,12 +15,14 @@ from app import create_app
 from app.config import load_settings
 from app.models.commerce import Invoice
 from app.models.enums import OrderState
-from app.orders import reconcile, service
+from app.orders import numbering, reconcile, service
 from tests.test_accounts import _account
 from tests.test_orders import BUYER, YEAR, _profile_id
 from tests.test_shortlist import db, registry  # noqa: F401 (fixture)
 
-TODAY = dt.date.today()
+# The business date (Skopje's), as the code under test uses it: this machine's clock may
+# be on another day near midnight.
+TODAY = numbering.today()
 
 # ------------------------------------------------------------------ reading a statement line
 
