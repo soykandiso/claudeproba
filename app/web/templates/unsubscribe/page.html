@@ -1,0 +1,29 @@
+{#- One-click unsubscribe (roadmap P6 s80): one button, or what has happened. -#}
+{% extends "base.html" %}
+{% block title %}{{ _('Известувања за нови повици') }}{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Известувања за нови повици') }}</h1>
+    {% if done %}
+    <p class="lead">{{ _('Известувањата се откажани. Повеќе нема да ви пишуваме за нови повици, и следењето нема да се продолжи.') }}</p>
+    {% else %}
+    <p class="lead">{{ _('Со копчето подолу престануваме да ви пишуваме за нови повици, и следењето не се продолжува.') }}</p>
+    {% endif %}
+  </div>
+
+  {% if done %}
+  {% if running %}
+  <p>{{ _('Се предомисливте? До %(date)s можете да ги вратите известувањата од вашата сметка.', date=until|mkdate) }}</p>
+  <p><a class="btn btn--quiet" href="{{ url_for('account.home') }}">{{ _('Сметка') }}</a></p>
+  {% endif %}
+  {% else %}
+  <form method="post">
+    <div class="actions">
+      <button class="btn" type="submit" data-busy="{{ _('Се откажува') }}">{{ _('Откажи ги известувањата') }}</button>
+    </div>
+  </form>
+  <p class="small soft">{{ _('Уплатата за тековниот период не се враќа. Нема ништо друго што треба да направите.') }}</p>
+  {% endif %}
+</div>
+{% endblock %}

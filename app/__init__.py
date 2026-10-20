@@ -65,6 +65,10 @@ def create_app(settings: Settings | None = None) -> Flask:
     app.register_blueprint(account_bp)
     # Ordering a report: the buyer's details, the proforma by e-mail (P4 s50).
     app.register_blueprint(checkout_bp)
+    # One-click unsubscribe from alerts (P6 s80); outside CSRF: a mail client POSTs here.
+    from app.web.unsubscribe import bp as unsubscribe_bp
+
+    app.register_blueprint(unsubscribe_bp)
     # The terms, the privacy policy and the processors, versioned (P3 s45).
     app.register_blueprint(legal_bp)
     app.cli.add_command(legal_cli)

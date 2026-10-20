@@ -33,6 +33,10 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > months or years; an early renewal runs from the end already paid; **cancelling keeps the paid
 > period and refunds nothing**; it follows the account's newest profile. The user may want a
 > pro-rata refund on cancelling, or a trial.
+> **20.10.2026, changed by Claude (P6 s80):** cancelling now **stops alerts at once** (s76 had a
+> cancelled subscription alerted until its paid end). Someone who unsubscribes has asked us to stop
+> writing; the paid period is still not refunded, and both the unsubscribe page and the account say
+> so before the click. Resuming is possible until the period ends.
 > **13.10.2026, default taken by Claude (P4 s55 rehearsal):** a list with fewer than five open
 > calls costs the same; the order form says how many calls the report will cover before the
 > buyer pays, and no report is sold when none is open. A lower price for fewer calls is the

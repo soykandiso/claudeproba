@@ -38,6 +38,29 @@
   </section>
   {% endif %}
 
+  {% if following %}
+  {# The monitoring subscription (P6 s80): what it is doing, and one button to stop or resume it. #}
+  <section class="stack" aria-labelledby="following-h">
+    <h2 id="following-h">{{ _('Известувања за нови повици') }}</h2>
+    {% if following.status == 'active' %}
+    <p>{{ _('Активни до %(date)s. Кога ќе се објави нов повик што одговара на профилот, ви пишуваме.', date=following.until|mkdate) }}</p>
+    <form method="post" action="{{ url_for('account.following', action='otkazi') }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {{ c.submit(_('Откажи ги известувањата'), kind='gray', busy=_('Се откажува')) }}
+    </form>
+    <p class="small soft">{{ _('Откажувањето ги запира известувањата веднаш и следењето не се продолжува. Уплатата за тековниот период не се враќа.') }}</p>
+    {% elif following.status == 'ending' %}
+    <p>{{ _('Откажани. Платениот период трае до %(date)s; до тогаш можете да ги вратите.', date=following.until|mkdate) }}</p>
+    <form method="post" action="{{ url_for('account.following', action='prodolzi') }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      {{ c.submit(_('Врати ги известувањата'), kind='quiet', busy=_('Се враќа')) }}
+    </form>
+    {% else %}
+    <p>{{ _('Следењето заврши на %(date)s.', date=following.until|mkdate) }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
   <section class="stack" aria-labelledby="out-h">
     <h2 id="out-h">{{ _('Одјава') }}</h2>
     <form method="post" action="{{ url_for('account.sign_out') }}">

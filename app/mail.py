@@ -34,6 +34,7 @@ def send(
     subject: str,
     body: str,
     attachments: tuple[tuple[str, bytes, str], ...] = (),
+    headers: dict[str, str] | None = None,
 ) -> str:
     """Send one plain-text message, with (filename, bytes, type) attachments; its Message-ID."""
     message = EmailMessage()
@@ -41,6 +42,8 @@ def send(
     message["To"] = to
     message["Subject"] = subject
     message["Message-ID"] = make_msgid(domain=_domain(settings.mail_from))
+    for name, value in (headers or {}).items():
+        message[name] = value
     message.set_content(body)
     for filename, data, mimetype in attachments:
         maintype, subtype = mimetype.split("/", 1)
@@ -63,6 +66,14 @@ def send(
             smtp.login(settings.smtp_user, settings.smtp_password or "")
         smtp.send_message(message)
     return message["Message-ID"]
+
+
+def unsubscribe_headers(url: str) -> dict[str, str]:
+    """RFC 8058 one-click unsubscribe: the mail client POSTs to `url`, nothing else is asked."""
+    return {
+        "List-Unsubscribe": f"<{url}>",
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    }
 
 
 def _domain(address: str) -> str:

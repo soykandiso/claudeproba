@@ -99,13 +99,14 @@ def test_only_a_running_period_is_alerted(registry, started, days):
 
 
 @db
-def test_a_cancelled_subscription_is_alerted_until_its_paid_end(registry):
+def test_a_cancelled_subscription_is_alerted_no_more(registry):
+    """Cancelling is asking us to stop writing (P6 s80): no alert, though the period is paid."""
     factory, source, snapshot = registry
     with factory() as s:
         subscription = _subscriber(s)
         subscription.cancelled_at = NOW
         call = make_call(s, source, snapshot, criteria=[FITS])
-        assert len(alerts.match_call(s, call.id, NOW)) == 1
+        assert alerts.match_call(s, call.id, NOW) == []
 
 
 @db

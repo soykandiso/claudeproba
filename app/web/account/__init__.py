@@ -30,6 +30,7 @@ from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint,
     Response,
+    abort,
     current_app,
     redirect,
     render_template,
@@ -302,6 +303,17 @@ def home():
             .where(Order.account_id == account.id)
             .order_by(Order.created_at.desc())
         ).all()
+        from app.orders import numbering, subscriptions
+
+        subscription = subscriptions.current(db, account.id)
+        following = (
+            {
+                "status": subscriptions.status(subscription, numbering.today()),
+                "until": subscription.renews_on,
+            }
+            if subscription
+            else None
+        )
     described = questions.describe(normalise(dict(profile.answers))) if profile else []
     rows = [(label, value or UNKNOWN, None) for label, value in described]
     return render_template(
@@ -311,7 +323,30 @@ def home():
         rows=rows,
         versions=versions,
         orders=orders,
+        following=following,
     )
+
+
+@bp.post("/smetka/sledenje/<action>")
+def following(action: str):
+    """Cancel or resume the alerts from the account (P6 s80): one button each, no questions."""
+    from app.orders import numbering, subscriptions
+
+    account_id = current_account_id()
+    if not account_id:
+        return redirect(url_for("account.sign_in"))
+    if action not in ("otkazi", "prodolzi"):
+        abort(404)
+    with _sessions()() as db:
+        subscription = subscriptions.current(db, account_id)
+        if subscription is None:
+            abort(404)
+        if action == "otkazi":
+            subscriptions.cancel(db, subscription, ip=request.remote_addr)
+        else:
+            subscriptions.resume(db, subscription, numbering.today(), ip=request.remote_addr)
+        db.commit()
+    return redirect(url_for("account.home") + "#following-h")
 
 
 # ------------------------------------------------------------------ the person's data

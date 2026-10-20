@@ -240,9 +240,13 @@ def renew_command():
     from app.pricing import prices
 
     settings = current_app.extensions["settings"]
-    with current_app.test_request_context(base_url=settings.public_url):
-        link = url_for("account.home", _external=True)
-    with _sessions()() as session:
+    secret = current_app.config["SECRET_KEY"]
+
+    def link(subscription):
+        token = subscriptions.unsubscribe_token(secret, subscription.id)
+        return url_for("unsubscribe.page", token=token, _external=True)
+
+    with current_app.test_request_context(base_url=settings.public_url), _sessions()() as session:
         counts = subscriptions.issue_renewals(
             session, settings, numbering.today(), prices().monitoring.renewal_notice_days, link
         )

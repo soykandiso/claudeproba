@@ -137,7 +137,9 @@ def activate(
             start = max(subscription.renews_on, today)  # an early renewal loses no day
             subscription.renews_on = add_months(start, PLANS[sku])
             subscription.product_id = placed.product_id
-            subscription.cancelled_at = None  # paying again is wanting it again
+            if subscription.cancelled_at is not None:  # paying again is wanting it again
+                subscription.cancelled_at = None
+                _consent(session, subscription.account_id, True, None)
         else:
             start = today
             subscription = Subscription(
@@ -150,6 +152,7 @@ def activate(
             session.add(subscription)
             session.flush()
             placed.subscription_id = subscription.id
+            _consent(session, placed.account_id, True, None)  # ordering it is asking for it
         invoice = deliver._issue(session, placed, paid, today)
         period = (start, subscription.renews_on)
         invoice_pdf = proforma.pdf(
@@ -195,11 +198,62 @@ def activate(
     return Activated(subscription.id, subscription.renews_on, invoice.number, account.email)
 
 
-def cancel(session: Session, subscription: Subscription, *, now: dt.datetime | None = None) -> None:
-    """No renewal; the period already paid runs to its end."""
+ALERTS = "alerts"  # the consent purpose: mail about new calls (P6 s80)
+
+
+def _consent(session: Session, account_id, granted: bool, ip: str | None) -> None:
+    from app.legal import legal
+    from app.models import ConsentRecord
+
+    session.add(
+        ConsentRecord(
+            account_id=account_id,
+            purpose=ALERTS,
+            granted=granted,
+            policy_version=legal().version,
+            ip_address=ip,
+        )
+    )
+
+
+def cancel(
+    session: Session, subscription: Subscription, *, now: dt.datetime | None = None, ip=None
+) -> None:
+    """Stop alerts now and renew nothing (P6 s80); the period paid is not refunded."""
     if subscription.cancelled_at is None:
         subscription.cancelled_at = now or numbering.now()
+        _consent(session, subscription.account_id, False, ip)
         session.flush()
+
+
+def resume(session: Session, subscription: Subscription, today: dt.date, *, ip=None) -> bool:
+    """Undo a cancellation while the paid period runs. False when it has ended."""
+    if subscription.cancelled_at is None or subscription.renews_on <= today:
+        return False
+    subscription.cancelled_at = None
+    _consent(session, subscription.account_id, True, ip)
+    session.flush()
+    return True
+
+
+def _serializer(secret: str):
+    from itsdangerous import URLSafeSerializer
+
+    return URLSafeSerializer(secret, salt="unsubscribe")
+
+
+def unsubscribe_token(secret: str, subscription_id) -> str:
+    """For the link in every alert and renewal e-mail: it names the subscription, nothing else."""
+    return _serializer(secret).dumps(str(subscription_id))
+
+
+def from_token(secret: str, token: str) -> str | None:
+    from itsdangerous import BadSignature
+
+    try:
+        return _serializer(secret).loads(token)
+    except BadSignature:
+        return None
 
 
 # ------------------------------------------------------------------ renewals (P6 s79)
@@ -243,10 +297,11 @@ def _last_buyer(session: Session, subscription: Subscription) -> service.Buyer:
     return service.Buyer(last.buyer_name, last.buyer_address, last.buyer_edb, last.buyer_embs)
 
 
-def renew(
-    session: Session, settings, subscription: Subscription, today: dt.date, link: str
-) -> Renewal:
-    """Issue and mail the renewal proforma; all or nothing, the e-mail last."""
+def renew(session: Session, settings, subscription: Subscription, today: dt.date, link) -> Renewal:
+    """Issue and mail the renewal proforma; all or nothing, the e-mail last.
+
+    `link(subscription)` is the subscription's one-click unsubscribe address.
+    """
     from app import mail
     from app.orders import proforma
 
@@ -279,7 +334,7 @@ def renew(
             f"со рок за плаќање {mkdate(invoice.due_at)}.\n\n"
             "Ако не ја платите, следењето престанува на крајот на периодот, без никаква обврска: "
             "не наплатуваме ништо што не сте го платиле. Ако веќе не сакате да ве известуваме, "
-            f"откажете го следењето на {link}.\n\n"
+            f"откажете го следењето со еден клик: {link(subscription)}\n\n"
             "Грантови и субвенции\n"
         )
         banned = find_banned(body)
@@ -292,6 +347,7 @@ def renew(
             f"Продолжување на следењето: профактура {invoice.number}",
             body,
             attachments=((f"{invoice.number}.pdf", document, "application/pdf"),),
+            headers=mail.unsubscribe_headers(link(subscription)),
         )
     except (mail.MailNotConfigured, OSError) as failed:
         session.rollback()
@@ -305,7 +361,7 @@ def renew(
     return Renewal(subscription.id, invoice.number, period)
 
 
-def issue_renewals(session: Session, settings, today: dt.date, notice_days: int, link: str) -> dict:
+def issue_renewals(session: Session, settings, today: dt.date, notice_days: int, link) -> dict:
     """Every renewal due today, each on its own: one failure holds no one else up."""
     counts = {"issued": 0, "failed": 0}
     for subscription in due_for_renewal(session, today, notice_days):

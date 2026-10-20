@@ -37,11 +37,13 @@ ALERTED = {Verdict.ELIGIBLE, Verdict.LIKELY_ELIGIBLE, Verdict.NEEDS_VERIFICATION
 
 
 def running(session: Session, today: dt.date) -> list[Subscription]:
-    """Subscriptions whose paid period covers `today` (cancelled ones too, until their end)."""
+    """Subscriptions whose paid period covers `today` and that nobody has cancelled."""
     return list(
         session.scalars(
             select(Subscription).where(
-                Subscription.started_on <= today, Subscription.renews_on > today
+                Subscription.started_on <= today,
+                Subscription.renews_on > today,
+                Subscription.cancelled_at.is_(None),  # cancelling stops alerts at once (s80)
             )
         )
     )
@@ -220,6 +222,10 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
 
         for subscription_id, pending in by_subscription.items():
             subscription = session.get(Subscription, subscription_id)
+            stop = link(
+                "unsubscribe.page",
+                token=subscriptions.unsubscribe_token(app.config["SECRET_KEY"], subscription.id),
+            )
             items, sent = [], []
             for alert in pending:
                 item, reason = _item(session, alert, now, link)
@@ -237,6 +243,7 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
                 items=items,
                 until=subscription.renews_on,
                 account=link("account.home"),
+                unsubscribe=stop,
             )
             # Our own words only: the institution's title, name and quotes are theirs, printed
             # as given (as the report's lint skips `data-theirs`).
@@ -245,6 +252,7 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
                 items=[_without_theirs(i) for i in items],
                 until=subscription.renews_on,
                 account=link("account.home"),
+                unsubscribe=stop,
             )
             banned = find_banned(ours)
             if banned:
@@ -259,7 +267,9 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
             )
             account = session.get(Account, subscription.account_id)
             try:
-                mail.send(settings, account.email, subject, body)
+                mail.send(
+                    settings, account.email, subject, body, headers=mail.unsubscribe_headers(stop)
+                )
             except (mail.MailNotConfigured, OSError):
                 log.exception("alerts for %s not mailed; they stay unsent", subscription_id)
                 session.rollback()

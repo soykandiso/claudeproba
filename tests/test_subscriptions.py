@@ -188,7 +188,9 @@ def test_no_plan_but_the_two():
 
 # ------------------------------------------------------------------ renewals (P6 s79)
 
-LINK = "http://localhost:8080/smetka"
+
+def LINK(subscription):  # noqa: N802 (stands where the link function goes)
+    return f"http://localhost:8080/otkazi-sledenje/{subscription.id}"
 
 
 def _active(s, settings, *, ends_in: int):
@@ -252,7 +254,9 @@ def test_the_renewal_proforma_is_mailed_for_the_next_period_and_promises_nothing
         .get_payload(decode=True)
         .decode()
     )
-    assert "без никаква обврска" in body and LINK in body and done.number in body
+    assert "без никаква обврска" in body and done.number in body
+    assert f"/otkazi-sledenje/{done.subscription_id}" in body  # one click away, in the text
+    assert message["List-Unsubscribe-Post"] == "List-Unsubscribe=One-Click"  # and in the client
     assert [p.get_filename() for p in message.walk() if p.get_filename()] == [f"{done.number}.pdf"]
 
 

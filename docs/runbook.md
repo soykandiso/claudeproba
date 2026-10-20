@@ -437,3 +437,8 @@ from the payment date. A stale unpaid renewal proforma can be left; it is overdu
 
 If the command reports renewals «not issued», the mail failed: nothing was issued, no number was
 spent, and the next day's run tries again.
+
+A subscriber who unsubscribes (the link in any alert or renewal e-mail, or the account page) stops
+getting alerts at once and their subscription will not renew; nothing is refunded, and they can
+resume from the account until the paid period ends. Every grant and withdrawal is in
+`consent_record` with purpose `alerts`, for a data request (§7).
