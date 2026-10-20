@@ -20,6 +20,7 @@ recording which version it matched (s78).
 
 import calendar
 import datetime as dt
+import logging
 from dataclasses import dataclass
 
 from sqlalchemy import select
@@ -33,6 +34,7 @@ from app.reports.lint import find_banned
 from app.web.format import SKOPJE, mkdate
 
 PLANS = {service.MONTH: 1, service.YEAR: 12}  # months per period
+log = logging.getLogger(__name__)
 
 
 class SubscriptionRefused(ValueError):
@@ -198,3 +200,121 @@ def cancel(session: Session, subscription: Subscription, *, now: dt.datetime | N
     if subscription.cancelled_at is None:
         subscription.cancelled_at = now or numbering.now()
         session.flush()
+
+
+# ------------------------------------------------------------------ renewals (P6 s79)
+
+
+@dataclass(frozen=True)
+class Renewal:
+    subscription_id: object
+    number: str
+    period: tuple[dt.date, dt.date]
+
+
+def _open_renewal(session: Session, subscription: Subscription) -> Order | None:
+    return session.scalar(
+        select(Order).where(
+            Order.subscription_id == subscription.id,
+            Order.state.in_([OrderState.CREATED, OrderState.INVOICED]),
+        )
+    )
+
+
+def due_for_renewal(session: Session, today: dt.date, notice_days: int) -> list[Subscription]:
+    """Running, not cancelled, ending within `notice_days`, with no renewal proforma open."""
+    candidates = session.scalars(
+        select(Subscription).where(
+            Subscription.cancelled_at.is_(None),
+            Subscription.renews_on > today,
+            Subscription.renews_on <= today + dt.timedelta(days=notice_days),
+        )
+    ).all()
+    return [s for s in candidates if _open_renewal(session, s) is None]
+
+
+def _last_buyer(session: Session, subscription: Subscription) -> service.Buyer:
+    """The invoice details of the subscription's last order: a renewal is billed the same way."""
+    last = session.scalar(
+        select(Order)
+        .where(Order.subscription_id == subscription.id)
+        .order_by(Order.created_at.desc())
+    )
+    return service.Buyer(last.buyer_name, last.buyer_address, last.buyer_edb, last.buyer_embs)
+
+
+def renew(
+    session: Session, settings, subscription: Subscription, today: dt.date, link: str
+) -> Renewal:
+    """Issue and mail the renewal proforma; all or nothing, the e-mail last."""
+    from app import mail
+    from app.orders import proforma
+
+    sku = session.scalar(select(Product.sku).where(Product.id == subscription.product_id))
+    profile = monitored_profile(session, subscription)
+    try:
+        placed, _ = order(
+            session,
+            subscription.account_id,
+            profile.id if profile else subscription.profile_id,
+            sku,
+            _last_buyer(session, subscription),
+            renewing=subscription,
+            today=today,
+        )
+        invoice = session.scalar(
+            select(Invoice).where(
+                Invoice.order_id == placed.id, Invoice.kind == InvoiceKind.PROFORMA
+            )
+        )
+        period = (subscription.renews_on, add_months(subscription.renews_on, PLANS[sku]))
+        document = proforma.pdf(
+            invoice, placed, description=proforma.describe(session, placed, period=period)
+        )
+        body = (
+            "Здраво,\n\n"
+            "Следењето на нови повици за вашиот профил е активно до "
+            f"{mkdate(subscription.renews_on)}. "
+            f"За продолжување до {mkdate(period[1])}, во прилог е профактурата {invoice.number}, "
+            f"со рок за плаќање {mkdate(invoice.due_at)}.\n\n"
+            "Ако не ја платите, следењето престанува на крајот на периодот, без никаква обврска: "
+            "не наплатуваме ништо што не сте го платиле. Ако веќе не сакате да ве известуваме, "
+            f"откажете го следењето на {link}.\n\n"
+            "Грантови и субвенции\n"
+        )
+        banned = find_banned(body)
+        if banned:
+            raise proforma.ProformaRefused(f"banned phrase in the renewal e-mail: {banned}")
+        account = session.get(Account, subscription.account_id)
+        mail.send(
+            settings,
+            account.email,
+            f"Продолжување на следењето: профактура {invoice.number}",
+            body,
+            attachments=((f"{invoice.number}.pdf", document, "application/pdf"),),
+        )
+    except (mail.MailNotConfigured, OSError) as failed:
+        session.rollback()
+        raise SubscriptionRefused(
+            f"Е-поштата не замина ({failed}); профактурата не е издадена."
+        ) from None
+    except proforma.ProformaRefused as refused:
+        session.rollback()
+        raise SubscriptionRefused(f"Профактурата не може да се отпечати: {refused}") from None
+    session.commit()
+    return Renewal(subscription.id, invoice.number, period)
+
+
+def issue_renewals(session: Session, settings, today: dt.date, notice_days: int, link: str) -> dict:
+    """Every renewal due today, each on its own: one failure holds no one else up."""
+    counts = {"issued": 0, "failed": 0}
+    for subscription in due_for_renewal(session, today, notice_days):
+        try:
+            renew(session, settings, subscription, today, link)
+            counts["issued"] += 1
+        except SubscriptionRefused:
+            log.exception(
+                "renewal for subscription %s not issued; tried again tomorrow", subscription.id
+            )
+            counts["failed"] += 1
+    return counts

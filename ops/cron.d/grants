@@ -40,3 +40,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # them; this mails each subscriber their unsent alerts, once a day at 08:00 Skopje (06:00 UTC),
 # judging each again first. How often in busy seasons is P6 s81.
 0 6 * * *  root  cd /srv/grants && docker compose exec -T web flask alerts send >> /var/log/grants-alerts.log 2>&1
+
+# Renewal proformas (app/orders/subscriptions.py, P6 s79): ten days before a subscription's
+# paid period ends, the next period's proforma is issued and mailed. Nothing is charged: an
+# unpaid renewal just lets the period end.
+15 6 * * *  root  cd /srv/grants && docker compose exec -T web flask orders renew >> /var/log/grants-renewals.log 2>&1

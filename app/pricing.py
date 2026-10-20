@@ -41,6 +41,7 @@ class Monitoring(_Strict):
     monthly_net: int = Field(gt=0)
     yearly_net: int = Field(gt=0)
     available: bool
+    renewal_notice_days: int = Field(gt=0)
 
 
 class Prices(_Strict):

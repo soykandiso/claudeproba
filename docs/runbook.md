@@ -423,3 +423,17 @@ nothing and leaves the order in progress: settle it with the buyer (a refund is 
 
 Which calls are offered a package is `config/packages.yaml`; a call that fits two packages is
 offered none, which `flask documents check` will not catch: read the shortlist after editing it.
+
+## 13. Subscriptions and renewals
+
+Ten days before a subscription's paid period ends, `flask orders renew` (cron) issues the next
+period's proforma and mails it. It appears in `/admin/uplati` like any other; when the transfer
+arrives, mark it paid: the period is extended from the old end, and the invoice goes out.
+
+**Nothing is charged automatically**, and an unpaid renewal is never chased: the subscription
+simply lapses on its end date and alerts stop. A renewal paid after the lapse starts a new period
+from the payment date. A stale unpaid renewal proforma can be left; it is overdue in
+`/admin/uplati` and harms nothing.
+
+If the command reports renewals «not issued», the mail failed: nothing was issued, no number was
+spent, and the next day's run tries again.

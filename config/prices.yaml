@@ -36,3 +36,6 @@ monitoring:
   yearly_net: 12000
   # P4 builds the alerts; until then the price is shown as coming.
   available: false
+  # Days before a period ends that the renewal proforma is issued (P6 s79). More than
+  # invoicing.yaml's proforma_due_days, so the proforma falls due before the period ends.
+  renewal_notice_days: 10

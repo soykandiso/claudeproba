@@ -10,7 +10,7 @@ import email
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.config import load_settings
 from app.ingestion.snapshots import SnapshotStore
@@ -184,3 +184,110 @@ def test_every_invoice_line_says_what_was_bought(registry):  # noqa: F811
 def test_no_plan_but_the_two():
     with pytest.raises(subscriptions.SubscriptionRefused):
         subscriptions.order(None, None, None, "monitoring-week", BUYER)
+
+
+# ------------------------------------------------------------------ renewals (P6 s79)
+
+LINK = "http://localhost:8080/smetka"
+
+
+def _active(s, settings, *, ends_in: int):
+    """A paid subscription whose period ends `ends_in` days from today."""
+    account, placed = _paid(s, service.MONTH)
+    fulfil.subscription_job(s, settings, placed.id)
+    subscription = s.get(Subscription, placed.subscription_id)
+    subscription.renews_on = numbering.today() + dt.timedelta(days=ends_in)
+    s.commit()  # as stored: a failed renewal rolls back only its own work
+    return account, subscription
+
+
+@db
+def test_a_renewal_is_due_only_near_the_end_and_once(registry, sending):  # noqa: F811
+    settings, *_ = sending
+    with registry[0]() as s:
+        today = numbering.today()
+        _, soon = _active(s, settings, ends_in=5)
+        _, later = _active(s, settings, ends_in=25)
+        _, cancelled = _active(s, settings, ends_in=5)
+        subscriptions.cancel(s, cancelled)
+        due = {x.id for x in subscriptions.due_for_renewal(s, today, 10)}
+        assert soon.id in due and later.id not in due and cancelled.id not in due
+
+        subscriptions.renew(s, settings, soon, today, LINK)
+        assert soon.id not in {x.id for x in subscriptions.due_for_renewal(s, today, 10)}
+
+
+@db
+def test_the_renewal_proforma_is_mailed_for_the_next_period_and_promises_nothing(registry, sending):  # noqa: F811
+    settings, store, outbox = sending
+    with registry[0]() as s:
+        today = numbering.today()
+        account, subscription = _active(s, settings, ends_in=10)
+        done = subscriptions.renew(s, settings, subscription, today, LINK)
+        assert done.period == (
+            subscription.renews_on,
+            subscriptions.add_months(subscription.renews_on, 1),
+        )
+
+        renewal = s.scalar(
+            select(Order).where(
+                Order.subscription_id == subscription.id, Order.state == OrderState.INVOICED
+            )
+        )
+        pro = s.scalar(select(Invoice).where(Invoice.order_id == renewal.id))
+        assert (
+            pro.number == done.number and pro.due_at < subscription.renews_on
+        )  # due before the end
+        first = s.scalar(
+            select(Order).where(
+                Order.subscription_id == subscription.id, Order.state == OrderState.DELIVERED
+            )
+        )
+        assert renewal.buyer_name == first.buyer_name and renewal.buyer_edb == first.buyer_edb
+
+    newest = max(outbox.glob("*.eml"), key=lambda p: p.stat().st_mtime)
+    message = email.message_from_bytes(newest.read_bytes())
+    body = (
+        next(p for p in message.walk() if p.get_content_type() == "text/plain")
+        .get_payload(decode=True)
+        .decode()
+    )
+    assert "без никаква обврска" in body and LINK in body and done.number in body
+    assert [p.get_filename() for p in message.walk() if p.get_filename()] == [f"{done.number}.pdf"]
+
+
+@db
+def test_a_paid_renewal_extends_from_the_paid_end(registry, sending):  # noqa: F811
+    settings, *_ = sending
+    with registry[0]() as s:
+        _, subscription = _active(s, settings, ends_in=7)
+        end = subscription.renews_on
+        subscriptions.renew(s, settings, subscription, numbering.today(), LINK)
+        renewal = s.scalar(
+            select(Order).where(
+                Order.subscription_id == subscription.id, Order.state == OrderState.INVOICED
+            )
+        )
+        pro = s.scalar(select(Invoice).where(Invoice.order_id == renewal.id))
+        reconcile.confirm(s, pro.id, Decimal(pro.total_mkd), "ref", numbering.today())
+        fulfil.subscription_job(s, settings, renewal.id)
+        assert subscription.renews_on == subscriptions.add_months(end, 1)
+
+
+@db
+def test_a_failed_mail_issues_nothing_and_it_is_tried_again(registry, sending):  # noqa: F811
+    settings, *_ = sending
+    no_mail = load_settings(env="testing", mail_backend="smtp", smtp_host=None)
+    with registry[0]() as s:
+        today = numbering.today()
+        _, subscription = _active(s, settings, ends_in=5)
+        before = s.scalar(
+            select(func.count()).select_from(Order).where(Order.subscription_id == subscription.id)
+        )
+        with pytest.raises(subscriptions.SubscriptionRefused, match="не е издадена"):
+            subscriptions.renew(s, no_mail, subscription, today, LINK)
+        after = s.scalar(
+            select(func.count()).select_from(Order).where(Order.subscription_id == subscription.id)
+        )
+        assert after == before
+        assert subscription.id in {x.id for x in subscriptions.due_for_renewal(s, today, 10)}

@@ -229,3 +229,21 @@ def retry_command(order_id):
         click.echo(f"order {order_id} handed to the worker again")
     else:
         click.echo(f"order {order_id} is already queued or running")
+
+
+@cli.command("renew")
+def renew_command():
+    """Issue and mail the renewal proformas due today (cron, daily)."""
+    from flask import url_for
+
+    from app.orders import numbering, subscriptions
+    from app.pricing import prices
+
+    settings = current_app.extensions["settings"]
+    with current_app.test_request_context(base_url=settings.public_url):
+        link = url_for("account.home", _external=True)
+    with _sessions()() as session:
+        counts = subscriptions.issue_renewals(
+            session, settings, numbering.today(), prices().monitoring.renewal_notice_days, link
+        )
+    click.echo(f"{counts['issued']} renewal proformas issued, {counts['failed']} not")
