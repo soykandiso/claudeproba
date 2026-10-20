@@ -197,6 +197,21 @@ many skips means the database is not up.
 - **No browser pane like this one.** Visual checks need headless Chromium (handoff §5 says
   where it is and to run it as `nobody`).
 
+### In a GitHub Codespace (where the owner runs it some nights)
+
+The Codespace uses Docker (`./run.py`), unlike the browser session. One command makes room on its
+disk, pulls the latest code, rebuilds, starts the app and migrates the database:
+
+```bash
+bash ops/dev/codespace_tonight.sh
+```
+
+If it says the disk is still too full, run it with `--deep` (removes every Docker image not in
+use; they are rebuilt), and if that is not enough, give the Codespace a larger machine type on
+github.com (Codespaces → the codespace → … → Change machine type): the disk grows with it, and the
+code and the database volume are kept. The script never removes Docker volumes, so the database
+survives every clean-up.
+
 ### Working agreements carried over from the sessions on this machine
 
 These lived in Claude's local memory here, so they are written down for a fresh session:
