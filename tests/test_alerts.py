@@ -165,3 +165,109 @@ def test_the_catch_up_finds_each_call_approved_since_a_day_once(registry):
             )
         s.flush()
         assert alerts.published_since(s, NOW - dt.timedelta(days=1)) == [call.id]
+
+
+# ------------------------------------------------------------------ sending (P6 s78)
+
+
+@pytest.fixture
+def mailing(tmp_path):
+    from app import create_app
+    from app.config import load_settings
+
+    app = create_app(load_settings(env="testing", outbox_dir=str(tmp_path / "outbox")))
+    return app, tmp_path / "outbox"
+
+
+def _body(outbox):
+    import email
+
+    files = sorted(outbox.glob("*.eml"))
+    message = email.message_from_bytes(files[-1].read_bytes())
+    subject = str(email.header.make_header(email.header.decode_header(message["Subject"])))
+    return subject, message.get_payload(decode=True).decode(), len(files)
+
+
+@db
+def test_an_alert_is_mailed_with_its_verdict_and_every_condition_quoted(registry, mailing):
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        subscription = _subscriber(s)
+        call = make_call(s, source, snapshot, title="Нов повик за софтвер", criteria=[FITS])
+        alerts.match_call(s, call.id, NOW)
+        counts = alerts.send_pending(app, s, NOW)
+        assert counts == {"mailed": 1, "alerts": 1, "skipped": 0, "failed": 0}
+        sent = _alerts(s, subscription)[0]
+        assert sent.sent_at == NOW and subscription.last_alert_at == NOW
+
+        subject, body, files = _body(outbox)
+        assert subject == "Нов повик за вашиот профил: Нов повик за софтвер"
+        assert "Оценка: " in body and "„цитат“" in body  # the stored words, verbatim
+        assert "http://localhost:8080/povici/izvor/" in body  # the passage behind the quote
+        assert "Последна проверка на повикот:" in body and "одлуката за секоја пријава" in body
+
+        # Sent once: a second run mails nothing.
+        assert alerts.send_pending(app, s, NOW)["mailed"] == 0
+        assert _body(outbox)[2] == files
+
+
+@db
+def test_a_call_closed_or_unpublished_by_sending_time_is_skipped_with_the_reason(registry, mailing):
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        subscription = _subscriber(s)
+        closing = make_call(s, source, snapshot, title="Се затвора", criteria=[FITS])
+        hidden = make_call(s, source, snapshot, title="Ќе се повлече", criteria=[FITS])
+        alerts.match_call(s, closing.id, NOW)
+        alerts.match_call(s, hidden.id, NOW)
+        closing.deadline_at = NOW - dt.timedelta(hours=1)
+        hidden.is_published = False
+        s.flush()
+        assert alerts.send_pending(app, s, NOW)["skipped"] == 2
+        reasons = sorted(a.skipped_reason for a in _alerts(s, subscription))
+        assert reasons == ["повикот не е објавен", "рокот на повикот истече"]
+        assert not outbox.exists() or not list(outbox.glob("*.eml"))
+
+
+@db
+def test_several_new_calls_are_one_message(registry, mailing):
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        _subscriber(s)
+        for n in range(3):
+            alerts.match_call(
+                s, make_call(s, source, snapshot, title=f"Повик {n}", criteria=[FITS]).id, NOW
+            )
+        assert alerts.send_pending(app, s, NOW)["mailed"] == 1
+        subject, body, files = _body(outbox)
+        assert files == 1 and subject == "3 нови повици за вашиот профил"
+        assert "1. Повик" in body and "3. Повик" in body
+
+
+@db
+def test_an_institutions_own_words_never_stop_an_alert(registry, mailing):
+    """«гарантирано» in a call's title is the institution's, quoted; our lint reads our words."""
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        _subscriber(s)
+        call = make_call(
+            s, source, snapshot, title="Гарантирано финансирање за ИТ", criteria=[FITS]
+        )
+        alerts.match_call(s, call.id, NOW)
+        assert alerts.send_pending(app, s, NOW)["mailed"] == 1
+
+
+def test_production_never_mails_links_to_localhost():
+    from types import SimpleNamespace
+
+    app = SimpleNamespace(
+        extensions={
+            "settings": SimpleNamespace(is_production=True, public_url="http://localhost:8080")
+        }
+    )
+    with pytest.raises(alerts.SendingRefused):
+        alerts.send_pending(app, None)

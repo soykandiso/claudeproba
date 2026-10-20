@@ -130,3 +130,159 @@ def match_command(since):
             total += len(match_call(session, call_id))
         session.commit()
     click.echo(f"{len(calls)} calls matched, {total} new alerts")
+
+
+# ------------------------------------------------------------------ sending (P6 s78)
+
+SHOWN_CONDITIONS = 6  # per call; the rest are on the page, the mail says how many
+
+
+class SendingRefused(RuntimeError):
+    """Nothing is sent: the settings would put wrong links in front of customers."""
+
+
+def _item(session: Session, alert: Alert, now: dt.datetime, link) -> tuple[dict | None, str | None]:
+    """What the mail says about one alert, judged again now; or why it is skipped."""
+    from app.models import ApplicantProfile, Programme
+
+    call = session.get(Call, alert.call_id)
+    if call is None or not call.is_published:
+        return None, "повикот не е објавен"
+    if call.deadline_at is not None and call.deadline_at <= now:
+        return None, "рокот на повикот истече"
+    row = session.get(ApplicantProfile, alert.profile_id)
+    profile = normalise.from_row(row, now.astimezone(SKOPJE).date())
+    scored, citations = shortlist.ranked(session, profile, now)
+    found = next((s for s in scored if s.call.id == call.id), None)
+    if found is None or found.excluded or found.outcome.verdict not in ALERTED:
+        return None, "повикот повеќе не одговара на профилот"
+    cited = [
+        (outcome, citations[outcome.criterion.id])
+        for outcome in found.outcome.outcomes
+        if outcome.criterion.id in citations  # no citation, no claim: not shown
+    ]
+    programme = session.get(Programme, call.programme_id)
+    return {
+        "title": call.title_mk,
+        "institution": programme.institution if programme else "",
+        "verdict": found.outcome.verdict,
+        "deadline": call.deadline_at,
+        "verified": call.last_verified_at or call.updated_at or now,
+        "conditions": [
+            {
+                "label": outcome.criterion.label_mk,
+                "verdict": outcome.verdict,
+                "quote": citation.quote,
+                "source_url": citation.source_url,
+                "retrieved": citation.retrieved_at,
+                "link": link("shortlist.passage", criterion_id=outcome.criterion.id),
+            }
+            for outcome, citation in cited[:SHOWN_CONDITIONS]
+        ],
+        "more": len(found.outcome.outcomes) - min(len(cited), SHOWN_CONDITIONS),
+        "shortlist": link("shortlist.index") + f"#call-{call.id}",
+        "canonical": call.canonical_url,
+    }, None
+
+
+def _without_theirs(item: dict) -> dict:
+    blank = {"title": "…", "institution": "…", "canonical": "…"}
+    conditions = [{**c, "quote": "…", "source_url": "…"} for c in item["conditions"]]
+    return {**item, **blank, "conditions": conditions}
+
+
+def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
+    """Mail every subscriber their unsent alerts, one message each; skip what is no longer true."""
+    from flask import render_template, url_for
+
+    from app import mail
+    from app.models import Account
+    from app.reports.lint import find_banned
+
+    settings = app.extensions["settings"]
+    if settings.is_production and not settings.public_url.startswith("https://"):
+        raise SendingRefused("GRANTS_PUBLIC_URL must be the site's https address in production")
+    now = now or numbering.now()
+    unsent = session.scalars(
+        select(Alert)
+        .where(Alert.sent_at.is_(None), Alert.skipped_reason.is_(None))
+        .order_by(Alert.subscription_id, Alert.created_at)
+    ).all()
+    by_subscription: dict = {}
+    for alert in unsent:
+        by_subscription.setdefault(alert.subscription_id, []).append(alert)
+
+    counts = {"mailed": 0, "alerts": 0, "skipped": 0, "failed": 0}
+    with app.test_request_context(base_url=settings.public_url):
+
+        def link(endpoint, **values):
+            return url_for(endpoint, _external=True, **values)
+
+        for subscription_id, pending in by_subscription.items():
+            subscription = session.get(Subscription, subscription_id)
+            items, sent = [], []
+            for alert in pending:
+                item, reason = _item(session, alert, now, link)
+                if reason:
+                    alert.skipped_reason = reason
+                    counts["skipped"] += 1
+                else:
+                    items.append(item)
+                    sent.append(alert)
+            if not items:
+                session.commit()
+                continue
+            body = render_template(
+                "alerts/mail.txt",
+                items=items,
+                until=subscription.renews_on,
+                account=link("account.home"),
+            )
+            # Our own words only: the institution's title, name and quotes are theirs, printed
+            # as given (as the report's lint skips `data-theirs`).
+            ours = render_template(
+                "alerts/mail.txt",
+                items=[_without_theirs(i) for i in items],
+                until=subscription.renews_on,
+                account=link("account.home"),
+            )
+            banned = find_banned(ours)
+            if banned:
+                log.error("alert mail for %s refused: banned phrase %s", subscription_id, banned)
+                session.rollback()
+                counts["failed"] += 1
+                continue
+            subject = (
+                f"Нов повик за вашиот профил: {items[0]['title'][:80]}"
+                if len(items) == 1
+                else f"{len(items)} нови повици за вашиот профил"
+            )
+            account = session.get(Account, subscription.account_id)
+            try:
+                mail.send(settings, account.email, subject, body)
+            except (mail.MailNotConfigured, OSError):
+                log.exception("alerts for %s not mailed; they stay unsent", subscription_id)
+                session.rollback()
+                counts["failed"] += 1
+                continue
+            for alert in sent:
+                alert.sent_at = now
+            subscription.last_alert_at = now
+            session.commit()
+            counts["mailed"] += 1
+            counts["alerts"] += len(sent)
+    return counts
+
+
+@cli.command("send")
+def send_command():
+    """Mail every subscriber their unsent alerts (cron, after the morning's ingestion)."""
+    from app.db import session_factory
+
+    sessions = session_factory(current_app.extensions["settings"])
+    with sessions() as session:
+        counts = send_pending(current_app._get_current_object(), session)
+    click.echo(
+        f"{counts['mailed']} subscribers mailed ({counts['alerts']} alerts), "
+        f"{counts['skipped']} skipped, {counts['failed']} not sent"
+    )

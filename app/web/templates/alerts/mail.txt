@@ -1,0 +1,29 @@
+Здраво,
+
+{% if items|length == 1 %}Објавен е нов јавен повик што одговара на вашиот профил.{% else %}Објавени се {{ items|length }} нови јавни повици што одговараат на вашиот профил.{% endif %}
+{% for item in items %}
+
+{{ loop.index }}. {{ item.title }}
+   {{ item.institution }}
+   Оценка: {{ verdict_labels[item.verdict] }}
+   Рок: {% if item.deadline %}{{ item.deadline|mkdate }}{% else %}не е наведен{% endif %}
+   Последна проверка на повикот: {{ item.verified|mkdate }}
+{% if item.conditions %}
+   Услови, со цитат од текстот на повикот:
+{% for c in item.conditions %}
+   - {{ c.label }}: {{ criterion_labels[c.verdict] }}
+     „{{ c.quote }}“
+     Извор: {{ c.source_url }}, прочитано на {{ c.retrieved|mkdate }}
+     Во текстот: {{ c.link }}
+{% endfor %}{% endif %}{% if item.more %}
+   {{ 'Уште еден услов' if item.more == 1 else 'Уште ' ~ item.more ~ ' услови' }} на страницата со повици.
+{% endif %}
+   Сите услови и цитати: {{ item.shortlist }}
+   Повикот кај институцијата: {{ item.canonical }}
+{% endfor %}
+
+Оценката е проценка врз основа на текстот на повикот и на вашите одговори; одлуката за секоја пријава ја носи институцијата. Пред да се пријавите, прочитајте ја последната верзија на повикот.
+
+Следењето е активно до {{ until|mkdate }}. Профилот и следењето: {{ account }}
+
+Грантови и субвенции

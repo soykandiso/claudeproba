@@ -234,7 +234,8 @@ CREATE TABLE public.alert (
     profile_id uuid NOT NULL,
     verdict public.verdict NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    sent_at timestamp with time zone
+    sent_at timestamp with time zone,
+    skipped_reason text
 );
 
 

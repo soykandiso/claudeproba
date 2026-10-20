@@ -156,3 +156,6 @@ class Alert(Base):
     verdict: Mapped[Verdict] = mapped_column(pg_enum(Verdict, "verdict"))
     created_at: Mapped[dt.datetime] = now_column()
     sent_at: Mapped[dt.datetime | None] = timestamptz()
+    # Set instead of sending when, by the time it would go, the call has closed, been
+    # unpublished, or no longer fits (P6 s78): an alert says only what is still true.
+    skipped_reason: Mapped[str | None] = mapped_column(Text)

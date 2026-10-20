@@ -35,3 +35,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # hands the order over at once; this catches any order whose hand-over failed (Redis
 # down, a deploy). A job per order id, so nothing is analysed twice.
 */10 * * * *  root  cd /srv/grants && docker compose exec -T web flask orders dispatch >> /var/log/grants-orders.log 2>&1
+
+# New calls for subscribers (app/alerts.py, P6 s78): calls are matched when a person publishes
+# them; this mails each subscriber their unsent alerts, once a day at 08:00 Skopje (06:00 UTC),
+# judging each again first. How often in busy seasons is P6 s81.
+0 6 * * *  root  cd /srv/grants && docker compose exec -T web flask alerts send >> /var/log/grants-alerts.log 2>&1

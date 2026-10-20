@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     # Becomes https://<domain>/crawler once the domain exists (decisions.md D2).
     crawler_contact_url: str = "https://github.com/soykandiso/claudeproba"
 
+    # The site's own address, for links in mail sent outside a request (alerts, P6 s78).
+    # https://<domain> in production once the domain exists (D2); the alert sender refuses to
+    # mail links to anything else there.
+    public_url: str = "http://localhost:8080"
+
     # Where `flask review export-cases` writes the evaluation cases reviewer
     # decisions become (app/review/cases.py). On the VPS a bind mount of the
     # checkout's evals/cases/from_review, pulled and committed by hand (runbook §7).
