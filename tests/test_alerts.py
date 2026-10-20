@@ -198,7 +198,7 @@ def test_an_alert_is_mailed_with_its_verdict_and_every_condition_quoted(registry
         call = make_call(s, source, snapshot, title="Нов повик за софтвер", criteria=[FITS])
         alerts.match_call(s, call.id, NOW)
         counts = alerts.send_pending(app, s, NOW)
-        assert counts == {"mailed": 1, "alerts": 1, "skipped": 0, "failed": 0}
+        assert counts == {"mailed": 1, "alerts": 1, "skipped": 0, "failed": 0, "waiting": 0}
         sent = _alerts(s, subscription)[0]
         assert sent.sent_at == NOW and subscription.last_alert_at == NOW
 
@@ -272,3 +272,76 @@ def test_production_never_mails_links_to_localhost():
     )
     with pytest.raises(alerts.SendingRefused):
         alerts.send_pending(app, None)
+
+
+# ------------------------------------------------------------------ digests (P6 s81)
+
+
+@db
+def test_a_burst_is_one_message_the_strongest_in_full_the_rest_listed(registry, mailing):
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        _subscriber(s)
+        for n in range(8):
+            deadline = NOW + dt.timedelta(days=20 + n)
+            call = make_call(
+                s, source, snapshot, title=f"Повик {n}", criteria=[FITS], deadline_at=deadline
+            )
+            alerts.match_call(s, call.id, NOW)
+        counts = alerts.send_pending(app, s, NOW)
+        assert counts["mailed"] == 1 and counts["alerts"] == 8
+        subject, body, files = _body(outbox)
+        assert files == 1 and subject == "8 нови повици за вашиот профил"
+        assert body.count("Услови, со цитат од текстот на повикот:") == alerts.DETAILED_CALLS
+        assert "Уште 3 повици" in body
+        # The nearest deadline first: «Повик 0» leads, «Повик 7» is only listed.
+        assert body.index("1. Повик 0") < body.index("- Повик 7")
+
+
+@db
+def test_one_message_a_day_and_the_rest_waits_for_tomorrow(registry, mailing):
+    app, outbox = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        subscription = _subscriber(s)
+        alerts.match_call(
+            s, make_call(s, source, snapshot, title="Утрински", criteria=[FITS]).id, NOW
+        )
+        alerts.send_pending(app, s, NOW)
+        alerts.match_call(
+            s, make_call(s, source, snapshot, title="Попладневен", criteria=[FITS]).id, NOW
+        )
+        later = alerts.send_pending(app, s, NOW + dt.timedelta(hours=3))
+        assert later["mailed"] == 0 and later["waiting"] == 1
+        tomorrow = alerts.send_pending(app, s, NOW + dt.timedelta(hours=21))
+        assert tomorrow["mailed"] == 1
+        assert all(a.sent_at for a in _alerts(s, subscription))
+        assert _body(outbox)[2] == 2
+
+
+@db
+def test_a_quiet_month_earns_one_still_watching_note(registry, mailing):
+    app, outbox = mailing
+    factory, *_ = registry
+    with factory() as s:
+        subscription = _subscriber(s, started=TODAY - dt.timedelta(days=40), days=60)
+        assert alerts.send_quiet(app, s, NOW) == 1
+        subject, body, _ = _body(outbox)
+        assert subject == "Ги следиме повиците за вашиот профил"
+        assert "ниту еден не одговара" in body or "немаше нови повици" in body
+        assert "/profil/" in body and "/otkazi-sledenje/" in body
+        assert subscription.last_alert_at == NOW
+        assert alerts.send_quiet(app, s, NOW + dt.timedelta(days=5)) == 0  # not again so soon
+
+
+@db
+def test_no_quiet_note_for_a_new_subscription_or_one_with_alerts_waiting(registry, mailing):
+    app, _ = mailing
+    factory, source, snapshot = registry
+    with factory() as s:
+        _subscriber(s, started=TODAY - dt.timedelta(days=10))  # new: not quiet yet
+        waiting = _subscriber(s, started=TODAY - dt.timedelta(days=40), days=60)
+        alerts.match_call(s, make_call(s, source, snapshot, criteria=[FITS]).id, NOW)
+        assert _alerts(s, waiting)  # an alert is waiting: not quiet
+        assert alerts.send_quiet(app, s, NOW) == 0

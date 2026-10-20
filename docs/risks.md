@@ -61,6 +61,7 @@ still only half built) and looking for classes of misreading deliberately, as s2
 | **Mitigation** | The monitoring subscription exists precisely to convert spiky transactions into recurring revenue. Document packages extend each spike (a call that opens in March generates package work through May). The public archive draws traffic in dead months. Digest emails in busy seasons so bursts do not become spam |
 | **Earliest cheap test** | **P1 session 6**, free as part of reconnaissance. Walk each source's archive back 2–3 years and plot actual publication dates. One evening produces the seasonal shape of your entire market — and tells you whether session 21's demand test is landing in a dead period (`roadmap.md` §8) |
 | **Observed (13.09.2026)** | AV announcements peak May–June and September, thinnest December–January; Economy deadlines cluster in August and November; IPARD 1–3 calls/year. Detail in `sources.md` §6.4 |
+| **Built (20.10.2026, P6 s81)** | Alerts are one digest a day at most, the five strongest calls in full and the rest listed; a subscriber who has heard nothing for 30 days gets one note that we are still watching (`app/alerts.py`) |
 
 ---
 

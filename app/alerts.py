@@ -137,6 +137,11 @@ def match_command(since):
 # ------------------------------------------------------------------ sending (P6 s78)
 
 SHOWN_CONDITIONS = 6  # per call; the rest are on the page, the mail says how many
+# Digests (P6 s81, risks.md R4): calls cluster in seasons, and a burst must not become spam.
+DETAILED_CALLS = 5  # in full per message; more are listed by title, deadline and link
+ONCE_A_DAY = dt.timedelta(hours=20)  # a later alert waits for tomorrow's message
+QUIET_AFTER = dt.timedelta(days=30)  # silence this long earns one «still watching» note
+_STRENGTH = {Verdict.ELIGIBLE: 0, Verdict.LIKELY_ELIGIBLE: 1, Verdict.NEEDS_VERIFICATION: 2}
 
 
 class SendingRefused(RuntimeError):
@@ -187,6 +192,16 @@ def _item(session: Session, alert: Alert, now: dt.datetime, link) -> tuple[dict 
     }, None
 
 
+def _order(item: dict):
+    """The strongest verdict first, then the nearest deadline; no deadline last."""
+    deadline = item["deadline"]
+    return (
+        _STRENGTH[item["verdict"]],
+        deadline is None,
+        deadline or dt.datetime.max.replace(tzinfo=dt.UTC),
+    )
+
+
 def _without_theirs(item: dict) -> dict:
     blank = {"title": "…", "institution": "…", "canonical": "…"}
     conditions = [{**c, "quote": "…", "source_url": "…"} for c in item["conditions"]]
@@ -214,7 +229,7 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
     for alert in unsent:
         by_subscription.setdefault(alert.subscription_id, []).append(alert)
 
-    counts = {"mailed": 0, "alerts": 0, "skipped": 0, "failed": 0}
+    counts = {"mailed": 0, "alerts": 0, "skipped": 0, "failed": 0, "waiting": 0}
     with app.test_request_context(base_url=settings.public_url):
 
         def link(endpoint, **values):
@@ -222,6 +237,9 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
 
         for subscription_id, pending in by_subscription.items():
             subscription = session.get(Subscription, subscription_id)
+            if subscription.last_alert_at and now - subscription.last_alert_at < ONCE_A_DAY:
+                counts["waiting"] += len(pending)  # one message a day: these go tomorrow
+                continue
             stop = link(
                 "unsubscribe.page",
                 token=subscriptions.unsubscribe_token(app.config["SECRET_KEY"], subscription.id),
@@ -238,9 +256,13 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
             if not items:
                 session.commit()
                 continue
+            items.sort(key=_order)
+            listed = items[DETAILED_CALLS:]
+            items = items[:DETAILED_CALLS]
             body = render_template(
                 "alerts/mail.txt",
                 items=items,
+                listed=listed,
                 until=subscription.renews_on,
                 account=link("account.home"),
                 unsubscribe=stop,
@@ -250,6 +272,7 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
             ours = render_template(
                 "alerts/mail.txt",
                 items=[_without_theirs(i) for i in items],
+                listed=[_without_theirs(i) for i in listed],
                 until=subscription.renews_on,
                 account=link("account.home"),
                 unsubscribe=stop,
@@ -260,10 +283,11 @@ def send_pending(app, session: Session, now: dt.datetime | None = None) -> dict:
                 session.rollback()
                 counts["failed"] += 1
                 continue
+            total = len(items) + len(listed)
             subject = (
                 f"Нов повик за вашиот профил: {items[0]['title'][:80]}"
-                if len(items) == 1
-                else f"{len(items)} нови повици за вашиот профил"
+                if total == 1
+                else f"{total} нови повици за вашиот профил"
             )
             account = session.get(Account, subscription.account_id)
             try:
@@ -292,7 +316,78 @@ def send_command():
     sessions = session_factory(current_app.extensions["settings"])
     with sessions() as session:
         counts = send_pending(current_app._get_current_object(), session)
+        quiet = send_quiet(current_app._get_current_object(), session)
     click.echo(
         f"{counts['mailed']} subscribers mailed ({counts['alerts']} alerts), "
-        f"{counts['skipped']} skipped, {counts['failed']} not sent"
+        f"{counts['waiting']} alerts waiting for tomorrow, {counts['skipped']} skipped, "
+        f"{counts['failed']} not sent; {quiet} «still watching» notes"
     )
+
+
+def send_quiet(app, session: Session, now: dt.datetime | None = None) -> int:
+    """One «still watching» note to each running subscription silent for `QUIET_AFTER` (s81).
+
+    A quiet month looks like a broken service (risks.md R4). The note says what was checked and
+    that nothing fitted, never more than once in `QUIET_AFTER`; a subscription with alerts
+    waiting is not quiet and gets none.
+    """
+    from flask import render_template, url_for
+
+    from app import mail
+    from app.models import Account
+    from app.reports.lint import find_banned
+
+    settings = app.extensions["settings"]
+    if settings.is_production and not settings.public_url.startswith("https://"):
+        raise SendingRefused("GRANTS_PUBLIC_URL must be the site's https address in production")
+    now = now or numbering.now()
+    today = now.astimezone(SKOPJE).date()
+    published = len(published_since(session, now - QUIET_AFTER))
+    sent = 0
+    with app.test_request_context(base_url=settings.public_url):
+        for subscription in running(session, today):
+            last = subscription.last_alert_at or dt.datetime.combine(
+                subscription.started_on, dt.time(12), dt.UTC
+            )
+            if now - last < QUIET_AFTER:
+                continue
+            waiting = session.scalar(
+                select(Alert.id).where(
+                    Alert.subscription_id == subscription.id,
+                    Alert.sent_at.is_(None),
+                    Alert.skipped_reason.is_(None),
+                )
+            )
+            if waiting is not None:
+                continue
+            stop = url_for(
+                "unsubscribe.page",
+                token=subscriptions.unsubscribe_token(app.config["SECRET_KEY"], subscription.id),
+                _external=True,
+            )
+            body = render_template(
+                "alerts/quiet.txt",
+                published=published,
+                profile=url_for("intake.form", _external=True),
+                until=subscription.renews_on,
+                unsubscribe=stop,
+            )
+            if find_banned(body):
+                log.error("quiet note for %s refused by the lint", subscription.id)
+                continue
+            account = session.get(Account, subscription.account_id)
+            try:
+                mail.send(
+                    settings,
+                    account.email,
+                    "Ги следиме повиците за вашиот профил",
+                    body,
+                    headers=mail.unsubscribe_headers(stop),
+                )
+            except (mail.MailNotConfigured, OSError):
+                log.exception("quiet note for %s not mailed", subscription.id)
+                continue
+            subscription.last_alert_at = now
+            session.commit()
+            sent += 1
+    return sent
