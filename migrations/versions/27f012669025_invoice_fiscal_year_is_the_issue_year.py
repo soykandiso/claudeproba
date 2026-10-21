@@ -7,6 +7,7 @@ Revises: d5c80c005c25
 Create Date: 2026-10-13 16:05:06.557449
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -15,8 +16,8 @@ import pgvector.sqlalchemy
 
 
 # revision identifiers, used by Alembic.
-revision: str = '27f012669025'
-down_revision: Union[str, Sequence[str], None] = 'd5c80c005c25'
+revision: str = "27f012669025"
+down_revision: Union[str, Sequence[str], None] = "d5c80c005c25"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,10 +25,10 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     op.create_check_constraint(
-        'fiscal_year', 'invoice', 'fiscal_year = EXTRACT(YEAR FROM issued_at)'
+        "fiscal_year", "invoice", "fiscal_year = EXTRACT(YEAR FROM issued_at)"
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_constraint('fiscal_year', 'invoice', type_='check')
+    op.drop_constraint("fiscal_year", "invoice", type_="check")
