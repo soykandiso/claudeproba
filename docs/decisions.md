@@ -28,6 +28,10 @@ Rate used throughout: **1 EUR ≈ 61.5 MKD** (the denar is pegged, so this is st
 > budget tables, which these packages do not yet have.
 > **16.10.2026, default taken by Claude:** a package promises the same **five working days** as a
 > report (the payment e-mail and the order page say so).
+> **21.10.2026, defaults taken by Claude:** the monitoring subscription goes on sale at D1's
+> prices; **one subscription per account at a time**, and it needs a saved profile; the order
+> form says **before payment** that nothing is charged automatically and that the current period
+> is not refunded on cancelling. Terms §2 names the package and monitoring; both await the lawyer.
 > **16.10.2026, defaults taken by Claude (P6 s76):** the subscription is **paid periods, never
 > renewed by itself** (no card on file: a renewal proforma, paid or not); periods are calendar
 > months or years; an early renewal runs from the end already paid; **cancelling keeps the paid

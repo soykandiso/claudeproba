@@ -47,6 +47,7 @@ def _sessions():
 
 
 PACKAGE_ENDPOINTS = {"checkout.package_form", "checkout.place_package"}
+SUBSCRIPTION_ENDPOINTS = {"checkout.subscription_form", "checkout.place_subscription"}
 REPORT_ENDPOINTS = {"checkout.form", "checkout.place"}
 
 
@@ -57,10 +58,12 @@ def _open_for_orders():
     p = prices()
     if request.endpoint in PACKAGE_ENDPOINTS:
         allowed = p.package.orderable
+    elif request.endpoint in SUBSCRIPTION_ENDPOINTS:
+        allowed = p.monitoring.available
     elif request.endpoint in REPORT_ENDPOINTS:
         allowed = p.report.orderable
     else:
-        allowed = p.report.orderable or p.package.orderable
+        allowed = p.report.orderable or p.package.orderable or p.monitoring.available
     if not allowed:
         abort(404)
 
@@ -242,12 +245,96 @@ def place_package(call_id: uuid.UUID):
     return redirect(url_for("checkout.order", order_id=order_id, sent="1" if sent else "0"))
 
 
+# ------------------------------------------------------------------ the subscription (P6)
+
+
+def _subscription_page(db, account_id, typed, errors, status=200):
+    from flask_babel import gettext as _
+
+    from app.i18n import money
+    from app.orders import subscriptions
+
+    p = prices().monitoring
+    current = subscriptions.current(db, account_id)
+    state = subscriptions.status(current, numbering.today()) if current else None
+    return render_template(
+        "checkout/subscription_form.html",
+        plan_options=[(service.MONTH, _("Месечно")), (service.YEAR, _("Годишно"))],
+        plan_prices=[
+            f"{word}, {money(net)} ({money(prices().gross(net))})"
+            for word, net in ((_("Месечно"), p.monthly_net), (_("Годишно"), p.yearly_net))
+        ],
+        chosen=typed.get("plan", service.MONTH),
+        has_profile=accounts_web._latest(db, account_id) is not None,
+        current=current if state in ("active", "ending") else None,
+        state=state,
+        typed=typed,
+        errors=errors,
+    ), status
+
+
+@bp.get("/sledenje")
+def subscription_form():
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    with _sessions()() as db:
+        return _subscription_page(db, account_id, {}, {})
+
+
+@bp.post("/sledenje")
+def place_subscription():
+    from app.orders import subscriptions
+
+    account_id, away = _signed_in_or_redirect()
+    if away:
+        return away
+    typed, errors = _clean(request.form)
+    typed["plan"] = request.form.get("plan", "")
+    if typed["plan"] not in subscriptions.PLANS:
+        errors["plan"] = "Изберете месечно или годишно."
+    with _sessions()() as db:
+        profile = accounts_web._latest(db, account_id)
+        if profile is None:
+            return redirect(url_for("intake.form"))
+        current = subscriptions.current(db, account_id)
+        if current and subscriptions.status(current, numbering.today()) != "lapsed":
+            return redirect(url_for("account.home") + "#following-h")  # one at a time
+        if errors:
+            return _subscription_page(db, account_id, typed, errors, 422)
+        order, _ = subscriptions.order(
+            db,
+            account_id,
+            profile.id,
+            typed["plan"],
+            service.Buyer(
+                typed["name"], typed["address"], typed["edb"] or None, typed["embs"] or None
+            ),
+        )
+        db.commit()
+        order_id = order.id
+        sent = _mail_proforma(db, order)
+    return redirect(url_for("checkout.order", order_id=order_id, sent="1" if sent else "0"))
+
+
 def _what(db, order: Order) -> dict:
     """What the order is for, as its pages and mails say it: a report, or a call's package."""
-    from app.models import Call
+    from app.models import Call, Subscription
     from app.models.documents import DocumentPackage
 
-    if service.sku_of(db, order) != service.PACKAGE:
+    sku = service.sku_of(db, order)
+    if sku in (service.MONTH, service.YEAR):
+        subscription = (
+            db.get(Subscription, order.subscription_id) if order.subscription_id else None
+        )
+        return {
+            "is_package": False,
+            "call_title": None,
+            "is_subscription": True,
+            "plan_name": service.NAMES[sku],
+            "until": subscription.renews_on if subscription else None,
+        }
+    if sku != service.PACKAGE:
         return {"is_package": False, "call_title": None}
     package = db.scalar(select(DocumentPackage).where(DocumentPackage.order_id == order.id))
     call = db.get(Call, package.call_id) if package else None
@@ -362,8 +449,8 @@ def _delivered_pdf(order_id: uuid.UUID, which: str):
         if found.state not in (OrderState.DELIVERED, OrderState.REFUNDED):
             abort(404)
         if which == "report":
-            if service.sku_of(db, found) == service.PACKAGE:
-                abort(404)  # a package is served as its archive (package_zip)
+            if service.sku_of(db, found) != service.REPORT:
+                abort(404)  # a package is served as its archive; a subscription has none
             key = found.report_storage_key
             name = f"Извештај {_proforma(db, found.id).number}.pdf"
         else:

@@ -9,6 +9,7 @@
     <h1>{{ _('Нарачка') }} {{ invoice.number }}</h1>
     <p class="lead">{{ order_states[order.state] }}.</p>
     {% if is_package %}<p>{{ _('Пакет на документи за повикот:') }} <span lang="mk">{{ call_title }}</span></p>{% endif %}
+    {% if is_subscription %}<p>{{ plan_name }}</p>{% endif %}
   </div>
 
   {% if sent == '1' %}
@@ -31,13 +32,22 @@
   {% elif order.state in ('paid', 'in_progress') %}
   <section class="stack" aria-labelledby="next-h">
     <h2 id="next-h">{{ _('Што следи') }}</h2>
-    {% if is_package %}
+    {% if is_subscription %}
+    <p>{{ _('Уплатата ја примивме на %(date)s. Следењето се активира и ви ја праќаме фактурата на е-пошта.', date=invoice.paid_at|mkdate) }}</p>
+    {% elif is_package %}
     <p>{{ _('Уплатата ја примивме на %(date)s. Го подготвуваме пакетот: образците на институцијата, пополнети со податоците што ги имаме, и листата што уште треба да подготвите.', date=invoice.paid_at|mkdate) }}</p>
     <p>{{ ngettext('Пакетот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работен ден од уплатата.', 'Пакетот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работни дена од уплатата.', price_list().report.delivery_working_days) }}</p>
     {% else %}
     <p>{{ _('Уплатата ја примивме на %(date)s. Анализата на отворените повици во вашата листа, до првите пет, е во тек.', date=invoice.paid_at|mkdate) }}</p>
     <p>{{ ngettext('Извештајот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работен ден од уплатата.', 'Извештајот го прегледува човек и ви го праќаме на е-пошта во рок од %(num)d работни дена од уплатата.', price_list().report.delivery_working_days) }}</p>
     {% endif %}
+  </section>
+  {% elif order.state in ('delivered', 'refunded') and order.delivered_at and is_subscription %}
+  <section class="stack" aria-labelledby="done-h">
+    <h2 id="done-h">{{ _('Следењето') }}</h2>
+    {% if until %}<p>{{ _('Активно до %(date)s. Пред крајот ви праќаме профактура за следниот период; ништо не се наплатува автоматски.', date=until|mkdate) }}</p>{% endif %}
+    <p class="actions"><a class="btn btn--quiet" href="{{ url_for('checkout.invoice_pdf', order_id=order.id) }}">{{ _('Фактура (PDF)') }}</a>
+       <a class="btn btn--plain" href="{{ url_for('account.home') }}#following-h">{{ _('Управување со следењето') }}</a></p>
   </section>
   {% elif order.state in ('delivered', 'refunded') and order.delivered_at %}
   <section class="stack" aria-labelledby="done-h">

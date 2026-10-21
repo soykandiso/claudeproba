@@ -1,0 +1,71 @@
+{#- Ordering the monitoring subscription (P6): what it does, what it does not, the two plans,
+    and the four details the proforma needs. One subscription at a time. -#}
+{% extends "base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}{{ _('Следење на нови повици') }}{% endblock %}
+{% macro field(key, label, hint=none, required=false, inputmode=none, autocomplete=none) -%}
+<div class="field">
+  <label for="{{ key }}">{{ label }}{% if not required %} <span class="optional">({{ _('по избор') }})</span>{% endif %}</label>
+  <input class="input" id="{{ key }}" name="{{ key }}" value="{{ typed.get(key, '') }}"
+         {%- if inputmode %} inputmode="{{ inputmode }}"{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if required %} required{% endif %}
+         {%- set ids = ([key ~ '-error'] if errors.get(key) else []) + ([key ~ '-hint'] if hint else []) %}{% if ids %} aria-describedby="{{ ids|join(' ') }}"{% endif %}{% if errors.get(key) %} aria-invalid="true"{% endif %}>
+  {% if errors.get(key) %}<span class="field-error" id="{{ key }}-error">{{ errors[key] }}</span>{% endif %}
+  {% if hint %}<span class="hint" id="{{ key }}-hint">{{ hint }}</span>{% endif %}
+</div>
+{%- endmacro %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>{{ _('Следење на нови повици') }}</h1>
+    <p class="lead">{{ _('Кога ќе се објави нов јавен повик што одговара на профилот на вашата фирма, ви пишуваме: оценката, рокот и условите, секој со цитат од текстот на повикот.') }}</p>
+  </div>
+
+  {% if errors %}
+  {{ c.error_summary(_('Нарачката не е испратена.'), items=errors.items()|list) }}
+  {% endif %}
+
+  {% if current %}
+  {{ c.empty(_('Веќе го следите') if state == 'active' else _('Следењето е откажано'),
+             _('Активно е до %(date)s. Управувајте со него од сметката.', date=current.renews_on|mkdate) if state == 'active'
+             else _('Платениот период трае до %(date)s; до тогаш можете да го вратите од сметката.', date=current.renews_on|mkdate),
+             href=url_for('account.home') ~ '#following-h', action=_('Сметка')) }}
+  {% elif not has_profile %}
+  {{ c.empty(_('Прво профил на фирмата'), _('Повиците се проверуваат според профилот на фирмата. Пополнете го, па вратете се тука.'), href=url_for('intake.form'), action=_('Пополни го профилот')) }}
+  {% else %}
+  <section class="stack" aria-labelledby="how-h">
+    <h2 id="how-h">{{ _('Како работи') }}</h2>
+    <ul class="rows">
+      <li><span>{{ _('Најмногу една порака дневно; во тивок месец, една кратка порака дека следиме.') }}</span></li>
+      <li><span>{{ _('Ништо не се наплатува автоматски: пред крајот на периодот добивате профактура за следниот.') }}</span></li>
+      <li><span>{{ _('Откажувате со еден клик, од секоја порака или од сметката.') }}</span></li>
+    </ul>
+    <p class="small soft">{{ _('Оценката е проценка врз основа на текстот на повикот и вашите одговори; одлуката за секоја пријава ја носи институцијата. Уплатата за тековниот период не се враќа при откажување.') }}</p>
+  </section>
+
+  <form class="form stack-lg" method="post" action="{{ url_for('checkout.place_subscription') }}" novalidate>
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="form-section">
+      <h2 class="form-section__title" id="plan-h">{{ _('Период') }}</h2>
+      <div class="form-section__card">
+        <div class="field">
+          {{ c.segmented('plan', plan_options, value=chosen, legend=_('Период')) }}
+          <ul class="hint plan-prices">{% for line in plan_prices %}<li>{{ line }}</li>{% endfor %}</ul>
+          <span class="hint">{{ _('Цените се без ДДВ; во загради, со ДДВ.') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h2 class="form-section__title">{{ _('На кого се издава профактурата') }}</h2>
+      <div class="form-section__card">
+        {{ field('name', _('Назив'), hint=_('Целосниот назив на фирмата, или име и презиме.'), required=true, autocomplete='organization') }}
+        {{ field('address', _('Адреса'), required=true, autocomplete='street-address') }}
+        {{ field('edb', _('ЕДБ'), hint=_('Со МК напред ако сте обврзник за ДДВ.'), inputmode='numeric') }}
+        {{ field('embs', _('ЕМБС'), inputmode='numeric') }}
+      </div>
+    </div>
+    <p class="privacy-note">{{ _('Овие податоци се само за профактурата и фактурата. Никогаш не стигнуваат до автоматската анализа.') }}</p>
+    <div class="actions form-submit">{{ c.submit(_('Нарачај и добиј профактура'), busy=_('Се издава профактура')) }}</div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

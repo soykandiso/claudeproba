@@ -43,7 +43,7 @@
     {{ c.group([
          (_('Месечно'), amount(m.monthly_net), none),
          (_('Годишно'), amount(m.yearly_net), none),
-         (_('Достапно'), _('сега') if m.available else _('наскоро'), none),
+         (_('Нарачка'), _('сега') if m.available else _('наскоро'), url_for('checkout.subscription_form') if m.available else none),
        ], footer=_('Известување по е-пошта кога ќе се отвори нов повик што одговара на вашиот профил.')) }}
   </section>
 

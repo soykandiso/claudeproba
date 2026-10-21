@@ -57,7 +57,14 @@
     </form>
     {% else %}
     <p>{{ _('Следењето заврши на %(date)s.', date=following.until|mkdate) }}</p>
+    <p><a class="btn btn--quiet" href="{{ url_for('checkout.subscription_form') }}">{{ _('Следи ги новите повици повторно') }}</a></p>
     {% endif %}
+  </section>
+  {% elif profile and price_list().monitoring.available %}
+  <section class="stack" aria-labelledby="following-h">
+    <h2 id="following-h">{{ _('Известувања за нови повици') }}</h2>
+    <p>{{ _('Кога ќе се објави нов повик што одговара на профилот, ви пишуваме, со цитат од условите.') }}</p>
+    <p><a class="btn btn--quiet" href="{{ url_for('checkout.subscription_form') }}">{{ _('Следење на нови повици') }}</a></p>
   </section>
   {% endif %}
 

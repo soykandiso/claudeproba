@@ -97,10 +97,24 @@ def test_the_pricing_page_shows_every_price_without_and_with_vat(client):
     assert "Бесплатно" in body
 
 
-def test_what_cannot_be_bought_says_so(client):
-    """Until P4's order flow and alerts exist, the page offers nothing it cannot sell."""
+def test_what_can_be_bought_links_to_its_order_form(client):
+    """Since 21.10.2026 the report and the subscription are both on sale: no «наскоро» left,
+    and each links to its own order form."""
     body = client.get("/ceni").get_data(as_text=True)
-    assert body.count("наскоро") == 1
+    assert "наскоро" not in body
+    assert 'href="/naracka/"' in body and 'href="/naracka/sledenje"' in body
+
+
+def test_a_product_switched_off_says_so(client, monkeypatch):
+    from app import pricing
+
+    real = pricing.prices()
+    off = real.model_copy(
+        update={"monitoring": real.monitoring.model_copy(update={"available": False})}
+    )
+    monkeypatch.setattr("app.web.public.prices", lambda: off)
+    body = client.get("/ceni").get_data(as_text=True)
+    assert body.count("наскоро") == 1 and 'href="/naracka/sledenje"' not in body
 
 
 def test_a_closed_founding_price_is_not_offered(client, monkeypatch):

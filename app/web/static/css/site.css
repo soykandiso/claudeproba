@@ -349,6 +349,7 @@ details.cite[open] > .excerpt { animation: reveal var(--dur-2) var(--ease-out); 
 .form > div > .field:first-child { border-top: 0; }
 .field label, .field legend { font-weight: 600; font-size: var(--text-subhead); }
 .field .hint { color: var(--label-2); font-size: var(--text-subhead); }
+.plan-prices { list-style: none; padding: 0; }
 fieldset.field { border: 0; border-top: var(--rule-w) solid var(--separator); margin: 0; padding-inline: 0; min-width: 0; }
 fieldset.field legend { padding: 0; float: left; width: 100%; margin-bottom: var(--s-8); }
 fieldset.field legend + * { clear: both; }
