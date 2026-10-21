@@ -8,7 +8,7 @@ x-app: &app
       condition: service_healthy
     redis:
       condition: service_healthy
-  environment:
+  environment: &app-env
     GRANTS_ENV: ${GRANTS_ENV:-development}
     GRANTS_DEBUG: "false"
     GRANTS_SECRET_KEY: ${GRANTS_SECRET_KEY:?set GRANTS_SECRET_KEY in .env}
@@ -21,6 +21,11 @@ x-app: &app
     GRANTS_MODEL_DIR: /srv/models
     GRANTS_HEARTBEAT_INGEST_URL: ${GRANTS_HEARTBEAT_INGEST_URL:-}
     GRANTS_HEARTBEAT_HEALTH_URL: ${GRANTS_HEARTBEAT_HEALTH_URL:-}
+    GRANTS_HEARTBEAT_EVAL_URL: ${GRANTS_HEARTBEAT_EVAL_URL:-}
+    GRANTS_MODEL_SPEND_CEILING_EUR: ${GRANTS_MODEL_SPEND_CEILING_EUR:-30}
+    # The model provider's key, read by the SDK in app/ai/gateway.py. Empty: extraction
+    # and the paid analysis fail loudly (a source alert), nothing guesses.
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     GRANTS_REVIEW_CASES_DIR: /srv/review-cases
   volumes:
     # Raw fetched bytes, content-addressed and write-once. Public documents, no
@@ -84,6 +89,24 @@ services:
   worker:
     <<: *app
     command: ["sh", "-c", "exec rq worker --url \"$$GRANTS_REDIS_URL\" ingest analysis"]
+
+  # Tier C, weekly from cron (evals/run.py --tier c, P2 s36): the real model over the
+  # frozen calls. In a database of its own, grants_eval, because the harness replaces
+  # the registry it runs on and refuses a production one; the frozen calls and cases
+  # are the checkout's evals/, read-only. Never started by `up`:
+  #   docker compose --profile eval run --rm eval
+  eval:
+    <<: *app
+    profiles: ["eval"]
+    restart: "no"
+    environment:
+      <<: *app-env
+      GRANTS_ENV: development
+      GRANTS_DATABASE_URL: postgresql://${POSTGRES_USER:-grants}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/grants_eval
+      PYTHONPATH: /srv/app
+    volumes:
+      - ./evals:/srv/app/evals:ro
+    command: ["sh", "-c", "alembic upgrade head && exec python evals/run.py --tier c --ping"]
 
   caddy:
     image: caddy:2-alpine

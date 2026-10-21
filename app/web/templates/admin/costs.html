@@ -1,0 +1,46 @@
+{#- What the model costs: this month against the ceiling (decisions.md D8),
+    which work cost it, and what one delivered report cost. From model_call, the gateway's
+    estimate at list prices; the provider's invoice is the authority. -#}
+{% extends "admin/base.html" %}
+{% import "_components.html" as c with context %}
+{% block title %}Трошоци{% endblock %}
+{% block main %}
+<div class="wrap grouped">
+  <div class="report-head stack">
+    <h1>Трошоци за моделот</h1>
+    <p class="soft">Проценка од ценовникот во <code>config/models.yaml</code>, по курс {{ rate|string|replace(".", ",") }} EUR за долар. Сметката од давателот е меродавна; ова е бројот што се следи меѓу две сметки.</p>
+  </div>
+
+  <section class="stack" aria-labelledby="month-h">
+    <h2 id="month-h">Овој месец</h2>
+    {% if spend.over %}
+    <p class="notice" role="alert"><strong>Над горната граница.</strong> Потрошено {{ spent }} од {{ ceiling }}. Што да се направи: <code>docs/runbook.md</code>, «The model spend alert».</p>
+    {% endif %}
+    {{ c.group([
+         ('Потрошено од ' ~ spend.since|mkdate, spent, none),
+         ('Горна граница (D8)', ceiling, none),
+         ('Искористено', '%d%%'|format((spend.share * 100)|round|int), none),
+       ], footer='Над границата, «flask ingest health» јавува по истиот пат како за извор што не работи.') }}
+    {% if tasks %}
+    {{ c.group(tasks, header='По задача') }}
+    {% else %}
+    <p class="soft">Овој месец моделот не е повикан.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack" aria-labelledby="reports-h">
+    <h2 id="reports-h">По извештај</h2>
+    {% if reports %}
+    <p>Обично {{ typical }} за еден извештај (медијана на последните {{ reports|length }}): проверката на условите и составот. Барањата одговорени од кешот не чинат ништо.</p>
+    {{ c.group(reports) }}
+    {% else %}
+    <p class="soft">Уште нема предаден извештај. Пред првиот, проценката е од tier C (<code>evals/run.py --tier c</code>).</p>
+    {% endif %}
+  </section>
+
+  <section class="stack" aria-labelledby="months-h">
+    <h2 id="months-h">Последните 12 месеци</h2>
+    {{ c.group(months) }}
+  </section>
+</div>
+{% endblock %}

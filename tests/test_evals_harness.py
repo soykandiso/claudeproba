@@ -413,3 +413,108 @@ def test_a_paraphrase_in_a_cassette_is_reported_not_believed(tier_b_world, monke
     assert failed.failures == [
         f"p07_craftsman_skopje × skopje-call-12149: {craft!r} went to review"
     ]
+
+
+# ------------------------------------------------------------------ tier C (P2 s36)
+
+
+class _RecordedModel:
+    """The cassettes in the real model's place, with tokens, so tier C can be run here."""
+
+    def __init__(self, cassettes):
+        from evals import tier_b
+
+        self.cassette = tier_b.CassetteProvider(cassettes)
+        self.live = None
+
+    def complete(self, request):
+        import dataclasses
+
+        self.cassette.call, self.cassette.profile = self.live.call, self.live.profile
+        reply = self.cassette.complete(request)
+        return dataclasses.replace(reply, input_tokens=2000, output_tokens=400)
+
+
+def _live(model_cassettes=None, max_eur=5.0, asked=None):
+    from app.ai.gateway import Routing
+    from evals import tier_b, tier_c
+
+    recorded = tier_b.load_cassettes()
+    model = _RecordedModel(model_cassettes or recorded)
+    provider = tier_c.LiveProvider(
+        inner=model, routing=Routing.load(), max_eur=max_eur, rate=1.0, cassettes=recorded
+    )
+    model.live = provider
+    suite = harness.load_suite()
+    return harness.Live(provider, asked or tier_c.sample(suite, harness.load_profiles(), False))
+
+
+def test_the_tier_c_sample_names_real_profiles_and_all_means_all():
+    from evals import tier_c
+
+    suite, profiles = harness.load_suite(), harness.load_profiles()
+    assert set(tier_c.sample(suite, profiles, False)) <= set(profiles)
+    assert tier_c.sample(suite, profiles, True) == list(profiles)
+    with pytest.raises(ValueError, match="unknown profiles"):
+        tier_c.sample({"tier_c": {"profiles": ["p99_nobody"]}}, profiles, False)
+
+
+@pytestmark_db
+def test_tier_c_asks_only_the_sample_and_counts_what_it_cost(tier_b_world):
+    from app.ai.gateway import Routing
+
+    session, factory = tier_b_world
+    live = _live()
+    report = harness.run(session, tier="c", session_factory=factory, live=live)
+
+    provider = live.provider
+    assert report.blocking() == []
+    assert provider.requests > 10 and set(provider.by_profile) == set(live.asked)
+    each = Routing.load().cost_usd("claude-opus-5", 2000, 400)
+    assert provider.cost_eur == pytest.approx(provider.requests * each)
+    # Every frozen call with a model-read condition is asked about by the sample.
+    assert tier_b_cassette_calls() <= asked_calls(provider)
+    assert provider.compared == provider.requests and provider.disagreements == []
+    assert "tier C — the real model" in report.text()
+
+
+def tier_b_cassette_calls():
+    from evals import tier_b
+
+    return set(tier_b.load_cassettes())
+
+
+def asked_calls(provider):
+    return {call for call, _ in provider.asked_pairs}
+
+
+@pytestmark_db
+def test_a_disagreement_with_the_cassettes_is_listed_and_warned_not_blocked(tier_b_world):
+    from evals import tier_b
+
+    craft = "Занаетот е меѓу дефицитарните занаети во изумирање наведени во повикот"
+    other = copy.deepcopy(tier_b.load_cassettes())
+    other["skopje-call-12149"][craft]["p07_craftsman_skopje"] = {
+        "verdict": "unclear",
+        "confidence": 0.4,
+        "reasoning_mk": "Не е јасно.",
+    }
+    session, factory = tier_b_world
+    live = _live(model_cassettes=other)
+    report = harness.run(session, tier="c", session_factory=factory, live=live)
+
+    [d] = live.provider.disagreements
+    assert (d.profile, d.recorded, d.live) == ("p07_craftsman_skopje", "satisfied", "unclear")
+    assert report.blocking() == []
+    assert any("disagree on 1" in w for w in report.warnings())
+
+
+@pytestmark_db
+def test_tier_c_stops_at_its_budget_and_a_partial_run_fails(tier_b_world):
+    session, factory = tier_b_world
+    live = _live(max_eur=0.0001)
+    report = harness.run(session, tier="c", session_factory=factory, live=live)
+
+    assert live.provider.requests == 1
+    assert live.stopped.startswith("0.")
+    assert any("stopped at its budget" in b for b in report.blocking())

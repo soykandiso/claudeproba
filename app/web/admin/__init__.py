@@ -920,6 +920,71 @@ def confirm_payment(invoice_id: uuid.UUID):
     return redirect(url_for("admin.payments"))
 
 
+# What the model costs (roadmap P2 s36): this month against D8's ceiling, by task, by report.
+
+TASK_LABELS = {
+    "extract_call": "Читање на повик",
+    "verify_criterion": "Проверка на услов",
+    "compose_report": "Состав на извештај",
+}
+
+
+def _eur(usd: float, rate: float) -> str:
+    return f"{amount(usd * rate)} EUR"
+
+
+@bp.get("/troshoci")
+def model_costs():
+    from app.ai import costs
+
+    settings, tz, now = _settings(), _tz(), _now()
+    rate = costs.eur_per_usd()
+    with _sessions()() as db:
+        spend = costs.month_to_date(db, now, tz, settings.model_spend_ceiling_eur, rate)
+        tasks = costs.by_task(db, spend.since)
+        months = costs.by_month(db, now, tz)
+        reports_ = costs.per_report(db)
+        numbers = dict(
+            db.execute(
+                select(Invoice.order_id, Invoice.number).where(
+                    Invoice.order_id.in_([r.order_id for r in reports_]),
+                    Invoice.kind == InvoiceKind.PROFORMA,
+                )
+            ).all()
+        )
+    typical = costs.median([r.cost_usd for r in reports_])
+    return render_template(
+        "admin/costs.html",
+        spend=spend,
+        spent=_eur(spend.usd, rate),
+        ceiling=f"{amount(spend.ceiling_eur)} EUR",
+        tasks=[
+            (
+                TASK_LABELS.get(t.task, t.task),
+                f"{t.calls} барања, {t.cached} од кешот"
+                + (f", {t.failed} неуспешни" if t.failed else "")
+                + f" · {_eur(t.cost_usd, rate)}",
+                None,
+            )
+            for t in tasks
+        ],
+        months=[
+            (f"{m.start:%m.%Y}", f"{m.calls} барања · {_eur(m.cost_usd, rate)}", None)
+            for m in months
+        ],
+        reports=[
+            (
+                f"{numbers.get(r.order_id, '—')}, предаден {mkdate(r.delivered_at)}",
+                f"{r.calls} барања · {_eur(r.cost_usd, rate)}",
+                None,
+            )
+            for r in reports_
+        ],
+        typical=_eur(typical, rate) if typical is not None else None,
+        rate=rate,
+    )
+
+
 # Document packages (roadmap P5 s75): open every document, then approve, which sends it.
 
 

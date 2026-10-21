@@ -41,6 +41,12 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # judging each again first. How often in busy seasons is P6 s81.
 0 6 * * *  root  cd /srv/grants && docker compose exec -T web flask alerts send >> /var/log/grants-alerts.log 2>&1
 
+# Tier C, Mondays at 07:00 UTC (evals/run.py --tier c, P2 s36): the real model over the
+# frozen calls, a sample of applicants, at most 5 EUR (evals/suite.yaml), in its own
+# database. It pings GRANTS_HEARTBEAT_EVAL_URL: failed when the gate fails, silent when it
+# did not run. docs/runbook.md §14.
+0 7 * * 1  root  cd /srv/grants && docker compose --profile eval run --rm -T eval >> /var/log/grants-eval.log 2>&1
+
 # Renewal proformas (app/orders/subscriptions.py, P6 s79): ten days before a subscription's
 # paid period ends, the next period's proforma is issued and mailed. Nothing is charged: an
 # unpaid renewal just lets the period end.

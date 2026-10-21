@@ -122,7 +122,8 @@ restart into a half-migrated state.
 | 502 from Caddy | `docker compose logs web` — usually a failed start after a bad deploy |
 | `/readyz` says not ready | It names the failing dependency. `docker compose logs postgres` or `redis` |
 | Jobs not processing | `docker compose logs worker`; is Redis healthy; is the queue name right |
-| Alert email from the health check | §4, "A source alert" |
+| Alert email from the health check | §4, "A source alert"; a `model spend` line: §14 |
+| Alert email from the eval check | §14, "Tier C, weekly" |
 | Alert email from the ingest check (no ping) | §4, "The ingest heartbeat went silent" |
 | No new calls for days | `flask ingest health` — the source is probably blocking or has changed layout |
 | `index FAILED: ModelNotDownloaded` in the ingest log | The `models` volume is empty or was recreated: `docker compose run --rm web flask ingest fetch-model` |
@@ -442,3 +443,61 @@ A subscriber who unsubscribes (the link in any alert or renewal e-mail, or the a
 getting alerts at once and their subscription will not renew; nothing is refunded, and they can
 resume from the account until the paid period ends. Every grant and withdrawal is in
 `consent_record` with purpose `alerts`, for a data request (§7).
+
+## 14. What the model costs, and the weekly tier C run
+
+**The spend.** `/admin/troshoci` shows this month's model spend against the ceiling
+(`GRANTS_MODEL_SPEND_CEILING_EUR`, 30 EUR, `docs/decisions.md` D8), by task, by delivered report
+(its median is the marginal model cost of one report), and the last twelve months. The numbers
+are the gateway's estimate at the list prices in `config/models.yaml`, converted at its
+`eur_per_usd`; the provider's invoice is the authority. Update the prices when the provider
+changes them, and the rate when it is visibly off.
+
+### The model spend alert
+
+`flask ingest health` (daily, §4) adds a line `model spend` to its report. Over the ceiling it
+reads `OVER_CEILING` and the health check fails, so the alert arrives by the same e-mail as a
+source alert. Nothing is stopped: the ceiling is an alarm.
+
+1. `/admin/troshoci`: which task, and since when.
+2. **Extraction** high: a source re-sending changed documents every run (a page whose bytes change
+   on every fetch defeats the content hash). `docs/sources.md` for the source; the fix is in its
+   fetcher, usually stripping what changes (`without_aspnet_state` is the precedent).
+3. **Verification or composition** high: count the reports delivered this month; if it is just
+   demand, raise the ceiling in `.env` (and D8). If not, look for repeated runs of one order.
+4. A failed-request count well above zero: the provider is refusing or the schema is failing;
+   `/var/log/grants-ingest.log` and the review queue.
+
+### Tier C, weekly
+
+Cron runs `docker compose --profile eval run --rm -T eval` on Mondays (07:00 UTC): stage 3 with the
+real model over the frozen calls, for the sample of applicants in `evals/suite.yaml`
+(`tier_c.profiles`), stopping at `tier_c.max_eur` (5 EUR). It runs in its own database,
+`grants_eval`, with the checkout's `evals/` mounted read-only, and pings
+`GRANTS_HEARTBEAT_EVAL_URL`. Its cost is **not** in `/admin/troshoci` (its rows are rolled back);
+it is in its log and on the provider's invoice: about 4 runs × 5 EUR at most a month.
+
+**Setup, once:**
+
+1. On healthchecks.io a check **grants-eval**: period **7 days**, grace **1 day**; its URL in `.env`
+   as `GRANTS_HEARTBEAT_EVAL_URL`. `ANTHROPIC_API_KEY` in `.env` too.
+2. On a volume created before 21.10.2026 the database does not exist yet:
+   `docker compose exec postgres createdb -U grants grants_eval` (a fresh volume gets it from
+   `ops/initdb/02-eval-database.sql`).
+3. Run it once by hand and read the report: `docker compose --profile eval run --rm eval`.
+
+**When it fails** (`/var/log/grants-eval.log`, and the e-mail):
+
+- `false eligible` or `false exclusion`: the model now answers a frozen case differently and the
+  answer reached a verdict. **Do not deploy a prompt or routing change until it is green.** If
+  nothing in this repository changed, the model behind the name did: read the disagreements, and
+  pin `config/models.yaml` to a dated model if the provider offers one.
+- `tier C stopped at its budget`: more requests than the sample used to need, or dearer ones.
+  Read the per-applicant costs before raising `max_eur`.
+- `the model and the cassettes disagree` is a warning: either the cassette (a person's answer, P2
+  s29) or the model is wrong. Read each one against the call's text in `evals/fixtures/`.
+- `went to review`: invalid output twice. A few is the gateway working; many is a schema or prompt
+  problem.
+
+Before a **prompt change** (a new version file), run every applicant, not the sample:
+`docker compose --profile eval run --rm eval sh -c "alembic upgrade head && python evals/run.py --tier c --all --max-eur 20"`.

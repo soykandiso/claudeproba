@@ -17,6 +17,11 @@ pricing_usd_per_mtok:
   claude-sonnet-5: {input: 2.00, output: 10.00}
   claude-haiku-4-5: {input: 1.00, output: 5.00}
 
+# Euros per US dollar, for comparing model_call.cost_usd with decisions.md D8's ceiling
+# in euros (app/ai/costs.py). Written down by hand on 21.10.2026, roughly the ECB rate;
+# the ceiling is an alarm, not a bill, so update it when it is visibly off, not daily.
+eur_per_usd: 0.86
+
 tasks:
   # Brief §7 asks for the cheapest tier for extraction. Sonnet rather than Haiku:
   # extraction decides which conditions can exclude an applicant and must copy

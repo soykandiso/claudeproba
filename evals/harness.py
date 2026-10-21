@@ -430,6 +430,7 @@ class Report:
     open_calls: int = 0
     tier: str = "A"
     from_review: Counter = field(default_factory=Counter)
+    live: "Live | None" = None
 
     @property
     def median_latency_ms(self) -> float:
@@ -456,6 +457,8 @@ class Report:
                 )
         if self.median_latency_ms > self.gate["median_latency_block_ms"]:
             blocked.append(f"median stage 1–2 latency {self.median_latency_ms:.0f} ms")
+        if self.live and self.live.stopped:
+            blocked.append("tier C stopped at its budget: a partial measurement is not a pass")
         return blocked
 
     def warnings(self) -> list[str]:
@@ -467,6 +470,13 @@ class Report:
             warned.append(f"{len(over)} case(s) claimed more than the expected verdict")
         if self.gate["median_latency_warn_ms"] < self.median_latency_ms:
             warned.append(f"median stage 1–2 latency {self.median_latency_ms:.0f} ms")
+        if self.live and self.live.provider.disagreements:
+            warned.append(
+                f"the model and the cassettes disagree on "
+                f"{len(self.live.provider.disagreements)} answer(s)"
+            )
+        if self.live and self.live.went_to_review:
+            warned.append(f"{len(self.live.went_to_review)} live answer(s) went to review")
         return warned
 
     def text(self) -> str:
@@ -527,6 +537,12 @@ class Report:
             )
             for (kind, decision), count in sorted(self.from_review.items()):
                 lines.append(f"      {kind:<11} {decision:<9} ×{count}")
+        if self.live:
+            from evals import tier_c
+
+            lines += tier_c.lines(
+                self.live.provider, self.live.asked, self.live.went_to_review, self.live.stopped
+            )
         lines.append("")
         blocked, warned = self.blocking(), self.warnings()
         for warning in warned:
@@ -578,8 +594,23 @@ def _ranking_check(check: Check, key: str, by_id: dict, ranked: list[stage2.Scor
         seen_excluded = seen_excluded or scored.excluded
 
 
-def _tier_b(session: Session, session_factory, calls: dict[str, Call], fixtures: dict):
-    """Stage 3 over each profile's shown calls, answered from the cassettes."""
+@dataclass
+class Live:
+    """Tier C's state through a run: who is asked, what went to review, why it stopped."""
+
+    provider: object
+    asked: list[str]
+    went_to_review: list[str] = field(default_factory=list)
+    stopped: str = ""
+
+
+def _tier_b(session: Session, session_factory, calls: dict[str, Call], fixtures: dict, live=None):
+    """Stage 3 over each profile's shown calls, answered from the cassettes.
+
+    With `live` (tier C) the answers come from `live.provider` instead, only the
+    profiles in `live.asked` are verified, an answer that went to review is counted
+    rather than failed, and the run stops verifying when the budget is spent.
+    """
     from app.ai.gateway import Gateway
     from app.matching import verify
     from app.models import ModelCall, ModelCallPayload, ReviewQueueItem
@@ -594,25 +625,37 @@ def _tier_b(session: Session, session_factory, calls: dict[str, Call], fixtures:
     session.execute(delete(ReviewQueueItem).where(ReviewQueueItem.kind == "verification"))
     session.flush()
 
-    provider = tier_b.CassetteProvider(tier_b.load_cassettes())
+    provider = live.provider if live else tier_b.CassetteProvider(tier_b.load_cassettes())
     gateway = Gateway(session_factory, provider)
     retrieve = tier_b.FixtureRetriever(
         {call.id: (call.primary_snapshot_id, fixtures[slug].text) for slug, call in calls.items()}
     )
 
     def verified(key, profile, outcomes, by_id, answered: Check, located: Check):
+        from evals import tier_c
+
+        if live and (live.stopped or key not in live.asked):
+            return outcomes
         settled = []
-        for outcome in outcomes:
+        for i, outcome in enumerate(outcomes):
             slug = by_id[outcome.call.id]
             provider.call, provider.profile = slug, key
-            outcome, results = verify.verify_call(
-                gateway, session_factory, retrieve, profile, outcome
-            )
+            try:
+                outcome, results = verify.verify_call(
+                    gateway, session_factory, retrieve, profile, outcome
+                )
+            except tier_c.BudgetSpent as spent:
+                live.stopped = f"{spent}; {key} × {slug} and everything after it not asked"
+                return settled + list(outcomes[i:])
             for v in results:
                 answered.checked += 1
                 label = v.outcome.criterion.label_mk
                 if v.review_item_id is not None:
-                    answered.failures.append(f"{key} × {slug}: {label!r} went to review")
+                    went = f"{key} × {slug}: {label!r} went to review"
+                    if live:
+                        live.went_to_review.append(went)
+                    else:
+                        answered.failures.append(went)
                 if v.evidence is not None:
                     located.checked += 1
                     text = fixtures[slug].text
@@ -626,13 +669,19 @@ def _tier_b(session: Session, session_factory, calls: dict[str, Call], fixtures:
 
 
 def run(
-    session: Session, suite: dict | None = None, *, tier: str = "a", session_factory=None
+    session: Session,
+    suite: dict | None = None,
+    *,
+    tier: str = "a",
+    session_factory=None,
+    live: Live | None = None,
 ) -> Report:
     """Load the frozen registry, run every profile through stages 1 and 2, and score it.
 
     Tier B (`evals/tier_b.py`) also runs stage 3's verification over every shown
     call, with recorded answers; it needs `session_factory` for the gateway, bound
-    to the same rolled-back transaction as `session`.
+    to the same rolled-back transaction as `session`. Tier C (`evals/tier_c.py`) is
+    tier B with `live`: the real model, a sample of profiles, a budget.
     """
     suite = suite or load_suite()
     as_of = suite["as_of"]
@@ -656,7 +705,9 @@ def run(
     }
 
     checks = [_citation_check(session, calls)]
-    verifier = _tier_b(session, session_factory, calls, fixtures) if tier == "b" else None
+    verifier = (
+        _tier_b(session, session_factory, calls, fixtures, live) if tier in ("b", "c") else None
+    )
     answered = Check("every recorded answer passed stage 3's gates")
     located = Check("every model quote is verbatim at its offsets")
     superset = Check("stage 1a filters only what the rules exclude")
@@ -729,4 +780,5 @@ def run(
         open_calls=sum(1 for f in fixtures.values() if f.shortlistable),
         tier=tier.upper(),
         from_review=from_review,
+        live=live,
     )

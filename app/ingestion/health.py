@@ -24,6 +24,11 @@ Each active source is in exactly one state:
 
 `source_health.is_alerting` records the state, so the command can tell a new
 problem from one you have already been told about.
+
+The same report carries one line that is not a source: **the model spend** this month
+against decisions.md D8's ceiling (app/ai/costs.py, P2 s36). Over the ceiling it alerts
+the way a source does, by the same route, because a second e-mail route is a second thing
+to keep working. Over the ceiling a day earlier as well means it is not new.
 """
 
 import datetime as dt
@@ -35,6 +40,7 @@ import httpx
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.ai import costs
 from app.heartbeat import ping
 from app.models import IngestionRun, SourceFeed, SourceHealth
 
@@ -42,6 +48,8 @@ FAILING_AFTER = dt.timedelta(hours=30)
 NOT_RUN_AFTER = dt.timedelta(hours=30)
 
 OK, FAILING, NOT_RUNNING, QUIET = "ok", "failing", "not_running", "quiet"
+OVER_CEILING = "over_ceiling"
+SPEND = "model spend"
 
 
 @dataclass(frozen=True)
@@ -157,7 +165,27 @@ def _first_line(text: str | None) -> str:
     return shown[:300]
 
 
-def report(states: list[SourceState], now: dt.datetime, tz: ZoneInfo) -> str:
+def spend_state(
+    session: Session, now: dt.datetime, tz: ZoneInfo, ceiling_eur: float, rate: float
+) -> SourceState:
+    """This month's model spend against the ceiling, in the shape of a source's state."""
+    spend = costs.month_to_date(session, now, tz, ceiling_eur, rate)
+    yesterday = now - dt.timedelta(days=1)
+    # Over the ceiling a day ago, in the same month: already announced.
+    was = (
+        costs.month_start(yesterday, tz) == spend.since
+        and costs.spent_usd(session, spend.since, yesterday) * rate > ceiling_eur
+    )
+    detail = f"{spend.eur:.2f} EUR of {ceiling_eur:.2f} EUR this month ({spend.share:.0%})"
+    return SourceState(SPEND, OVER_CEILING if spend.over else OK, detail, was)
+
+
+def report(
+    states: list[SourceState],
+    now: dt.datetime,
+    tz: ZoneInfo,
+    spend: SourceState | None = None,
+) -> str:
     """The text you read in the alert email and in the command's log."""
     alerting = [s for s in states if s.alerting]
     head = (
@@ -170,8 +198,14 @@ def report(states: list[SourceState], now: dt.datetime, tz: ZoneInfo) -> str:
         marker = state.status.upper() if state.alerting else "ok"
         new = " (new)" if state.newly_alerting else ""
         lines.append(f"{marker}{new}  {state.slug}: {state.detail}")
+    if spend is not None:
+        marker = spend.status.upper() if spend.alerting else "ok"
+        new = " (new)" if spend.newly_alerting else ""
+        lines += ["", f"{marker}{new}  {spend.slug}: {spend.detail}"]
     if alerting:
         lines += ["", "What to do: docs/runbook.md, 'A source alert'."]
+    if spend is not None and spend.alerting:
+        lines += ["", "What to do: docs/runbook.md, 'The model spend alert'."]
     return "\n".join(lines)
 
 
@@ -180,10 +214,13 @@ class HealthResult:
     states: list[SourceState]
     text: str
     heartbeat: list[str]
+    spend: SourceState | None = None
 
     @property
     def alerting(self) -> bool:
-        return any(state.alerting for state in self.states)
+        return any(state.alerting for state in self.states) or bool(
+            self.spend and self.spend.alerting
+        )
 
 
 def run_health_check(
@@ -193,16 +230,25 @@ def run_health_check(
     now: dt.datetime,
     tz: ZoneInfo,
     transport: httpx.BaseTransport | None = None,
+    ceiling_eur: float | None = None,
+    rate: float | None = None,
 ) -> HealthResult:
-    """Judge, record, and report to the health check. What `flask ingest health` runs."""
+    """Judge, record, and report to the health check. What `flask ingest health` runs.
+
+    With `ceiling_eur` (and `rate`, euros per dollar) the model spend is judged too.
+    """
     with sessions() as session:
         states = check_sources(session, now, tz)
         session.commit()
-    text = report(states, now, tz)
-    alerting = any(state.alerting for state in states)
+        spend = (
+            spend_state(session, now, tz, ceiling_eur, rate) if ceiling_eur is not None else None
+        )
+    text = report(states, now, tz, spend)
+    everything = states + ([spend] if spend else [])
+    alerting = any(state.alerting for state in everything)
 
     heartbeat = []
-    if any(state.was_alerting for state in states) and any(s.newly_alerting for s in states):
+    if any(s.was_alerting for s in everything) and any(s.newly_alerting for s in everything):
         # healthchecks.io emails only when a check changes state. It is already
         # down for the earlier problem, so a second failure would arrive in
         # silence: bring it up for a moment so this one is announced too.
@@ -210,4 +256,4 @@ def run_health_check(
             ping(url, ok=True, body="re-arming: a new source problem follows", transport=transport)
         )
     heartbeat.append(ping(url, ok=not alerting, body=text, transport=transport))
-    return HealthResult(states, text, heartbeat)
+    return HealthResult(states, text, heartbeat, spend)

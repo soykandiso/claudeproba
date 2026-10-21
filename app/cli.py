@@ -9,6 +9,7 @@ import click
 from flask import Flask, current_app
 from sqlalchemy import select
 
+from app.ai import costs
 from app.ai.gateway import AnthropicProvider, Gateway, InvalidModelOutput
 from app.db import session_factory
 from app.heartbeat import ping
@@ -142,8 +143,9 @@ def manual_command(urls, institution, note):
 
 @ingest.command(
     "health",
-    help="Judge every active source (failing, not running, quiet) and report to the "
-    "health check, which emails. Exits 1 when any source needs attention.",
+    help="Judge every active source (failing, not running, quiet) and this month's model "
+    "spend against its ceiling, and report to the health check, which emails. Exits 1 "
+    "when anything needs attention.",
 )
 @click.option(
     "--drill",
@@ -170,7 +172,14 @@ def health_command(drill):
         if not line.startswith("heartbeat sent"):
             sys.exit(1)  # a drill that did not leave the box proves nothing
         return
-    result = run_health_check(session_factory(settings), url=url, now=now, tz=tz)
+    result = run_health_check(
+        session_factory(settings),
+        url=url,
+        now=now,
+        tz=tz,
+        ceiling_eur=settings.model_spend_ceiling_eur,
+        rate=costs.eur_per_usd(),
+    )
     click.echo(result.text)
     for line in result.heartbeat:
         click.echo(line)

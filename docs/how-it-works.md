@@ -45,11 +45,16 @@ All under `/admin` (not switched on in production until the operator can sign in
 | `/admin/rachen-vnes` | When you hear of a call no source fetched | Paste its URLs; it goes through the same path and lands in Преглед |
 | `/admin/uplati` (Уплати) | A transfer arrived | Paste the bank statement line, then «Означи како платена». The buyer is told and the analysis starts (runbook §9) |
 | `/admin/izveshtaj/<id>` | A paid report's draft is ready | Read it against the quoted documents, edit the wording if needed, approve. **Approving sends it** with the invoice (runbook §10) |
+| `/admin/troshoci` (Трошоци) | When curious, and when the spend alert arrives | Read this month's model spend against the 30 EUR ceiling, by task and by report (runbook §14) |
 | `/admin/paket/<id>` | A paid document package is made | Open every form in Word; check it is the institution's current form and the company's details are right; approve. **Approving sends it** (runbook §12) |
 
 Commands you will use: `flask invoices audit` before handing invoices to the accountant (runbook
 §11); `flask orders retry <id>` if an analysis failed; `flask ingest health` to see whether any
-source has gone quiet.
+source has gone quiet, and whether this month's model spend is over its ceiling.
+
+Weekly, cron runs **tier C** of the evaluation harness: the real model over the frozen calls,
+a sample of applicants, at most 5 EUR, in a database of its own. A false eligible there blocks
+deploying a prompt or model change (runbook §14, `evals/README.md`).
 
 ---
 
@@ -244,4 +249,6 @@ From `docs/handoff.md` §4, the ones that block launch:
 | **Forms** | **Decided (D3): all programmes**, in the order АВ, Economy, IPARD, ИНОВА. Each set needs the institution's **official blank application forms** (the owner's copies, or a current call's attachments) | P5 from session 58 |
 | s55 | The real rehearsal: your own profile, a real transfer, the real server | Brief §14's proof that money flows |
 
-The monitoring subscription is **on sale since 21.10.2026** (`/naracka/sledenje`, linked from `/ceni` and the account). P6 is built: the subscription, matching new calls, alert e-mails, renewal proformas, one-click unsubscribe, digests (and before it P5 is built: document packages at 2.900 МКД for the Employment Agency's and the Ministry of Economy's calls (built: the engine, the checklist, the Employment Agency's three forms, the Ministry of Economy's eight, the draft label; IPARD's set waits for its next call's forms).
+P2 s36 is built (21.10.2026): the model's cost on `/admin/troshoci`, the spend alarm in the
+daily health check, and tier C, weekly, which needs `ANTHROPIC_API_KEY` and the server (D2) to
+run. The monitoring subscription is **on sale since 21.10.2026** (`/naracka/sledenje`, linked from `/ceni` and the account). P6 is built: the subscription, matching new calls, alert e-mails, renewal proformas, one-click unsubscribe, digests (and before it P5 is built: document packages at 2.900 МКД for the Employment Agency's and the Ministry of Economy's calls (built: the engine, the checklist, the Employment Agency's three forms, the Ministry of Economy's eight, the draft label; IPARD's set waits for its next call's forms).

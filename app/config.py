@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     # Unset in development; `flask ingest health` refuses to run without it in production.
     heartbeat_ingest_url: str | None = None
     heartbeat_health_url: str | None = None
+    # The weekly tier C evaluation (evals/run.py --tier c --ping, P2 s36): failed when the
+    # gate fails, and healthchecks.io alarms when a week passes without it.
+    heartbeat_eval_url: str | None = None
 
     # Hard ceiling on model spend, alarmed rather than enforced (decisions.md D8).
     model_spend_ceiling_eur: float = Field(default=30.0, ge=0)

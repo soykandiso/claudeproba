@@ -234,6 +234,14 @@ provider to keep the subprocessor list short, all behind a swappable interface.
 **What I still need from you: a monthly spend ceiling that triggers an alarm.** I recommend **€30/month**
 during P1–P4. The `model_call` table makes spend visible per feature, so the alarm is one query.
 
+> **Built 21.10.2026 (P2 s36), defaults taken by Claude:** the alarm is a line in the daily
+> `flask ingest health` and fails the same health check as a source, so it arrives by the
+> e-mail route that already exists; nothing is stopped. Spend is the gateway's estimate at list
+> prices, converted at a rate written by hand in `config/models.yaml` (`eur_per_usd: 0.86`).
+> Tier C, weekly, is capped at **5 EUR a run** on a sample of three applicants; its cost is
+> outside the ceiling's count (its rows are rolled back) and at most about 20 EUR a month.
+> `/admin/troshoci` shows the month, the tasks and the cost of each delivered report.
+
 **Consequences:** too low a ceiling and you will throttle the composition step, which is the one place
 a stronger model genuinely improves the customer-facing artefact. Too high and a caching bug or a
 retry loop costs you a month's infrastructure budget before you notice. €30 with an alert is the
@@ -833,7 +841,7 @@ DL4 and DL6 have rebuilt those screens, not on the old ones.
 | D5 | Retention periods | P3 s45 | 24 months profiles; invoices per tax law |
 | D6 | Free tier depth | P2 s28 | Full top 10 with reasons and citations |
 | D7 | Albanian reviewer | Before any SQ content | Defer until a named reviewer is funded |
-| D8 | Model spend ceiling | P1 s7 | €30/month with an alarm |
+| D8 | Model spend ceiling | P1 s7; **alarm built 21.10.2026 (P2 s36)** | €30/month with an alarm |
 | D9 | OCR for image-only PDFs | ~~P1 s9~~ **decided 13.09.2026**; both reopened gaps closed 21.09.2026 | Tesseract `mkd` locally; OCR citations always reviewed; two narrow second passes, matched by box, supply the `%` and the Albanian blocks |
 | D10 | EU portal scope | Before the first EU approvals (P1 s15) | Five programme areas, 39 topics; the default in code |
 | D11 | Operator sign-in | Before production ingests real calls | SSH tunnel first, magic link with P3 s44 |

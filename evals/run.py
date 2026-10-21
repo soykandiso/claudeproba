@@ -1,6 +1,7 @@
-"""Run the evaluation harness. Tier A today; B is P2 s29, C is P2 s36.
+"""Run the evaluation harness: tier A, B (P2 s29) or C (P2 s36).
 
     PYTHONPATH=. uv run python evals/run.py              # the gate
+    PYTHONPATH=. uv run python evals/run.py --tier c     # the real model, a sample, a budget
     PYTHONPATH=. uv run python evals/run.py --worksheet  # the case files to fill in
     PYTHONPATH=. uv run python evals/run.py --retrieval  # stage 3's retrieval (P2 s30)
 
@@ -15,6 +16,7 @@ measurement and catastrophic anywhere else.
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from textwrap import wrap
@@ -129,22 +131,51 @@ def worksheet() -> int:
     return 0
 
 
-def gate(tier: str = "a") -> int:
+def _live(everyone: bool, max_eur: float | None) -> harness.Live:
+    """Tier C's provider: the real model, counted and capped (evals/tier_c.py)."""
+    from app.ai import costs
+    from app.ai.gateway import AnthropicProvider, Routing
+    from evals import tier_b, tier_c
+
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise SystemExit("tier C needs ANTHROPIC_API_KEY: it asks the real model")
+    suite = harness.load_suite()
+    budget = max_eur if max_eur is not None else float(suite["tier_c"]["max_eur"])
+    provider = tier_c.LiveProvider(
+        inner=AnthropicProvider(),
+        routing=Routing.load(),
+        max_eur=budget,
+        rate=costs.eur_per_usd(),
+        cassettes=tier_b.load_cassettes(),
+    )
+    return harness.Live(provider, tier_c.sample(suite, harness.load_profiles(), everyone))
+
+
+def gate(
+    tier: str = "a", *, everyone: bool = False, max_eur: float | None = None, ping: bool = False
+) -> int:
     settings = load_settings()
     if settings.is_production:
         raise SystemExit("refusing to run the harness against a production database")
+    live = _live(everyone, max_eur) if tier == "c" else None
     engine = create_engine(settings.sqlalchemy_url)
     connection = engine.connect()
     transaction = connection.begin()
     factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
     try:
         with factory() as session:
-            report = harness.run(session, tier=tier, session_factory=factory)
+            report = harness.run(session, tier=tier, session_factory=factory, live=live)
     finally:
         transaction.rollback()
         connection.close()
         engine.dispose()
     print(report.text())
+    if ping:
+        # The weekly tier C run's alarm (ops/cron.d/grants): healthchecks.io e-mails
+        # when the gate fails, and when a week passes without a ping.
+        from app.heartbeat import ping as send
+
+        print(send(settings.heartbeat_eval_url, ok=not report.blocking(), body=report.text()))
     return 1 if report.blocking() else 0
 
 
@@ -182,9 +213,27 @@ def main() -> int:
     )
     parser.add_argument(
         "--tier",
-        choices=["a", "b"],
+        choices=["a", "b", "c"],
         default="a",
-        help="a: stages 0-2 (default); b: also stage 3 with recorded answers (evals/tier_b.py)",
+        help="a: stages 0-2 (default); b: also stage 3 with recorded answers (evals/tier_b.py); "
+        "c: stage 3 with the real model on suite.yaml's sample, within its budget (tier_c.py)",
+    )
+    parser.add_argument(
+        "--all",
+        dest="everyone",
+        action="store_true",
+        help="tier c: ask about every profile, not the sample (before a prompt change)",
+    )
+    parser.add_argument(
+        "--max-eur",
+        type=float,
+        default=None,
+        help="tier c: stop asking past this many euros (default: suite.yaml tier_c.max_eur)",
+    )
+    parser.add_argument(
+        "--ping",
+        action="store_true",
+        help="report the result to GRANTS_HEARTBEAT_EVAL_URL (the weekly cron job)",
     )
     parser.add_argument(
         "--retrieval",
@@ -194,7 +243,9 @@ def main() -> int:
     args = parser.parse_args()
     if args.worksheet:
         return worksheet()
-    return retrieval_gate() if args.retrieval else gate(args.tier)
+    if args.retrieval:
+        return retrieval_gate()
+    return gate(args.tier, everyone=args.everyone, max_eur=args.max_eur, ping=args.ping)
 
 
 if __name__ == "__main__":

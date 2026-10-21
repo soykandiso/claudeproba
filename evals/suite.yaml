@@ -24,6 +24,16 @@ retrieval:
   k: 6
   top_k_share_min: 0.9
 
+# Tier C: stage 3 with the real model (evals/tier_c.py, P2 s36). Weekly on a sample, so it
+# costs a few euros and not the month's ceiling (decisions.md D8: 30 EUR); `--all` asks
+# about every profile, before a prompt change. The sample asks about every frozen call:
+# p01 (Skopje, IT) and p07 (a Skopje craftsman) between them reach all four open calls'
+# model-read conditions from both sides, and p02 (a Bitola bakery) is outside Skopje.
+# The budget is checked before each request: a run that reaches it stops and fails.
+tier_c:
+  profiles: [p01_skopje_it_micro, p02_bitola_bakery_small, p07_craftsman_skopje]
+  max_eur: 5
+
 # Which profiles each frozen call is worth asking about, for `run.py --worksheet`.
 # `all` is the ten profiles; an advance notice has the same answer for everybody,
 # so it costs one line of the user's evening instead of ten.
