@@ -20,6 +20,7 @@ The importer refuses to run if either upstream archive has changed since the has
 | `nace.csv` | 1000 | НКД Рев.2 — sections, divisions, groups, classes, and four national subclasses |
 | `municipalities.csv` | 80 | НТЕС level 4, with its planning region and the ДЗС municipality number |
 | `regions.csv` | 8 | НТЕС level 3 — the eight planning regions |
+| `nace_synonyms.yaml` | 53 | **Hand-written**, the one file here that is: everyday words («пекар», «фризер») to НКД classes, for the intake picker's search only. Decides nothing, so the version below does not change with it; `tests/test_reference_data.py` checks every code is a class |
 | `reference.yaml` | — | version, retrieval date, upstream URLs and SHA-256 of each archive |
 
 ## Provenance

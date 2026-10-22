@@ -187,19 +187,45 @@ def resolve_nace(text: object) -> Nace | None:
     return index.get(_nace_by_name().get(fold(text), ""))
 
 
+SYNONYM_MIN = 3  # «пе» would find half the file
+
+
+@cache
+def nace_synonyms() -> dict[str, tuple[str, ...]]:
+    """Everyday words to classes (data/nace_synonyms.yaml), for the picker only."""
+    raw = yaml.safe_load((DATA / "nace_synonyms.yaml").read_text(encoding="utf-8")) or {}
+    return {fold(word): tuple(codes) for word, codes in raw.items()}
+
+
+def _by_synonym(needle: str) -> list[str]:
+    """Codes of every word the query begins, or that begins the query.
+
+    «пека» finds «пекар»; «пекарница» and «пекарата» find it too.
+    """
+    if len(needle) < SYNONYM_MIN:
+        return []
+    found: list[str] = []
+    for word, codes in nace_synonyms().items():
+        if word.startswith(needle) or needle.startswith(word):
+            found += [c for c in codes if c not in found]
+    return found
+
+
 def search_nace(
     query: str, limit: int = 10, levels: tuple[int, ...] = (CLASS, SUBCLASS)
 ) -> list[Nace]:
     """Activities whose name contains `query`, for the intake form's picker.
 
-    Prefix matches first, then the rest, each in code order so the list is stable
-    between keystrokes. Never used to decide anything: a person picks the row.
+    Prefix matches first, then what an everyday word leads to («пекар» → bread,
+    data/nace_synonyms.yaml), then the rest, each in code order so the list is
+    stable between keystrokes. Never used to decide anything: a person picks the row.
     """
     needle = fold(query)
     if not needle:
         return []
+    index = nace_index()
     starts, contains = [], []
-    for entry in nace_index().values():
+    for entry in index.values():
         if entry.level not in levels:
             continue
         name = fold(entry.name_mk)
@@ -207,7 +233,13 @@ def search_nace(
             starts.append(entry)
         elif needle in name:
             contains.append(entry)
-    return (starts + contains)[:limit]
+    named = {e.code for e in starts + contains}
+    synonyms = [
+        index[code]
+        for code in _by_synonym(needle)
+        if code in index and code not in named and index[code].level in levels
+    ]
+    return (starts + synonyms + contains)[:limit]
 
 
 def resolve_municipality(text: object) -> Municipality | None:

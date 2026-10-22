@@ -199,6 +199,38 @@ def test_search_finds_an_activity_a_person_would_type():
     assert all(h.level in (CLASS, SUBCLASS) for h in hits)
 
 
+@pytest.mark.parametrize(
+    "typed, code",
+    [("пекар", "10.71"), ("пека", "10.71"), ("Пекарница", "10.71"), ("фризер", "96.02")],
+)
+def test_search_knows_the_word_a_person_uses_for_the_activity(typed, code):
+    """DS4's timed intake: «пекар» found nothing, because НКД says «леб»."""
+    assert code in {h.code for h in reference.search_nace(typed)}
+
+
+def test_a_name_match_still_comes_before_a_synonym():
+    # «мебел» is in НКД's own names; the synonym adds nothing above them.
+    hits = reference.search_nace("мебел")
+    assert fold_starts(hits[0].name_mk, "мебел") or "мебел" in hits[0].name_mk.casefold()
+
+
+def fold_starts(name: str, needle: str) -> bool:
+    return reference.fold(name).startswith(needle)
+
+
+def test_two_letters_do_not_reach_the_synonyms():
+    assert reference._by_synonym("пе") == []
+
+
+def test_every_synonym_leads_to_a_class_that_exists():
+    index = reference.nace_index()
+    for word, codes in reference.nace_synonyms().items():
+        assert word == word.casefold() and codes, word
+        assert not re.search(r"[A-Za-z]", word), f"a Latin letter in {word!r}"
+        for code in codes:
+            assert code in index and index[code].level == CLASS, (word, code)
+
+
 def test_search_is_bounded_and_stable():
     assert reference.search_nace("а", limit=5) == reference.search_nace("а", limit=5)
     assert len(reference.search_nace("а", limit=5)) == 5

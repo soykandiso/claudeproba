@@ -1,0 +1,66 @@
+# Everyday words for activities, for the intake picker's search only
+# (app/matching/reference.py search_nace). Written by hand, unlike the other files here:
+# НКД names an activity by what is produced («Производство на леб»), a person by who does
+# it («пекар»). Found in DS4's timed intake: «пекар» found nothing.
+#
+# A word leads to the classes listed under it; the picker then shows НКД's own names, and
+# a person picks one. Nothing here decides anything or is shown to a customer, so it does
+# not change the reference-data version in reference.yaml.
+#
+# Adding a word: lower case, Macedonian Cyrillic, the shortest form people type (a search
+# for «пекарница» also finds «пекар»'s entry, and «пека» finds «пекар»). Every code must
+# exist in nace.csv as a class (four digits); tests/test_reference_data.py checks it.
+
+пекар: ["10.71"]
+пекарница: ["10.71"]
+бурек: ["10.71"]
+слаткар: ["10.71", "10.72"]
+торти: ["10.71"]
+фризер: ["96.02"]
+бербер: ["96.02"]
+козметичар: ["96.02"]
+автомеханичар: ["45.20"]
+механичар: ["45.20", "25.62"]
+вулканизер: ["45.20"]
+автосервис: ["45.20"]
+столар: ["16.23", "31.09"]
+мебел: ["31.09"]
+ресторан: ["56.10"]
+кафана: ["56.10", "56.30"]
+кафетерија: ["56.30"]
+хотел: ["55.10"]
+програмер: ["62.01"]
+софтвер: ["62.01"]
+сметководител: ["69.20"]
+книговодител: ["69.20"]
+адвокат: ["69.10"]
+градежник: ["41.20"]
+електричар: ["43.21"]
+водоинсталатер: ["43.22"]
+молер: ["43.34"]
+шивач: ["14.13", "14.19"]
+кројач: ["14.13"]
+превозник: ["49.41"]
+такси: ["49.32"]
+зеленчук: ["01.13", "10.39"]
+пчелар: ["01.49"]
+лозар: ["01.21"]
+винарија: ["11.02"]
+овоштар: ["01.24"]
+млекара: ["10.51"]
+сирење: ["10.51"]
+месар: ["10.11", "10.13", "47.22"]
+маркет: ["47.11"]
+продавница: ["47.11"]
+аптека: ["47.73"]
+стоматолог: ["86.23"]
+заболекар: ["86.23"]
+ординација: ["86.21"]
+златар: ["32.12"]
+филигран: ["32.12"]
+печатница: ["18.12"]
+фотограф: ["74.20"]
+туристичка агенција: ["79.11"]
+градинка: ["88.91"]
+чевлар: ["95.23"]
+каменорезач: ["23.70"]
