@@ -429,3 +429,15 @@ news is from April 2026; its programmes are in Службен весник 53/20
 - **From this machine** the server dropped one request with a percent-encoded Cyrillic slug in the
   query string; by numeric id it answered. The fetcher uses ids.
 - `active: true`, priority 2, quiet SLA 180 days: a new agency publishes rarely.
+- **10.11.2026: its first own call, 1/2026** (post 4212, published 30.10.2026, open 15 days
+  counting that day, so until 13.11.2026). The fetcher found it by the title rule, with its two
+  Word documents. It **selects business-support organisations** (ОДП) to run the voucher
+  consulting system (measure 23, 2.500.000 ден.) and self-employment support (measure 22,
+  57.775.000 ден.) for three years: a selection of providers, scored on staff, projects, local
+  ties and premises, not a grant a company applies for. Its «Придружна документација» is the
+  terms and the scoring, **not a form**: applications go through the national e-services portal.
+  So there is no template set in it (D3's ИНОВА set still waits for the Greening co-grant call).
+  What follows from it is worth watching: once the organisations are chosen, the **vouchers for
+  ММСП** are what a company can ask for.
+- The same day the server dropped one connection without answering and answered the next run:
+  a transient, which the 4-hourly retry covers.
