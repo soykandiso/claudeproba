@@ -7,13 +7,17 @@ folder, because the repository ships none.
 """
 
 import datetime as dt
+import re
 import subprocess
 import sys
+from pathlib import Path
 
+import jinja2
 import pytest
 from babel.messages.catalog import Catalog
 from babel.messages.mofile import write_mo
 from flask_babel import force_locale
+from jinja2 import nodes
 
 from app import create_app, i18n
 from app.config import load_settings
@@ -117,3 +121,73 @@ def test_every_marked_string_is_extracted_with_its_plural(tmp_path):
     for msgid in ("Оди на содржината", "Детален извештај", "МКД", "Што не правиме"):
         assert f'msgid "{msgid}"' in text, msgid
     assert 'msgid_plural "За првите %(num)d нарачки"' in text
+
+
+# -- what is marked stays marked (docs/i18n.md, "What is marked") -----------------------
+
+TEMPLATES = Path(__file__).resolve().parents[1] / "app" / "web" / "templates"
+# The surfaces docs/i18n.md lists as marked. Admin, /stil and /demo are Macedonian by design.
+MARKED = [
+    "base.html",
+    "index.html",
+    "pricing.html",
+    "_components.html",
+    *(f"intake/{p.name}" for p in sorted((TEMPLATES / "intake").glob("*.html"))),
+    *(f"shortlist/{p.name}" for p in sorted((TEMPLATES / "shortlist").glob("*.html"))),
+]
+CYRILLIC = re.compile(r"[Ѐ-ӿ]")
+GETTEXT = {"_", "gettext", "ngettext"}
+
+
+def unmarked(source: str) -> list[str]:
+    """Macedonian a translator would never see: text, or a string literal outside _().
+
+    Read from the parsed template rather than with a pattern, so comments are gone and a
+    literal is judged by what calls it, not by where it sits on the line.
+    """
+    tree = jinja2.Environment(extensions=["jinja2.ext.i18n"]).parse(source)
+    allowed = {
+        id(arg)
+        for call in tree.find_all(nodes.Call)
+        if isinstance(call.node, nodes.Name) and call.node.name in GETTEXT
+        for arg in call.args
+    }
+    found = [
+        node.data.strip()
+        for node in tree.find_all(nodes.TemplateData)
+        if CYRILLIC.search(node.data)
+    ]
+    found += [
+        node.value
+        for node in tree.find_all(nodes.Const)
+        if isinstance(node.value, str) and CYRILLIC.search(node.value) and id(node) not in allowed
+    ]
+    return found
+
+
+@pytest.mark.parametrize("name", MARKED)
+def test_a_marked_surface_has_no_macedonian_outside_gettext(name):
+    assert unmarked((TEMPLATES / name).read_text(encoding="utf-8")) == []
+
+
+def test_the_check_sees_text_and_literals_but_not_comments_or_marked_strings():
+    assert unmarked("<p>Цени</p>") == ["<p>Цени</p>"]
+    assert unmarked("{{ c.group(rows, header='Цени') }}") == ["Цени"]
+    plural = "{{ ngettext('%(num)d ден', '%(num)d дена', n) }}"
+    assert unmarked("{# Цени #}{{ _('Цени') }}" + plural) == []
+
+
+def test_the_intake_and_shortlist_are_translated_when_a_catalog_has_them(tmp_path, monkeypatch):
+    """A marked string reaches the page in the page's language, with its numbers."""
+    catalog = Catalog(locale="en")
+    catalog.add("Профил на фирмата", "Company profile")
+    catalog.add("Изберете", "Choose")
+    folder = tmp_path / "en" / "LC_MESSAGES"
+    folder.mkdir(parents=True)
+    with (folder / "messages.mo").open("wb") as mo:
+        write_mo(mo, catalog)
+    monkeypatch.setattr(i18n, "TRANSLATIONS", tmp_path)
+    body = _client().get("/profil/?lang=en").get_data(as_text=True)
+    assert "<h1>Company profile</h1>" in body and ">Choose<" in body
+    # What the catalog does not have stays the Macedonian it was written in.
+    assert "Не е важно за мене" in body

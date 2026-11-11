@@ -1,36 +1,35 @@
 {% extends "base.html" %}
 {% import "_components.html" as c with context %}
-{% block title %}Што разбравме од одговорите{% endblock %}
+{% block title %}{{ _('Што разбравме од одговорите') }}{% endblock %}
 {% block main %}
 <div class="wrap">
   <div class="report-head stack">
-    <h1>Што разбравме од одговорите</h1>
-    <p class="soft">Профилот е зачуван во овој прелистувач. Според него се споредуваат условите
-      на отворените повици.</p>
+    <h1>{{ _('Што разбравме од одговорите') }}</h1>
+    <p class="soft">{{ _('Профилот е зачуван во овој прелистувач. Според него се споредуваат условите на отворените повици.') }}</p>
   </div>
 
   {# The answers as an iOS settings list (DL3): each answer a row, its reading on the right;
      what was not answered says so, and the footer says what that means. #}
-  {{ c.group(answers, header='Вашите одговори',
-             footer='Неодговорено поле не исклучува ниту еден повик. Условот што зависи од него се означува за проверка и ве прашуваме тогаш.') }}
+  {{ c.group(answers, header=_('Вашите одговори'),
+             footer=_('Неодговорено поле не исклучува ниту еден повик. Условот што зависи од него се означува за проверка и ве прашуваме тогаш.')) }}
 
   {% if profile.project_description %}
   <section class="stack">
-    <h2>Опис на проектот</h2>
+    <h2>{{ _('Опис на проектот') }}</h2>
     <p>{{ profile.project_description }}</p>
-    <h3>Ова стигнува до автоматската анализа</h3>
-    {% call c.excerpt(scrubbed, own=true) %}<span>Податоците по кои може да се препознае фирмата се заменети пред текстот да го напушти серверот.</span>{% endcall %}
+    <h3>{{ _('Ова стигнува до автоматската анализа') }}</h3>
+    {% call c.excerpt(scrubbed, own=true) %}<span>{{ _('Податоците по кои може да се препознае фирмата се заменети пред текстот да го напушти серверот.') }}</span>{% endcall %}
   </section>
   {% endif %}
 
   <div class="actions actions--after form-submit">
-    <a class="btn" href="{{ url_for('shortlist.index') }}">Види ги отворените повици</a>
-    <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">Измени го профилот</a>
+    <a class="btn" href="{{ url_for('shortlist.index') }}">{{ _('Види ги отворените повици') }}</a>
+    <a class="btn btn--quiet" href="{{ url_for('intake.form') }}">{{ _('Измени го профилот') }}</a>
   </div>
 
   {% if took %}
   {# The DS4 acceptance (P2 s23's) is a timed run, so the page says what it measured. #}
-  <p class="soft">Пополнувањето траеше {{ took }}.</p>
+  <p class="soft">{{ _('Пополнувањето траеше %(took)s.', took=took) }}</p>
   {% endif %}
 </div>
 {% endblock %}

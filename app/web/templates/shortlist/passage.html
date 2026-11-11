@@ -5,12 +5,12 @@
 {% set quote_lang = quoted|lang_of %}
 <div class="wrap grouped">
   {# Back to the call the reader came from, not the top of the list (F14). #}
-  <a class="back" href="{{ url_for('shortlist.index', _anchor='call-' ~ call.id) }}">Назад кон повиците</a>
+  <a class="back" href="{{ url_for('shortlist.index', _anchor='call-' ~ call.id) }}">{{ _('Назад кон повиците') }}</a>
   <div class="report-head stack">
     {# The condition is why the reader is here, so it is the heading; the call is the
        context above it (F15). The call's title is the institution's words: its own lang. #}
     <div class="stack--tight">
-      <p class="soft small">Услов од повикот</p>
+      <p class="soft small">{{ _('Услов од повикот') }}</p>
       <p class="passage__call" lang="{{ call.title_mk|lang_of }}">{{ call.title_mk }}</p>
     </div>
     <h1>{{ criterion.label_mk }}</h1>
@@ -19,14 +19,14 @@
      As an inset group (DL4): the source is a row that leads to the institution's page. #}
   {% set position %}<span class="id id--14">{{ snapshot.id }} {{ criterion.quote_start }}–{{ criterion.quote_end }}</span>{% endset %}
   {{ c.group([
-       ('Институција', institution, none),
-       ('Рок за пријава', c.deadline(call.deadline_at), none),
-       ('Последна проверка', c.date(call.last_verified_at), none),
-       ('Преземено', c.date(snapshot.fetched_at), none),
-       ('Извор', source_url.split('/')[2], source_url),
-       ('Позиција на цитатот', position, none),
-     ] + ([('Лиценца', credit[0], credit[1])] if credit else []), footer='Означениот текст е точно од знак ' ~ criterion.quote_start ~ ' до знак ' ~ criterion.quote_end
-       ~ ' во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.') }}
+       (_('Институција'), institution, none),
+       (_('Рок за пријава'), c.deadline(call.deadline_at), none),
+       (_('Последна проверка'), c.date(call.last_verified_at), none),
+       (_('Преземено'), c.date(snapshot.fetched_at), none),
+       (_('Извор'), source_url.split('/')[2], source_url),
+       (_('Позиција на цитатот'), position, none),
+     ] + ([(_('Лиценца'), credit[0], credit[1])] if credit else []), footer=_('Означениот текст е точно од знак %(start)s до знак %(end)s во зачуваниот текст, и тоа е проверено пред да се прикаже. Околу него е само дел од документот; целиот повик е на страницата на институцијата.',
+       start=criterion.quote_start, end=criterion.quote_end)) }}
   {# The stored text on a card; the quote in it is still the one bold element. #}
   <div class="document document--card" lang="{{ quote_lang }}">{{ before }}<mark id="quote">{{ quoted }}</mark>{{ after }}</div>
 </div>

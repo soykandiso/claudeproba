@@ -36,12 +36,12 @@
      reading conditions, and should know some are still in a document nobody has read. #}
   {% if call.eligibility_gap %}<p>{{ call.eligibility_gap }}</p>{% endif %}
   <dl class="facts">
-    <div><dt>Рок за пријава</dt><dd>{{ deadline(call.deadline_at) }}</dd></div>
-    {% if call.grant_max_mkd %}<div><dt>Најмногу по барател</dt><dd>{{ call.grant_max_mkd|thousands }} МКД</dd></div>{% endif %}
-    <div><dt>Последна проверка</dt><dd>{{ call.last_verified_at|mkdate }}</dd></div>
+    <div><dt>{{ _('Рок за пријава') }}</dt><dd>{{ deadline(call.deadline_at) }}</dd></div>
+    {% if call.grant_max_mkd %}<div><dt>{{ _('Најмногу по барател') }}</dt><dd>{{ call.grant_max_mkd|thousands }} {{ _('МКД') }}</dd></div>{% endif %}
+    <div><dt>{{ _('Последна проверка') }}</dt><dd>{{ call.last_verified_at|mkdate }}</dd></div>
   </dl>
   {% if outcome.outcomes %}
-  <ul class="reasons" aria-label="Услови од повикот">
+  <ul class="reasons" aria-label="{{ _('Услови од повикот') }}">
     {% for item in outcome.outcomes %}
     {% set cite = e.citation(item) %}
     <li>
@@ -50,7 +50,7 @@
       <p class="soft">{{ item.reason_mk }}</p>
       {% if cite %}
       <details class="cite">
-        <summary>Цитат од повикот</summary>
+        <summary>{{ _('Цитат од повикот') }}</summary>
         {{ excerpt(cite) }}
       </details>
       {% endif %}
@@ -58,11 +58,11 @@
     {% endfor %}
   </ul>
   {% else %}
-  <p class="soft">Условите на овој повик сè уште не се одобрени од уредник, па ниеден не е проверен.</p>
+  <p class="soft">{{ _('Условите на овој повик сè уште не се одобрени од уредник, па ниеден не е проверен.') }}</p>
   {% endif %}
   {% if not e.scored.excluded %}
   <details class="why">
-    <summary>Зошто е на ова место во листата</summary>
+    <summary>{{ _('Зошто е на ова место во листата') }}</summary>
     <dl class="breakdown">
       {% for part in e.scored.parts if part.weight %}
       <div><dt>{{ score_labels[part.name] }}</dt><dd>{{ part.reason_mk }}</dd></div>
@@ -71,7 +71,7 @@
   </details>
   {% endif %}
   <div class="actions">
-    <a class="btn btn--quiet" href="{{ call.canonical_url }}" rel="noopener">Повикот на страницата на институцијата</a>
+    <a class="btn btn--quiet" href="{{ call.canonical_url }}" rel="noopener">{{ _('Повикот на страницата на институцијата') }}</a>
     {% if package_for is defined and package_for.get(call.id) and not e.scored.excluded %}
     {# A package for this call (P5 s75): the institution's forms, filled and checked. #}
     <a class="btn btn--plain" href="{{ url_for('checkout.package_form', call_id=call.id) }}">{{ _('Пакет на документи, %(price)s', price=price_list().package.net|money) }}</a>

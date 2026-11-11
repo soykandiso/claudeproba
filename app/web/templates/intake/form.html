@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Профил на фирмата{% endblock %}
+{% block title %}{{ _('Профил на фирмата') }}{% endblock %}
 {% block main %}
 <div class="wrap">
   {% set action = url_for('intake.save') %}
   {% set tekovna_action = url_for('intake.tekovna') %}
-  {% set submit_label = 'Зачувај го профилот' %}
+  {% set submit_label = _('Зачувај го профилот') %}
   {% include "intake/_form.html" %}
 </div>
 {% endblock %}

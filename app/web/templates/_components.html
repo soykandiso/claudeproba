@@ -18,14 +18,14 @@
 {%- if d -%}
 <span class="deadline{% if deadline_passed(d, today) %} deadline--passed{% endif %}">{{ d|mkdate }}{% set left = days_left(d, today) %}{% if left %}, {{ left }}{% endif %}</span>
 {%- else -%}
-<span>Нема краен рок</span>
+<span>{{ _('Нема краен рок') }}</span>
 {%- endif -%}
 {%- endmacro %}
 
 {% macro date(d) -%}{{ d|mkdate }}{%- endmacro %}
 
 {# Amounts as Macedonian writes them, with the currency after: 12.000 МКД. #}
-{% macro amount(value, currency='МКД') -%}
+{% macro amount(value, currency=_('МКД')) -%}
 <span class="amount">{{ value|thousands }} {{ currency }}</span>
 {%- endmacro %}
 
@@ -34,13 +34,13 @@
    an English quote is read by an English voice and gets English quotation marks.
    `own` is for our own text shown as an excerpt (the scrubbed description): it is not
    a citation, so it never wears the citation colour (docs/design.md F12). #}
-{% macro excerpt(quote, source=none, retrieved=none, href=none, link_label='Види го во текстот на повикот', lang='mk', own=false, compact=true, credit=none) -%}
+{% macro excerpt(quote, source=none, retrieved=none, href=none, link_label=_('Види го во текстот на повикот'), lang='mk', own=false, compact=true, credit=none) -%}
 <figure class="excerpt{% if compact %} excerpt--compact{% endif %}{% if own %} excerpt--own{% endif %}">
   <blockquote lang="{{ lang }}">{{ quote }}</blockquote>
   {%- if source or retrieved or href or credit or caller is defined %}
   <figcaption>
-    {% if source %}<span>{% if not own %}<span class="cite-mark">Извор:</span> {% endif %}{{ source }}</span>{% endif %}
-    {% if retrieved %}<span>Преземено {{ retrieved|mkdate }}</span>{% endif %}
+    {% if source %}<span>{% if not own %}<span class="cite-mark">{{ _('Извор:') }}</span> {% endif %}{{ source }}</span>{% endif %}
+    {% if retrieved %}<span>{{ _('Преземено %(date)s', date=retrieved|mkdate) }}</span>{% endif %}
     {#- The credit a source's licence asks for beside its words (the EU's CC BY 4.0). #}
     {% if credit %}<span><a rel="license" href="{{ credit[1] }}">{{ credit[0] }}</a></span>{% endif %}
     {% if href %}<a href="{{ href }}">{{ link_label }}</a>{% endif %}
@@ -53,7 +53,7 @@
 {# A button that submits. `kind` is primary, quiet or destructive. `busy` is what it
    says while the request is out (app/web/static/js/submit.js sets the state). A
    disabled button says why beside it, never only in a tooltip. #}
-{% macro submit(label, kind='primary', busy='Се обработува', disabled_reason=none, id=none, name=none, value=none) -%}
+{% macro submit(label, kind='primary', busy=_('Се обработува'), disabled_reason=none, id=none, name=none, value=none) -%}
 <button class="btn{% if kind != 'primary' %} btn--{{ kind }}{% endif %}" type="submit" data-busy="{{ busy }}"
   {%- if id %} id="{{ id }}"{% endif %}{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}
   {%- if disabled_reason %} disabled aria-describedby="{{ id }}-why"{% endif %}>{{ label }}</button>

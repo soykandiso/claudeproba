@@ -2,7 +2,7 @@
    {% import "intake/_macros.html" as f with context %} #}
 
 {% macro label(q) %}
-<label for="{{ q.key }}">{{ q.label_mk }}{% if not q.required %} <span class="optional">(по избор)</span>{% endif %}</label>
+<label for="{{ q.key }}">{{ q.label_mk }}{% if not q.required %} <span class="optional">{{ _('(по избор)') }}</span>{% endif %}</label>
 {% endmacro %}
 
 {% macro hint(q) %}{% if q.hint_mk %}<span class="hint" id="{{ q.key }}-hint">{{ q.hint_mk }}</span>{% endif %}{% endmacro %}
@@ -21,7 +21,7 @@
 
 {% macro select(q, a, errors) %}
 <select class="select" id="{{ q.key }}" name="{{ q.key }}" {{ described(q, errors) }}>
-  <option value="">{% if q.required %}Изберете{% else %}Не е важно за мене{% endif %}</option>
+  <option value="">{% if q.required %}{{ _('Изберете') }}{% else %}{{ _('Не е важно за мене') }}{% endif %}</option>
   {% for value, text in q.options %}
   <option value="{{ value }}" {% if value == a.get(q.key) %}selected{% endif %}>{{ text }}</option>
   {% endfor %}
@@ -80,7 +80,7 @@
 </div>
 {% elif q.kind == 'checkboxes' %}
 <fieldset class="field">
-  <legend>{{ q.label_mk }}{% if not q.required %} <span class="optional">(по избор)</span>{% endif %}</legend>
+  <legend>{{ q.label_mk }}{% if not q.required %} <span class="optional">{{ _('(по избор)') }}</span>{% endif %}</legend>
   {{ checkboxes(q, a) }}
   {{ hint(q) }}
 </fieldset>
